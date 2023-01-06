@@ -17,7 +17,7 @@
 //!
 
 #![warn(missing_docs)]
-mod superlu;
+pub mod superlu;
 
 #[cfg(test)]
 mod tests {

@@ -1,2 +1,8 @@
 /target
 /Cargo.lock
+
+# Emacs saves
+*~
+
+# For C binaries
+*.out

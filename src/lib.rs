@@ -19,12 +19,6 @@
 #![warn(missing_docs)]
 mod superlu;
 
-pub fn add(left: usize, right: usize) -> usize {
-    left + right
-}
-
-
-
 #[cfg(test)]
 mod tests {
     use super::*;

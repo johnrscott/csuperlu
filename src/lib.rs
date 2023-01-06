@@ -3,10 +3,18 @@
 //! performative, and retains the main features of the original SuperLU iterface.
 //!
 //! The SuperLU User Guide is
-//! <https://portal.nersc.gov/project/sparse/superlu/superlu_ug.pdf>
+//! <https://portal.nersc.gov/project/sparse/superlu/superlu_ug.pdf>, and
+//! provides an overview of what SuperLU can do. 
 //!
-//! The function reference for SuperLU is provided  
+//! SuperLU solves sparse systems of linear equations of the form $$AX = B,$$
+//! where $A$ is a sparse $n\times n$ matrix, $B$ is a dense
+//! $n \times n_\text{rhs}$ matrix of right-hand sides, and $X$ is the matrix
+//! of unknowns (the same size as $B$).
+//!
+//!
+//! The (C) function reference for SuperLU is provided  
 //! <https://portal.nersc.gov/project/sparse/superlu/superlu_code_html/index.html>
+//!
 
 #![warn(missing_docs)]
 mod superlu;

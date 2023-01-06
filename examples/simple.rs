@@ -12,15 +12,9 @@
 
 extern crate csuperlu;
 
-use csuperlu::superlu::dgssv::{dgssv, LUDecomp};
-use csuperlu::superlu::comp_col::CompColMatrix;
-use csuperlu::superlu::dense::DenseMatrix;
-use csuperlu::superlu::utils::{superlu_options_t, colperm_t,
-			       SuperLUStat_t, SuperMatrix};
-use std::mem::MaybeUninit;
-
 fn main() {
 
+    /*
     // Matrix dimensions
     let m: i32 = 5;
     let n: i32 = 5;
@@ -46,7 +40,7 @@ fn main() {
     let xa = vec![0, 3, 6, 8, 10, 12];
 
     // Make the matrix
-    let mut A = CompColMatrix::new(m, n, nnz, a, asub, xa);    
+    let mut A = CompColMatrix::new(m, n, nnz, a, asub, xa);
     
     // Make the RHS vector
     let nrhs = 1;
@@ -61,7 +55,7 @@ fn main() {
 
     let mut stat = SuperLUStat_t::new();    
     let mut info = 0;
-    let mut lu_decomp = unsafe {
+    let (mut L, mut U, mut info) = unsafe {
 	let mut L = MaybeUninit::<SuperMatrix>::uninit();
 	let mut U = MaybeUninit::<SuperMatrix>::uninit();
 	
@@ -69,16 +63,17 @@ fn main() {
 	      perm_r.as_mut_ptr(),
 	      L.as_mut_ptr(), U.as_mut_ptr(),
 	      &mut B.super_matrix, &mut stat, &mut info);
-
-	LUDecomp {
-	    L: SuperNodeMatrix::from_super_matrix(L.assume_init()),
-	    U: CompColMatrix::from_super_matrix(U.assume_init()),
+	
+	(
+	    L.assume_init(),
+	    U.assume_init(),
 	    info
-	}
+	)
     };
 
     A.print("A");
-    lu_decomp.U.print("U");
-    lu_decomp.L.print("L");
+    U.print("U");
+    L.print("L");
     B.print("B");    
+*/
 }

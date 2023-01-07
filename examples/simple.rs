@@ -10,11 +10,17 @@
 //! porting code as easy as possible
 //!
 
-extern crate csuperlu;
+use std::mem::MaybeUninit;
+use csuperlu::c::comp_col::c_dCreate_CompCol_Matrix;
+use csuperlu::c::utils::{
+    SuperMatrix,
+    Stype_t,
+    Mtype_t,
+    Dtype_t
+};
 
 fn main() {
 
-    /*
     // Matrix dimensions
     let m: i32 = 5;
     let n: i32 = 5;
@@ -31,17 +37,24 @@ fn main() {
     let l: f64 = 12.0;
     
     // Vector of doubles of length nnz
-    let a = vec![s, l, l, u, l, l, u, p, u, e, u, r];
+    let mut a = vec![s, l, l, u, l, l, u, p, u, e, u, r];
 
     // Vector of ints of length nnz
-    let asub = vec![0, 1, 4, 1, 2, 4, 0, 2, 0, 3, 3, 4];
+    let mut asub = vec![0, 1, 4, 1, 2, 4, 0, 2, 0, 3, 3, 4];
 
     // Vector of ints of length n+1
-    let xa = vec![0, 3, 6, 8, 10, 12];
+    let mut xa = vec![0, 3, 6, 8, 10, 12];
 
     // Make the matrix
-    let mut A = CompColMatrix::new(m, n, nnz, a, asub, xa);
-    
+    let A = unsafe {
+	let mut A = MaybeUninit::<SuperMatrix>::uninit();
+	c_dCreate_CompCol_Matrix(A.as_mut_ptr(), m, n, nnz,
+				 a.as_mut_ptr(), asub.as_mut_ptr(), xa.as_mut_ptr(),
+				 Stype_t::SLU_NC, Dtype_t::SLU_D, Mtype_t::SLU_GE);
+	A.assume_init()
+    };
+
+    /*
     // Make the RHS vector
     let nrhs = 1;
     let mut rhs = vec![1.0; m as usize];

@@ -111,6 +111,7 @@ pub enum milu_t {
 
 #[repr(C)]
 #[allow(non_snake_case)]
+#[allow(non_camel_case_types)]
 pub struct superlu_options_t {
     Fact: fact_t,
     Equil: yes_no_t,
@@ -146,6 +147,7 @@ pub type flops_t = libc::c_float;
 
 #[repr(C)]
 #[allow(non_snake_case)]
+#[allow(non_camel_case_types)]
 pub struct SuperLUStat_t {
     panel_histo: *mut libc::c_int,
     utime: *mut libc::c_double,

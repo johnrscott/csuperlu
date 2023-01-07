@@ -11,8 +11,14 @@
 //!
 
 use std::mem::MaybeUninit;
-use csuperlu::c::comp_col::c_dCreate_CompCol_Matrix;
-use csuperlu::c::dense::c_dCreate_Dense_Matrix;
+use csuperlu::c::comp_col::{
+    c_dCreate_CompCol_Matrix,
+    c_dPrint_CompCol_Matrix,
+};
+use csuperlu::c::dense::{
+    c_dCreate_Dense_Matrix,
+};
+use csuperlu::c::super_node::c_dPrint_SuperNode_Matrix;
 use csuperlu::c::dgssv::c_dgssv;
 use csuperlu::c::utils::{
     SuperMatrix,
@@ -102,10 +108,13 @@ fn main() {
 	    info
 	)
     };
-/*
-    A.print("A");
-    U.print("U");
-    L.print("L");
-    B.print("B");    
-*/
+
+    let c_str = std::ffi::CString::new("A").unwrap();
+    c_dPrint_CompCol_Matrix(c_str.as_ptr() as *mut libc::c_char, &mut A);
+
+    let c_str = std::ffi::CString::new("U").unwrap();
+    c_dPrint_CompCol_Matrix(c_str.as_ptr() as *mut libc::c_char, &mut U);
+
+    let c_str = std::ffi::CString::new("L").unwrap();
+    c_dPrint_SuperNode_Matrix(c_str.as_ptr() as *mut libc::c_char, &mut L);
 }

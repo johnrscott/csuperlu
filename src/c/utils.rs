@@ -111,6 +111,7 @@ pub enum milu_t {
 
 #[repr(C)]
 #[allow(non_snake_case)]
+#[allow(non_camel_case_types)]
 pub struct superlu_options_t {
     Fact: fact_t,
     Equil: yes_no_t,
@@ -146,6 +147,7 @@ pub type flops_t = libc::c_float;
 
 #[repr(C)]
 #[allow(non_snake_case)]
+#[allow(non_camel_case_types)]
 pub struct SuperLUStat_t {
     panel_histo: *mut libc::c_int,
     utime: *mut libc::c_double,
@@ -165,3 +167,31 @@ pub struct SuperMatrix {
     ncol: libc::c_int,
     Store: *mut libc::c_void,
 }
+
+#[link(name = "superlu")]
+extern {
+    fn set_default_options(options: *mut superlu_options_t);
+    fn StatInit(stat: *mut SuperLUStat_t);
+    fn StatFree(stat: *mut SuperLUStat_t);
+}
+
+pub fn c_set_default_options(options: *mut superlu_options_t) {
+    unsafe {
+	set_default_options(options);
+    }
+}
+
+#[allow(non_snake_case)]
+pub fn c_StatInit(stat: *mut SuperLUStat_t) {
+    unsafe {
+	StatInit(stat);
+    }
+}
+
+#[allow(non_snake_case)]
+pub fn c_StatFree(stat: *mut SuperLUStat_t) {
+    unsafe {
+	StatFree(stat);
+    }
+}
+

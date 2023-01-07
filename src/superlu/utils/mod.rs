@@ -1,11 +1,11 @@
-use std::mem::MaybeUninit;
+mod c_utils;
 
-#[link(name = "superlu")]
-extern {
-    fn set_default_options(options: *mut superlu_options_t);
-    fn StatInit(stat: *mut SuperLUStat_t);
-    fn StatFree(stat: *mut SuperLUStat_t);
-}
+use std::mem::MaybeUninit;
+use crate::superlu::utils::c_utils::{
+    c_set_default_options,
+    c_StatInit,
+    c_StatFree,
+};
 
 // Data type
 #[repr(C)]
@@ -212,4 +212,17 @@ impl SuperMatrix {
     pub fn num_cols(&self) -> usize {
 	self.ncol as usize
     }
+}
+
+pub fn set_default_options(options: *mut superlu_options_t) {
+    c_set_default_options(options);
+}
+
+pub fn StatInit(stat: *mut SuperLUStat_t) {
+    c_StatInit(stat);
+}
+
+
+pub fn StatFree(stat: *mut SuperLUStat_t) {
+    c_StatFree(stat);
 }

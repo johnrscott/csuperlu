@@ -12,3 +12,9 @@ pub fn c_dPrint_SuperNode_Matrix(what: *mut libc::c_char, A: *mut SuperMatrix) {
 	dPrint_SuperNode_Matrix(what, A);
     }
 }
+
+pub fn c_Destroy_SuperNode_Matrix(A: *mut SuperMatrix) {
+    unsafe {
+	Destroy_SuperNode_Matrix(A);
+    }
+}

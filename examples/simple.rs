@@ -63,13 +63,18 @@ fn main() {
 
     // Vector of ints of length n+1
     let mut xa = vec![0, 3, 6, 8, 10, 12];
-
+    
     // Make the matrix
     let mut A = unsafe {
 	let mut A = MaybeUninit::<SuperMatrix>::uninit();
 	c_dCreate_CompCol_Matrix(A.as_mut_ptr(), m, n, nnz,
 				 a.as_mut_ptr(), asub.as_mut_ptr(), xa.as_mut_ptr(),
 				 Stype_t::SLU_NC, Dtype_t::SLU_D, Mtype_t::SLU_GE);
+
+	// When the CompCol matrix is created, the vectors a, asub and xa are
+	// considered to be owned by the matrix. This means that the matrix free
+	// function also frees these vectors. In order to avoid rust also freeing
+	// them, forget them here.
 	std::mem::forget(a);
 	std::mem::forget(asub);
 	std::mem::forget(xa);

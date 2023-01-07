@@ -16,16 +16,5 @@
 //! <https://portal.nersc.gov/project/sparse/superlu/superlu_code_html/index.html>
 //!
 
-#![warn(missing_docs)]
-pub mod superlu;
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn it_works() {
-        // let result = add(2, 2);
-        // assert_eq!(result, 4);
-    }
-}
+//#![warn(missing_docs)]
+pub mod c;

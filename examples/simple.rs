@@ -14,11 +14,16 @@ use std::mem::MaybeUninit;
 use csuperlu::c::comp_col::{
     c_dCreate_CompCol_Matrix,
     c_dPrint_CompCol_Matrix,
+    c_Destroy_CompCol_Matrix,
 };
 use csuperlu::c::dense::{
     c_dCreate_Dense_Matrix,
+    c_Destroy_SuperMatrix_Store,
 };
-use csuperlu::c::super_node::c_dPrint_SuperNode_Matrix;
+use csuperlu::c::super_node::{
+    c_dPrint_SuperNode_Matrix,
+    c_Destroy_SuperNode_Matrix,
+};
 use csuperlu::c::dgssv::c_dgssv;
 use csuperlu::c::utils::{
     SuperMatrix,
@@ -30,6 +35,7 @@ use csuperlu::c::utils::{
     colperm_t,
     SuperLUStat_t,
     c_StatInit,
+    c_StatFree,
 };
 
 fn main() {
@@ -64,6 +70,9 @@ fn main() {
 	c_dCreate_CompCol_Matrix(A.as_mut_ptr(), m, n, nnz,
 				 a.as_mut_ptr(), asub.as_mut_ptr(), xa.as_mut_ptr(),
 				 Stype_t::SLU_NC, Dtype_t::SLU_D, Mtype_t::SLU_GE);
+	std::mem::forget(a);
+	std::mem::forget(asub);
+	std::mem::forget(xa);
 	A.assume_init()
     };
 
@@ -117,4 +126,10 @@ fn main() {
 
     let c_str = std::ffi::CString::new("L").unwrap();
     c_dPrint_SuperNode_Matrix(c_str.as_ptr() as *mut libc::c_char, &mut L);
+
+    c_Destroy_CompCol_Matrix(&mut A);
+    c_Destroy_SuperMatrix_Store(&mut B);
+    c_Destroy_SuperNode_Matrix(&mut L);
+    c_Destroy_CompCol_Matrix(&mut U);
+    c_StatFree(&mut stat);
 }

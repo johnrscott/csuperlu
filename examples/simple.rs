@@ -13,7 +13,7 @@
 use std::mem::MaybeUninit;
 use csuperlu::c::comp_col::c_dCreate_CompCol_Matrix;
 use csuperlu::c::dense::c_dCreate_Dense_Matrix;
-
+use csuperlu::c::dgssv::c_dgssv;
 use csuperlu::c::utils::{
     SuperMatrix,
     Stype_t,
@@ -53,7 +53,7 @@ fn main() {
     let mut xa = vec![0, 3, 6, 8, 10, 12];
 
     // Make the matrix
-    let A = unsafe {
+    let mut A = unsafe {
 	let mut A = MaybeUninit::<SuperMatrix>::uninit();
 	c_dCreate_CompCol_Matrix(A.as_mut_ptr(), m, n, nnz,
 				 a.as_mut_ptr(), asub.as_mut_ptr(), xa.as_mut_ptr(),
@@ -86,24 +86,23 @@ fn main() {
 	c_StatInit(stat.as_mut_ptr());
 	    stat.assume_init()
     };
-/*
-	SuperLUStat_t::new();    
+    
     let mut info = 0;
     let (mut L, mut U, mut info) = unsafe {
 	let mut L = MaybeUninit::<SuperMatrix>::uninit();
 	let mut U = MaybeUninit::<SuperMatrix>::uninit();
 	
-	dgssv(&mut options, &mut A.super_matrix, perm_c.as_mut_ptr(),
+	c_dgssv(&mut options, &mut A, perm_c.as_mut_ptr(),
 	      perm_r.as_mut_ptr(),
 	      L.as_mut_ptr(), U.as_mut_ptr(),
-	      &mut B.super_matrix, &mut stat, &mut info);
+	      &mut B, &mut stat, &mut info);
 	(
 	    L.assume_init(),
 	    U.assume_init(),
 	    info
 	)
     };
-
+/*
     A.print("A");
     U.print("U");
     L.print("L");

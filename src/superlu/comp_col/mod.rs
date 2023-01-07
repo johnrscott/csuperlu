@@ -7,7 +7,7 @@ use crate::superlu::comp_col::c_comp_col::{
     c_dPrint_CompCol_Matrix,    
 };
 
-
+#[allow(non_snake_case)]
 pub fn dCreate_CompCol_Matrix(A: *mut SuperMatrix,
 			      m: libc::c_int,
 			      n: libc::c_int,
@@ -22,11 +22,13 @@ pub fn dCreate_CompCol_Matrix(A: *mut SuperMatrix,
 			     stype, dtype, mtype);
 }
 
+#[allow(non_snake_case)]
 pub fn Destroy_CompCol_Matrix(A: *mut SuperMatrix) {
     c_Destroy_CompCol_Matrix(A);
 }
 
+#[allow(non_snake_case)]
 pub fn dPrint_CompCol_Matrix(what: *mut libc::c_char,
-			       A: *mut SuperMatrix) {
+			     A: *mut SuperMatrix) {
     c_dPrint_CompCol_Matrix(what, A);
 }

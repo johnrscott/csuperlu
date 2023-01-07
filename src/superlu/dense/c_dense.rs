@@ -17,6 +17,7 @@ extern {
     fn Destroy_SuperMatrix_Store(A: *mut SuperMatrix);
 }
 
+#[allow(non_snake_case)]
 pub fn c_dCreate_Dense_Matrix(X: *mut SuperMatrix,
 			      m: libc::c_int,
 			      n: libc::c_int,
@@ -30,12 +31,14 @@ pub fn c_dCreate_Dense_Matrix(X: *mut SuperMatrix,
     }
 }
 
+#[allow(non_snake_case)]
 pub fn c_dPrint_Dense_Matrix(what: *mut libc::c_char, A: *mut SuperMatrix) {
     unsafe {
 	dPrint_Dense_Matrix(what, A);	
     }
 }
 
+#[allow(non_snake_case)]
 pub fn c_Destroy_SuperMatrix_Store(A: *mut SuperMatrix) {
     unsafe {
 	Destroy_SuperMatrix_Store(A);	

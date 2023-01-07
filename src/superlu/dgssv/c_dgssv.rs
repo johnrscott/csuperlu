@@ -15,6 +15,7 @@ extern {
 	     info: *mut libc::c_int);
 }
 
+#[allow(non_snake_case)]
 pub fn c_dgssv(options: *mut superlu_options_t,
 	       A: *mut SuperMatrix,
 	       perm_c: *mut libc::c_int,

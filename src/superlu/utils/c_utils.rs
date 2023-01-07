@@ -16,13 +16,14 @@ pub fn c_set_default_options(options: *mut superlu_options_t) {
     }
 }
 
+#[allow(non_snake_case)]
 pub fn c_StatInit(stat: *mut SuperLUStat_t) {
     unsafe {
 	StatInit(stat);
     }
 }
 
-
+#[allow(non_snake_case)]
 pub fn c_StatFree(stat: *mut SuperLUStat_t) {
     unsafe {
 	StatFree(stat);

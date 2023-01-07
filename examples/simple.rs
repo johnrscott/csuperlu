@@ -18,7 +18,12 @@ use csuperlu::c::utils::{
     SuperMatrix,
     Stype_t,
     Mtype_t,
-    Dtype_t
+    Dtype_t,
+    superlu_options_t,
+    c_set_default_options,
+    colperm_t,
+    SuperLUStat_t,
+    c_StatInit,
 };
 
 fn main() {
@@ -66,14 +71,23 @@ fn main() {
 	B.assume_init()
     };
     
-    /*
-    let mut options = superlu_options_t::new();
+    let mut options = unsafe {
+	let mut options = MaybeUninit::<superlu_options_t>::uninit();
+	c_set_default_options(options.as_mut_ptr());
+	options.assume_init()
+    };
     options.ColPerm = colperm_t::NATURAL;
     
     let mut perm_r = Vec::<i32>::with_capacity(m as usize);
     let mut perm_c = Vec::<i32>::with_capacity(n as usize);
 
-    let mut stat = SuperLUStat_t::new();    
+    let mut stat = unsafe {
+	let mut stat = MaybeUninit::<SuperLUStat_t>::uninit();
+	c_StatInit(stat.as_mut_ptr());
+	    stat.assume_init()
+    };
+/*
+	SuperLUStat_t::new();    
     let mut info = 0;
     let (mut L, mut U, mut info) = unsafe {
 	let mut L = MaybeUninit::<SuperMatrix>::uninit();
@@ -83,7 +97,6 @@ fn main() {
 	      perm_r.as_mut_ptr(),
 	      L.as_mut_ptr(), U.as_mut_ptr(),
 	      &mut B.super_matrix, &mut stat, &mut info);
-	
 	(
 	    L.assume_init(),
 	    U.assume_init(),

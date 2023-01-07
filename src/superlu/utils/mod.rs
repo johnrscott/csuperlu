@@ -175,25 +175,6 @@ pub struct SuperLUStat_t {
     expansions: libc::c_int,
 }
 
-impl SuperLUStat_t {
-    pub fn new() -> Self {
-	let stat = unsafe {
-    	    let mut stat = MaybeUninit::<SuperLUStat_t>::uninit();
-    	    StatInit(stat.as_mut_ptr());
-    	    stat.assume_init()
-	};
-	stat
-    }
-}
-
-impl Drop for SuperLUStat_t {
-    fn drop(&mut self) {
-	unsafe {
-	    StatFree(self);	    
-	}
-    }
-}
-
 #[repr(C)]
 #[allow(non_snake_case)]
 pub struct SuperMatrix {
@@ -205,24 +186,17 @@ pub struct SuperMatrix {
     Store: *mut libc::c_void,
 }
 
-impl SuperMatrix {
-    pub fn num_rows(&self) -> usize {
-	self.nrow as usize
-    }
-    pub fn num_cols(&self) -> usize {
-	self.ncol as usize
-    }
-}
-
 pub fn set_default_options(options: *mut superlu_options_t) {
     c_set_default_options(options);
 }
 
+#[allow(non_snake_case)]
 pub fn StatInit(stat: *mut SuperLUStat_t) {
     c_StatInit(stat);
 }
 
 
+#[allow(non_snake_case)]
 pub fn StatFree(stat: *mut SuperLUStat_t) {
     c_StatFree(stat);
 }

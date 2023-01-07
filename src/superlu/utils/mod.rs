@@ -1,6 +1,5 @@
 mod c_utils;
 
-use std::mem::MaybeUninit;
 use crate::superlu::utils::c_utils::{
     c_set_default_options,
     c_StatInit,
@@ -148,17 +147,6 @@ pub struct superlu_options_t {
     num_lookaheads: libc::c_int,
     lookahead_etree: yes_no_t,
     SymPattern: yes_no_t,
-}
-
-impl superlu_options_t {
-    pub fn new() -> Self {
-	let options = unsafe {
-	    let mut options = MaybeUninit::<Self>::uninit();
-	    set_default_options(options.as_mut_ptr());
-	    options.assume_init()
-	};
-	options
-    }
 }
 
 #[allow(non_camel_case_types)]

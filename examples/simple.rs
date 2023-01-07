@@ -53,8 +53,7 @@ fn main() {
 				 Stype_t::SLU_NC, Dtype_t::SLU_D, Mtype_t::SLU_GE);
 	A.assume_init()
     };
-
-    /*
+/*
     // Make the RHS vector
     let nrhs = 1;
     let mut rhs = vec![1.0; m as usize];

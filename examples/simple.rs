@@ -5,10 +5,12 @@
 //!   Users’ Guide to illustrate how to call a SuperLU routine, and the
 //!   matrix data structures used by SuperLU. "
 //!
-//! Compared to the original C code, this code is much cleaner, and much
-//! safer. However, function names similar to SuperLU have been kept to make
-//! porting code as easy as possible
-//!
+//! This code calls all the same functions as the C code, but with names
+//! prefixed with c_. However, there are a few differences compared to the
+//! C code. First, Rust vectors are used instead of C style vectors (allocated
+//! with malloc). Second, Rust requires unsafe blocks whenever a struct is
+//! initialised by a function taking the uninitialised struct as an input/output
+//! parameter. 
 
 use std::mem::MaybeUninit;
 use csuperlu::c::comp_col::{

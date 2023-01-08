@@ -55,3 +55,9 @@ impl SuperLUStat_t {
 	}
     }
 }
+
+impl Drop for SuperLUStat_t {
+    fn drop(&mut self) {
+	c_StatFree(self);
+    }
+}

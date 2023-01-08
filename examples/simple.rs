@@ -138,5 +138,4 @@ fn main() {
     c_Destroy_SuperMatrix_Store(&mut B);
     c_Destroy_SuperNode_Matrix(&mut L);
     c_Destroy_CompCol_Matrix(&mut U);
-    c_StatFree(&mut stat);
 }

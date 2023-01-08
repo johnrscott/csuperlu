@@ -57,18 +57,15 @@ impl SuperLUStat_t {
 	    stat.assume_init()
 	}
     }
+    pub fn print(&self) {
+	unsafe {
+	    c_StatFree(self as *const Self as *mut Self);
+	}
+    }
 }
 
 impl Drop for SuperLUStat_t {
     fn drop(&mut self) {
 	c_StatFree(self);
-    }
-}
-
-impl std::fmt::Display for SuperLUStat_t {
-    fn fmt(&mut self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-	unsafe {
-	    c_StatFree(self as &mut Self);
-	}
     }
 }

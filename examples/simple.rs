@@ -5,10 +5,12 @@
 //!   Users’ Guide to illustrate how to call a SuperLU routine, and the
 //!   matrix data structures used by SuperLU. "
 //!
-//! Compared to the original C code, this code is much cleaner, and much
-//! safer. However, function names similar to SuperLU have been kept to make
-//! porting code as easy as possible
-//!
+//! This code calls all the same functions as the C code, but with names
+//! prefixed with c_. However, there are a few differences compared to the
+//! C code. First, Rust vectors are used instead of C style vectors (allocated
+//! with malloc). Second, Rust requires unsafe blocks whenever a struct is
+//! initialised by a function taking the uninitialised struct as an input/output
+//! parameter. 
 
 use std::mem::MaybeUninit;
 use csuperlu::c::comp_col::{
@@ -33,9 +35,10 @@ use csuperlu::c::utils::{
     superlu_options_t,
     c_set_default_options,
     colperm_t,
+};
+use csuperlu::c::stat::{
     SuperLUStat_t,
-    c_StatInit,
-    c_StatFree,
+    c_StatPrint,
 };
 
 fn main() {
@@ -68,7 +71,8 @@ fn main() {
     let mut A = unsafe {
 	let mut A = MaybeUninit::<SuperMatrix>::uninit();
 	c_dCreate_CompCol_Matrix(A.as_mut_ptr(), m, n, nnz,
-				 a.as_mut_ptr(), asub.as_mut_ptr(), xa.as_mut_ptr(),
+				 a.as_mut_ptr(), asub.as_mut_ptr(),
+				 xa.as_mut_ptr(),
 				 Stype_t::SLU_NC, Dtype_t::SLU_D, Mtype_t::SLU_GE);
 
 	// When the CompCol matrix is created, the vectors a, asub and xa are
@@ -87,7 +91,8 @@ fn main() {
     let mut B = unsafe {
 	let mut B = MaybeUninit::<SuperMatrix>::uninit();
 	c_dCreate_Dense_Matrix(B.as_mut_ptr(), m, nrhs, rhs.as_mut_ptr(), m,
-			       Stype_t::SLU_DN, Dtype_t::SLU_D, Mtype_t::SLU_GE);	
+			       Stype_t::SLU_DN, Dtype_t::SLU_D,
+			       Mtype_t::SLU_GE);	
 	B.assume_init()
     };
     
@@ -101,12 +106,8 @@ fn main() {
     let mut perm_r = Vec::<i32>::with_capacity(m as usize);
     let mut perm_c = Vec::<i32>::with_capacity(n as usize);
 
-    let mut stat = unsafe {
-	let mut stat = MaybeUninit::<SuperLUStat_t>::uninit();
-	c_StatInit(stat.as_mut_ptr());
-	    stat.assume_init()
-    };
-    
+    let mut stat = SuperLUStat_t::new();
+
     let mut info = 0;
     let (mut L, mut U, mut info) = unsafe {
 	let mut L = MaybeUninit::<SuperMatrix>::uninit();
@@ -123,6 +124,9 @@ fn main() {
 	)
     };
 
+    // Print the performance statistics
+    c_StatPrint(&mut stat);
+
     let c_str = std::ffi::CString::new("A").unwrap();
     c_dPrint_CompCol_Matrix(c_str.as_ptr() as *mut libc::c_char, &mut A);
 
@@ -136,5 +140,4 @@ fn main() {
     c_Destroy_SuperMatrix_Store(&mut B);
     c_Destroy_SuperNode_Matrix(&mut L);
     c_Destroy_CompCol_Matrix(&mut U);
-    c_StatFree(&mut stat);
 }

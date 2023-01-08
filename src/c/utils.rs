@@ -142,21 +142,6 @@ pub struct superlu_options_t {
     SymPattern: yes_no_t,
 }
 
-#[allow(non_camel_case_types)]
-pub type flops_t = libc::c_float;
-
-#[repr(C)]
-#[allow(non_snake_case)]
-#[allow(non_camel_case_types)]
-pub struct SuperLUStat_t {
-    panel_histo: *mut libc::c_int,
-    utime: *mut libc::c_double,
-    ops: *mut flops_t,
-    TinyPivots: libc::c_int,
-    RefineSteps: libc::c_int,
-    expansions: libc::c_int,
-}
-
 #[repr(C)]
 #[allow(non_snake_case)]
 pub struct SuperMatrix {
@@ -171,8 +156,6 @@ pub struct SuperMatrix {
 #[link(name = "superlu")]
 extern {
     fn set_default_options(options: *mut superlu_options_t);
-    fn StatInit(stat: *mut SuperLUStat_t);
-    fn StatFree(stat: *mut SuperLUStat_t);
 }
 
 pub fn c_set_default_options(options: *mut superlu_options_t) {
@@ -180,18 +163,3 @@ pub fn c_set_default_options(options: *mut superlu_options_t) {
 	set_default_options(options);
     }
 }
-
-#[allow(non_snake_case)]
-pub fn c_StatInit(stat: *mut SuperLUStat_t) {
-    unsafe {
-	StatInit(stat);
-    }
-}
-
-#[allow(non_snake_case)]
-pub fn c_StatFree(stat: *mut SuperLUStat_t) {
-    unsafe {
-	StatFree(stat);
-    }
-}
-

@@ -6,6 +6,7 @@
 //!
 
 pub mod utils;
+pub mod stat;
 pub mod comp_col;
 pub mod dense;
 pub mod dgssv;

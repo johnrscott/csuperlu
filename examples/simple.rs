@@ -70,7 +70,8 @@ fn main() {
     let mut A = unsafe {
 	let mut A = MaybeUninit::<SuperMatrix>::uninit();
 	c_dCreate_CompCol_Matrix(A.as_mut_ptr(), m, n, nnz,
-				 a.as_mut_ptr(), asub.as_mut_ptr(), xa.as_mut_ptr(),
+				 a.as_mut_ptr(), asub.as_mut_ptr(),
+				 xa.as_mut_ptr(),
 				 Stype_t::SLU_NC, Dtype_t::SLU_D, Mtype_t::SLU_GE);
 
 	// When the CompCol matrix is created, the vectors a, asub and xa are
@@ -89,7 +90,8 @@ fn main() {
     let mut B = unsafe {
 	let mut B = MaybeUninit::<SuperMatrix>::uninit();
 	c_dCreate_Dense_Matrix(B.as_mut_ptr(), m, nrhs, rhs.as_mut_ptr(), m,
-			       Stype_t::SLU_DN, Dtype_t::SLU_D, Mtype_t::SLU_GE);	
+			       Stype_t::SLU_DN, Dtype_t::SLU_D,
+			       Mtype_t::SLU_GE);	
 	B.assume_init()
     };
     
@@ -103,11 +105,7 @@ fn main() {
     let mut perm_r = Vec::<i32>::with_capacity(m as usize);
     let mut perm_c = Vec::<i32>::with_capacity(n as usize);
 
-    let mut stat = unsafe {
-	let mut stat = MaybeUninit::<SuperLUStat_t>::uninit();
-	c_StatInit(stat.as_mut_ptr());
-	    stat.assume_init()
-    };
+    let mut stat = SuperLUStat_t::new();
     
     let mut info = 0;
     let (mut L, mut U, mut info) = unsafe {

@@ -2,13 +2,22 @@
 //!
 //! SuperLU records performance statistics such as the number
 //! of floating-point operations and the execution time of the
-//! solvers.
+//! solvers. This module contains a wrapper around the
+//! SuperLUStat_t object in the C library. All the functions
+//! related to this structure are exposed here, except the
+//! memory related functions (alloc and free) which are wrapped
+//! up in new and drop.
 
 use std::mem::MaybeUninit;
     
 #[allow(non_camel_case_types)]
 pub type flops_t = libc::c_float;
 
+/// Performance statistics struct
+///
+/// This structure is documented in section 1.3.3 of them
+/// SuperLU manual.
+///
 #[repr(C)]
 #[allow(non_snake_case)]
 #[allow(non_camel_case_types)]
@@ -50,6 +59,10 @@ pub fn c_StatPrint(stat: *mut SuperLUStat_t) {
 }
 
 impl SuperLUStat_t {
+
+    // Create a new SuperLUStat_t. Memory is handled automatically
+    // -- there is no need to run alloc and free functions manually
+    // (as in the C library)
     pub fn new() -> Self {
 	unsafe {
 	    let mut stat = MaybeUninit::<SuperLUStat_t>::uninit();

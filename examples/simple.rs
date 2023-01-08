@@ -38,9 +38,8 @@ use csuperlu::c::utils::{
 };
 use csuperlu::c::stat::{
     SuperLUStat_t,
-    c_StatFree,
+    c_StatPrint,
 };
-
 
 fn main() {
 
@@ -108,7 +107,7 @@ fn main() {
     let mut perm_c = Vec::<i32>::with_capacity(n as usize);
 
     let mut stat = SuperLUStat_t::new();
-    
+
     let mut info = 0;
     let (mut L, mut U, mut info) = unsafe {
 	let mut L = MaybeUninit::<SuperMatrix>::uninit();
@@ -125,7 +124,8 @@ fn main() {
 	)
     };
 
-    //stat.print();
+    // Print the performance statistics
+    c_StatPrint(&mut stat);
 
     let c_str = std::ffi::CString::new("A").unwrap();
     c_dPrint_CompCol_Matrix(c_str.as_ptr() as *mut libc::c_char, &mut A);

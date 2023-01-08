@@ -57,11 +57,6 @@ impl SuperLUStat_t {
 	    stat.assume_init()
 	}
     }
-
-    // This currently causes double free
-    pub fn print(&self) {
-	c_StatFree(self as *const Self as *mut Self);
-    }
 }
 
 impl Drop for SuperLUStat_t {

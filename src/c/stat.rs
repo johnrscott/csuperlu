@@ -47,7 +47,7 @@ pub fn c_StatPrint(stat: *mut SuperLUStat_t) {
 }
 
 impl SuperLUStat_t {
-    fn new() -> Self {
+    pub fn new() -> Self {
 	unsafe {
 	    let mut stat = MaybeUninit::<SuperLUStat_t>::uninit();
 	    c_StatInit(stat.as_mut_ptr());

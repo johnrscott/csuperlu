@@ -35,10 +35,12 @@ use csuperlu::c::utils::{
     superlu_options_t,
     c_set_default_options,
     colperm_t,
+};
+use csuperlu::c::stat::{
     SuperLUStat_t,
-    c_StatInit,
     c_StatFree,
 };
+
 
 fn main() {
 

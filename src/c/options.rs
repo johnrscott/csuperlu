@@ -125,4 +125,3 @@ impl superlu_options_t {
 	}
     }
 }
-

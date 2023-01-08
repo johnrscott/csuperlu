@@ -1,8 +1,11 @@
-//! This is the stat module
+//! Performance statistics functions
 //!
+//! SuperLU records performance statistics such as the number
+//! of floating-point operations and the execution time of the
+//! solvers.
 
 use std::mem::MaybeUninit;
-
+    
 #[allow(non_camel_case_types)]
 pub type flops_t = libc::c_float;
 
@@ -59,5 +62,13 @@ impl SuperLUStat_t {
 impl Drop for SuperLUStat_t {
     fn drop(&mut self) {
 	c_StatFree(self);
+    }
+}
+
+impl std::fmt::Display for SuperLUStat_t {
+    fn fmt(&mut self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+	unsafe {
+	    c_StatFree(self as &mut Self);
+	}
     }
 }

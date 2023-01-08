@@ -32,13 +32,14 @@ use csuperlu::c::utils::{
     Stype_t,
     Mtype_t,
     Dtype_t,
-    superlu_options_t,
-    c_set_default_options,
-    colperm_t,
 };
 use csuperlu::c::stat::{
     SuperLUStat_t,
     c_StatPrint,
+};
+use csuperlu::c::options::{
+    superlu_options_t,
+    colperm_t,
 };
 
 fn main() {
@@ -96,11 +97,7 @@ fn main() {
 	B.assume_init()
     };
     
-    let mut options = unsafe {
-	let mut options = MaybeUninit::<superlu_options_t>::uninit();
-	c_set_default_options(options.as_mut_ptr());
-	options.assume_init()
-    };
+    let mut options = superlu_options_t::new();
     options.ColPerm = colperm_t::NATURAL;
     
     let mut perm_r = Vec::<i32>::with_capacity(m as usize);

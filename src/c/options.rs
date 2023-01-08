@@ -1,3 +1,10 @@
+//! Options argument
+//!
+//! The options argument is used to specify how the solver
+//! should work. It is documented in section 2.4 of the
+//! SuperLU manual.
+//!
+
 use std::mem::MaybeUninit;
 
 #[repr(C)]

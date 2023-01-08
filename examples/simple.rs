@@ -125,6 +125,8 @@ fn main() {
 	)
     };
 
+    //stat.print();
+
     let c_str = std::ffi::CString::new("A").unwrap();
     c_dPrint_CompCol_Matrix(c_str.as_ptr() as *mut libc::c_char, &mut A);
 

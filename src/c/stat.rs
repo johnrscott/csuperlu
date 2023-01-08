@@ -57,10 +57,10 @@ impl SuperLUStat_t {
 	    stat.assume_init()
 	}
     }
+
+    // This currently causes double free
     pub fn print(&self) {
-	unsafe {
-	    c_StatFree(self as *const Self as *mut Self);
-	}
+	c_StatFree(self as *const Self as *mut Self);
     }
 }
 

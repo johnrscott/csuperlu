@@ -26,7 +26,7 @@ use csuperlu::c::super_node::{
     c_dPrint_SuperNode_Matrix,
     c_Destroy_SuperNode_Matrix,
 };
-use csuperlu::c::dgssv::c_dgssv;
+use csuperlu::c::simple_driver::c_dgssv;
 use csuperlu::c::utils::{
     SuperMatrix,
     Stype_t,
@@ -74,7 +74,8 @@ fn main() {
 	c_dCreate_CompCol_Matrix(A.as_mut_ptr(), m, n, nnz,
 				 a.as_mut_ptr(), asub.as_mut_ptr(),
 				 xa.as_mut_ptr(),
-				 Stype_t::SLU_NC, Dtype_t::SLU_D, Mtype_t::SLU_GE);
+				 Stype_t::SLU_NC, Dtype_t::SLU_D,
+				 Mtype_t::SLU_GE);
 
 	// When the CompCol matrix is created, the vectors a, asub and xa are
 	// considered to be owned by the matrix. This means that the matrix free

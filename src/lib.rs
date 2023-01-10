@@ -18,3 +18,4 @@
 
 //#![warn(missing_docs)]
 pub mod c;
+pub mod comp_col;

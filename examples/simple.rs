@@ -44,6 +44,9 @@ use csuperlu::c::options::{
 use csuperlu::comp_col::{
     dCreate_CompCol_Matrix,
 };
+use csuperlu::dense::{
+    dCreate_Dense_Matrix,
+};
 
 fn main() {
 
@@ -76,26 +79,19 @@ fn main() {
      				       Stype_t::SLU_NC, Dtype_t::SLU_D,
      				       Mtype_t::SLU_GE);
     
-    // 	// When the CompCol matrix is created, the vectors a, asub and xa are
-    // 	// considered to be owned by the matrix. This means that the matrix free
-    // 	// function also frees these vectors. In order to avoid rust also freeing
-    // 	// them, forget them here.
-    // 	std::mem::forget(a);
-    // 	std::mem::forget(asub);
-    // 	std::mem::forget(xa);
-    // 	A.assume_init()
-    // };
-
     // Make the RHS vector
     let nrhs = 1;
     let mut rhs = vec![1.0; m as usize];
-    let mut B = unsafe {
-	let mut B = MaybeUninit::<SuperMatrix>::uninit();
-	c_dCreate_Dense_Matrix(B.as_mut_ptr(), m, nrhs, rhs.as_mut_ptr(), m,
-			       Stype_t::SLU_DN, Dtype_t::SLU_D,
-			       Mtype_t::SLU_GE);	
-	B.assume_init()
-    };
+    let mut B = dCreate_Dense_Matrix(m, nrhs, &mut rhs, m,
+     				     Stype_t::SLU_DN, Dtype_t::SLU_D,
+     				     Mtype_t::SLU_GE);
+    // let mut B = unsafe {
+    // 	let mut B = MaybeUninit::<SuperMatrix>::uninit();
+    // 	c_dCreate_Dense_Matrix(B.as_mut_ptr(), m, nrhs, rhs.as_mut_ptr(), m,
+    // 			       Stype_t::SLU_DN, Dtype_t::SLU_D,
+    // 			       Mtype_t::SLU_GE);	
+    // 	B.assume_init()
+    // };
     
     let mut options = superlu_options_t::new();
     options.ColPerm = colperm_t::NATURAL;

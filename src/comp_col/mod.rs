@@ -18,9 +18,9 @@ use crate::c::comp_col::c_dCreate_CompCol_Matrix;
 /// 2.3 of the SuperLU manual.
 ///
 #[allow(non_snake_case)]
-pub fn dCreate_CompCol_Matrix(m: libc::c_int,
-			      n: libc::c_int,
-			      nnz: libc::c_int,
+pub fn dCreate_CompCol_Matrix(m: i32,
+			      n: i32,
+			      nnz: i32,
 			      mut nzval: Vec<f64>,
 			      mut rowind: Vec<i32>,
 			      mut colptr: Vec<i32>,

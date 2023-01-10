@@ -1,3 +1,6 @@
+//! Functions to create matrices in compressed column format.
+//!
+
 use std::mem::MaybeUninit;
 use crate::c::utils::{
     SuperMatrix,
@@ -7,6 +10,13 @@ use crate::c::utils::{
 };
 use crate::c::comp_col::c_dCreate_CompCol_Matrix;
 
+/// Specify a compressed column matrix from input vectors
+///
+/// Use this function to make a SuperMatrix in compressed column
+/// format, from the vector of values, row indices, and column
+/// offsets. Compressed column format is documented in Section
+/// 2.3 of the SuperLU manual.
+///
 #[allow(non_snake_case)]
 pub fn dCreate_CompCol_Matrix(m: libc::c_int,
 			      n: libc::c_int,

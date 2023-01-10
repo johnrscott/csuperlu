@@ -22,12 +22,12 @@ pub type flops_t = libc::c_float;
 #[allow(non_snake_case)]
 #[allow(non_camel_case_types)]
 pub struct SuperLUStat_t {
-    panel_histo: *mut libc::c_int,
-    utime: *mut libc::c_double,
-    ops: *mut flops_t,
-    TinyPivots: libc::c_int,
-    RefineSteps: libc::c_int,
-    expansions: libc::c_int,
+    pub panel_histo: *mut libc::c_int,
+    pub utime: *mut libc::c_double,
+    pub ops: *mut flops_t,
+    pub TinyPivots: libc::c_int,
+    pub RefineSteps: libc::c_int,
+    pub expansions: libc::c_int,
 }
 
 #[link(name = "superlu")]

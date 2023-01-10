@@ -1,6 +1,7 @@
 use libc;
-use crate::c::utils::{superlu_options_t, SuperMatrix};
+use crate::c::utils::SuperMatrix;
 use crate::c::stat::SuperLUStat_t;
+use crate::c::options::superlu_options_t;
 
 #[link(name = "superlu")]
 extern {

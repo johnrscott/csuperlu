@@ -26,19 +26,20 @@ use csuperlu::c::super_node::{
     c_dPrint_SuperNode_Matrix,
     c_Destroy_SuperNode_Matrix,
 };
-use csuperlu::c::dgssv::c_dgssv;
+use csuperlu::c::simple_driver::c_dgssv;
 use csuperlu::c::utils::{
     SuperMatrix,
     Stype_t,
     Mtype_t,
     Dtype_t,
-    superlu_options_t,
-    c_set_default_options,
-    colperm_t,
 };
 use csuperlu::c::stat::{
     SuperLUStat_t,
     c_StatPrint,
+};
+use csuperlu::c::options::{
+    superlu_options_t,
+    colperm_t,
 };
 
 fn main() {
@@ -73,7 +74,8 @@ fn main() {
 	c_dCreate_CompCol_Matrix(A.as_mut_ptr(), m, n, nnz,
 				 a.as_mut_ptr(), asub.as_mut_ptr(),
 				 xa.as_mut_ptr(),
-				 Stype_t::SLU_NC, Dtype_t::SLU_D, Mtype_t::SLU_GE);
+				 Stype_t::SLU_NC, Dtype_t::SLU_D,
+				 Mtype_t::SLU_GE);
 
 	// When the CompCol matrix is created, the vectors a, asub and xa are
 	// considered to be owned by the matrix. This means that the matrix free
@@ -96,11 +98,7 @@ fn main() {
 	B.assume_init()
     };
     
-    let mut options = unsafe {
-	let mut options = MaybeUninit::<superlu_options_t>::uninit();
-	c_set_default_options(options.as_mut_ptr());
-	options.assume_init()
-    };
+    let mut options = superlu_options_t::new();
     options.ColPerm = colperm_t::NATURAL;
     
     let mut perm_r = Vec::<i32>::with_capacity(m as usize);

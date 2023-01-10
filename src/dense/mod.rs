@@ -10,12 +10,16 @@ use crate::c::utils::{
 };
 use crate::c::dense::c_dCreate_Dense_Matrix;
 
-/// Specify a compressed column matrix from input vectors
+/// Specify a dense matrix from an input vector.
 ///
-/// Use this function to make a SuperMatrix in compressed column
-/// format, from the vector of values, row indices, and column
-/// offsets. Compressed column format is documented in Section
-/// 2.3 of the SuperLU manual.
+/// Use this function to make a dense SuperMatrix. The vector
+/// which stores the values in the matrix is passed in as a
+/// mutable reference, because this storage is overwritten by
+/// the solver when the dense matrix is used as the right-hand
+/// side matrix.
+///
+/// TODO: check that the ldx parameter is used to specify
+/// column- major or row-major order.
 ///
 #[allow(non_snake_case)]
 pub fn dCreate_Dense_Matrix(m: i32,

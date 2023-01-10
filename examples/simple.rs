@@ -85,13 +85,6 @@ fn main() {
     let mut B = dCreate_Dense_Matrix(m, nrhs, &mut rhs, m,
      				     Stype_t::SLU_DN, Dtype_t::SLU_D,
      				     Mtype_t::SLU_GE);
-    // let mut B = unsafe {
-    // 	let mut B = MaybeUninit::<SuperMatrix>::uninit();
-    // 	c_dCreate_Dense_Matrix(B.as_mut_ptr(), m, nrhs, rhs.as_mut_ptr(), m,
-    // 			       Stype_t::SLU_DN, Dtype_t::SLU_D,
-    // 			       Mtype_t::SLU_GE);	
-    // 	B.assume_init()
-    // };
     
     let mut options = superlu_options_t::new();
     options.ColPerm = colperm_t::NATURAL;

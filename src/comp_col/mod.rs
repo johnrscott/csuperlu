@@ -10,7 +10,7 @@ use crate::c::utils::{
 };
 use crate::c::comp_col::c_dCreate_CompCol_Matrix;
 
-/// Specify a compressed column matrix from input vectors
+/// Specify a compressed column matrix from input vectors.
 ///
 /// Use this function to make a SuperMatrix in compressed column
 /// format, from the vector of values, row indices, and column

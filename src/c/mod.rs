@@ -11,4 +11,5 @@ pub mod options;
 pub mod comp_col;
 pub mod dense;
 pub mod simple_driver;
+pub mod expert_driver;
 pub mod super_node;

@@ -41,12 +41,9 @@ use csuperlu::c::options::{
     superlu_options_t,
     colperm_t,
 };
-use csuperlu::comp_col::{
-    dCreate_CompCol_Matrix,
-};
-use csuperlu::dense::{
-    dCreate_Dense_Matrix,
-};
+use csuperlu::comp_col::dCreate_CompCol_Matrix;
+use csuperlu::dense::dCreate_Dense_Matrix;
+use csuperlu::simple_driver::dgssv;
 
 fn main() {
 
@@ -94,21 +91,24 @@ fn main() {
 
     let mut stat = SuperLUStat_t::new();
 
-    let mut info = 0;
-    let (mut L, mut U, mut info) = unsafe {
-	let mut L = MaybeUninit::<SuperMatrix>::uninit();
-	let mut U = MaybeUninit::<SuperMatrix>::uninit();
+    //let mut info = 0;
+    let (mut L, mut U, mut info) = dgssv(&mut options, &mut A,
+					 perm_c, perm_r, &mut B,
+					 &mut stat);
+
+    // 	let mut L = MaybeUninit::<SuperMatrix>::uninit();
+    // 	let mut U = MaybeUninit::<SuperMatrix>::uninit();
 	
-	c_dgssv(&mut options, &mut A, perm_c.as_mut_ptr(),
-	      perm_r.as_mut_ptr(),
-	      L.as_mut_ptr(), U.as_mut_ptr(),
-	      &mut B, &mut stat, &mut info);
-	(
-	    L.assume_init(),
-	    U.assume_init(),
-	    info
-	)
-    };
+    // 	c_dgssv(&mut options, &mut A, perm_c.as_mut_ptr(),
+    // 	      perm_r.as_mut_ptr(),
+    // 	      L.as_mut_ptr(), U.as_mut_ptr(),
+    // 	      &mut B, &mut stat, &mut info);
+    // 	(
+    // 	    L.assume_init(),
+    // 	    U.assume_init(),
+    // 	    info
+    // 	)
+    // };
 
     // Print the performance statistics
     c_StatPrint(&mut stat);

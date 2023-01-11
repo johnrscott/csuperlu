@@ -79,37 +79,22 @@ fn main() {
     // Make the RHS vector
     let nrhs = 1;
     let mut rhs = vec![1.0; m as usize];
-    let mut B = dCreate_Dense_Matrix(m, nrhs, &mut rhs, m,
-     				     Stype_t::SLU_DN, Dtype_t::SLU_D,
-     				     Mtype_t::SLU_GE);
+    let B = dCreate_Dense_Matrix(m, nrhs, &mut rhs, m,
+     				 Stype_t::SLU_DN, Dtype_t::SLU_D,
+     				 Mtype_t::SLU_GE);
     
     let mut options = superlu_options_t::new();
     options.ColPerm = colperm_t::NATURAL;
     
-    let mut perm_r = Vec::<i32>::with_capacity(m as usize);
-    let mut perm_c = Vec::<i32>::with_capacity(n as usize);
+    let perm_r = Vec::<i32>::with_capacity(m as usize);
+    let perm_c = Vec::<i32>::with_capacity(n as usize);
 
     let mut stat = SuperLUStat_t::new();
 
-    //let mut info = 0;
     let (mut X, mut L, mut U, mut info) = dgssv(options, &mut A,
 						perm_c, perm_r, B,
 						&mut stat);
     
-    // 	let mut L = MaybeUninit::<SuperMatrix>::uninit();
-    // 	let mut U = MaybeUninit::<SuperMatrix>::uninit();
-	
-    // 	c_dgssv(&mut options, &mut A, perm_c.as_mut_ptr(),
-    // 	      perm_r.as_mut_ptr(),
-    // 	      L.as_mut_ptr(), U.as_mut_ptr(),
-    // 	      &mut B, &mut stat, &mut info);
-    // 	(
-    // 	    L.assume_init(),
-    // 	    U.assume_init(),
-    // 	    info
-    // 	)
-    // };
-
     // Print the performance statistics
     c_StatPrint(&mut stat);
 

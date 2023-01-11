@@ -8,7 +8,10 @@ use crate::c::utils::{
     Mtype_t,
     Dtype_t,
 };
-use crate::c::comp_col::c_dCreate_CompCol_Matrix;
+use crate::c::comp_col::{
+    c_dCreate_CompCol_Matrix,
+    c_dPrint_CompCol_Matrix,
+};
 
 /// Specify a compressed column matrix from input vectors.
 ///
@@ -42,4 +45,11 @@ pub fn dCreate_CompCol_Matrix(m: i32,
 	std::mem::forget(colptr);
 	A.assume_init()
     }
+}
+
+
+#[allow(non_snake_case)]
+pub fn dPrint_CompCol_Matrix(what: &str, A: &mut SuperMatrix) {
+    let c_str = std::ffi::CString::new(what).unwrap();
+    c_dPrint_CompCol_Matrix(c_str.as_ptr() as *mut libc::c_char, A);
 }

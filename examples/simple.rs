@@ -13,7 +13,6 @@
 //! parameter. 
 
 use csuperlu::c::comp_col::{
-    c_dPrint_CompCol_Matrix,
     c_Destroy_CompCol_Matrix,
 };
 use csuperlu::c::dense::c_Destroy_SuperMatrix_Store;
@@ -34,7 +33,10 @@ use csuperlu::c::options::{
     superlu_options_t,
     colperm_t,
 };
-use csuperlu::comp_col::dCreate_CompCol_Matrix;
+use csuperlu::comp_col::{
+    dCreate_CompCol_Matrix,
+    dPrint_CompCol_Matrix,
+};
 use csuperlu::dense::dCreate_Dense_Matrix;
 use csuperlu::simple_driver::{
     dgssv,
@@ -98,12 +100,8 @@ fn main() {
     // Print the performance statistics
     c_StatPrint(&mut stat);
 
-    let c_str = std::ffi::CString::new("A").unwrap();
-    c_dPrint_CompCol_Matrix(c_str.as_ptr() as *mut libc::c_char,
-			    &mut A);
-
-    let c_str = std::ffi::CString::new("U").unwrap();
-    c_dPrint_CompCol_Matrix(c_str.as_ptr() as *mut libc::c_char, &mut U);
+    dPrint_CompCol_Matrix("A", &mut A);
+    dPrint_CompCol_Matrix("U", &mut U);
 
     let c_str = std::ffi::CString::new("L").unwrap();
     c_dPrint_SuperNode_Matrix(c_str.as_ptr() as *mut libc::c_char, &mut L);

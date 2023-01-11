@@ -24,9 +24,6 @@ pub struct DgssvSolution {
 /// (which uses the same storage as B), the L and U matrices of
 /// the LU decomposition, and 
 ///
-/// TODO: Need to think through ownership for this function -- e.g.
-/// B should be consumed, because the storage for B is reused as
-/// the solution X.
 ///
 #[allow(non_snake_case)]
 pub fn dgssv(mut options: superlu_options_t,
@@ -34,8 +31,7 @@ pub fn dgssv(mut options: superlu_options_t,
 	     mut perm_c: Vec<i32>,
 	     mut perm_r: Vec<i32>,
 	     mut B: SuperMatrix,
-	     mut stat: SuperLUStat_t)
-	     -> DgssvSolution {
+	     mut stat: SuperLUStat_t) -> DgssvSolution {
     let mut info = 0;
     unsafe {
     	let mut L = MaybeUninit::<SuperMatrix>::uninit();

@@ -8,6 +8,15 @@ use crate::c::stat::SuperLUStat_t;
 
 use crate::c::simple_driver::c_dgssv;
 
+#[allow(non_snake_case)]
+pub struct DgssvSolution {
+    pub X: SuperMatrix,
+    pub L: SuperMatrix,
+    pub U: SuperMatrix,
+    pub stat: SuperLUStat_t,
+    pub info: i32,
+}
+
 /// Solve a sparse linear system AX = B.
 ///
 /// The inputs to the function are the matrix A, the rhs matrix B,
@@ -26,7 +35,7 @@ pub fn dgssv(mut options: superlu_options_t,
 	     mut perm_r: Vec<i32>,
 	     mut B: SuperMatrix,
 	     mut stat: SuperLUStat_t)
-	     -> (SuperMatrix, SuperMatrix, SuperMatrix, SuperLUStat_t, i32) {
+	     -> DgssvSolution {
     let mut info = 0;
     unsafe {
     	let mut L = MaybeUninit::<SuperMatrix>::uninit();
@@ -36,12 +45,12 @@ pub fn dgssv(mut options: superlu_options_t,
     		perm_r.as_mut_ptr(),
     		L.as_mut_ptr(), U.as_mut_ptr(),
     		&mut B, &mut stat, &mut info);
-    	(
-	    B,
-    	    L.assume_init(),
-    	    U.assume_init(),
+    	DgssvSolution {
+	    X: B,
+    	    L: L.assume_init(),
+    	    U: U.assume_init(),
 	    stat,
 	    info
-    	)
+    	}
     }
 }

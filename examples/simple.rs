@@ -43,7 +43,10 @@ use csuperlu::c::options::{
 };
 use csuperlu::comp_col::dCreate_CompCol_Matrix;
 use csuperlu::dense::dCreate_Dense_Matrix;
-use csuperlu::simple_driver::dgssv;
+use csuperlu::simple_driver::{
+    dgssv,
+    DgssvSolution,
+};
 
 fn main() {
 
@@ -89,9 +92,15 @@ fn main() {
     let perm_r = Vec::<i32>::with_capacity(m as usize);
     let perm_c = Vec::<i32>::with_capacity(n as usize);
 
-    let mut stat = SuperLUStat_t::new();
+    let stat = SuperLUStat_t::new();
 
-    let (mut X, mut L, mut U, mut stat, mut info) = dgssv(options, &mut A,
+    let DgssvSolution {
+	mut X,
+	mut L,
+	mut U,
+	mut stat,
+	mut info
+    } = dgssv(options, &mut A,
 							  perm_c, perm_r, B,
 							  stat);
     

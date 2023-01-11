@@ -59,13 +59,13 @@ fn main() {
     let l: f64 = 12.0;
     
     // Vector of doubles of length nnz
-    let mut a = vec![s, l, l, u, l, l, u, p, u, e, u, r];
+    let a = vec![s, l, l, u, l, l, u, p, u, e, u, r];
 
     // Vector of ints of length nnz
-    let mut asub = vec![0, 1, 4, 1, 2, 4, 0, 2, 0, 3, 3, 4];
+    let asub = vec![0, 1, 4, 1, 2, 4, 0, 2, 0, 3, 3, 4];
 
     // Vector of ints of length n+1
-    let mut xa = vec![0, 3, 6, 8, 10, 12];
+    let xa = vec![0, 3, 6, 8, 10, 12];
     
     // Make the matrix
     let mut A = dCreate_CompCol_Matrix(m, n, nnz, a, asub, xa,
@@ -93,13 +93,14 @@ fn main() {
 	mut U,
 	mut stat,
 	mut info
-    } = dgssv(options, &mut A, perm_c, perm_r, B, stat);
+    } = dgssv(options, &mut A.super_matrix, perm_c, perm_r, B, stat);
     
     // Print the performance statistics
     c_StatPrint(&mut stat);
 
     let c_str = std::ffi::CString::new("A").unwrap();
-    c_dPrint_CompCol_Matrix(c_str.as_ptr() as *mut libc::c_char, &mut A);
+    c_dPrint_CompCol_Matrix(c_str.as_ptr() as *mut libc::c_char,
+			    &mut A.super_matrix);
 
     let c_str = std::ffi::CString::new("U").unwrap();
     c_dPrint_CompCol_Matrix(c_str.as_ptr() as *mut libc::c_char, &mut U);
@@ -107,7 +108,7 @@ fn main() {
     let c_str = std::ffi::CString::new("L").unwrap();
     c_dPrint_SuperNode_Matrix(c_str.as_ptr() as *mut libc::c_char, &mut L);
 
-    c_Destroy_CompCol_Matrix(&mut A);
+    c_Destroy_CompCol_Matrix(&mut A.super_matrix);
     c_Destroy_SuperMatrix_Store(&mut X);
     c_Destroy_SuperNode_Matrix(&mut L);
     c_Destroy_CompCol_Matrix(&mut U);

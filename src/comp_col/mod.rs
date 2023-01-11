@@ -10,6 +10,11 @@ use crate::c::utils::{
 };
 use crate::c::comp_col::c_dCreate_CompCol_Matrix;
 
+#[allow(non_snake_case)]
+pub struct CompColMatrix {
+    pub super_matrix: SuperMatrix,
+}
+
 /// Specify a compressed column matrix from input vectors.
 ///
 /// Use this function to make a SuperMatrix in compressed column
@@ -26,7 +31,7 @@ pub fn dCreate_CompCol_Matrix(m: i32,
 			      mut colptr: Vec<i32>,
 			      stype: Stype_t,
 			      dtype: Dtype_t,
-			      mtype: Mtype_t) -> SuperMatrix {
+			      mtype: Mtype_t) -> CompColMatrix {
     unsafe {
 	let mut A = MaybeUninit::<SuperMatrix>::uninit();
 	c_dCreate_CompCol_Matrix(A.as_mut_ptr(), m, n, nnz,
@@ -40,6 +45,8 @@ pub fn dCreate_CompCol_Matrix(m: i32,
 	std::mem::forget(nzval);
 	std::mem::forget(rowind);
 	std::mem::forget(colptr);
-	A.assume_init()
+	CompColMatrix {
+	    super_matrix: A.assume_init(),
+	}
     }
 }

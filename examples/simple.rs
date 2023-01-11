@@ -92,10 +92,10 @@ fn main() {
     let mut stat = SuperLUStat_t::new();
 
     //let mut info = 0;
-    let (mut L, mut U, mut info) = dgssv(&mut options, &mut A,
-					 perm_c, perm_r, &mut B,
-					 &mut stat);
-
+    let (mut X, mut L, mut U, mut info) = dgssv(options, &mut A,
+						perm_c, perm_r, B,
+						&mut stat);
+    
     // 	let mut L = MaybeUninit::<SuperMatrix>::uninit();
     // 	let mut U = MaybeUninit::<SuperMatrix>::uninit();
 	
@@ -123,7 +123,7 @@ fn main() {
     c_dPrint_SuperNode_Matrix(c_str.as_ptr() as *mut libc::c_char, &mut L);
 
     c_Destroy_CompCol_Matrix(&mut A);
-    c_Destroy_SuperMatrix_Store(&mut B);
+    c_Destroy_SuperMatrix_Store(&mut X);
     c_Destroy_SuperNode_Matrix(&mut L);
     c_Destroy_CompCol_Matrix(&mut U);
 }

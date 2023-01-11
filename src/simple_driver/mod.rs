@@ -11,7 +11,7 @@ use crate::c::simple_driver::c_dgssv;
 /// Solve a sparse linear system AX = B.
 ///
 ///
-/// TODO: Need to think threw ownership for this function -- e.g.
+/// TODO: Need to think through ownership for this function -- e.g.
 /// B should be consumed, because the storage for B is reused as
 /// the solution X.
 ///

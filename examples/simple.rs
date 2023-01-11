@@ -93,14 +93,14 @@ fn main() {
 	mut U,
 	mut stat,
 	mut info
-    } = dgssv(options, &mut A.super_matrix, perm_c, perm_r, B, stat);
+    } = dgssv(options, &mut A, perm_c, perm_r, B, stat);
     
     // Print the performance statistics
     c_StatPrint(&mut stat);
 
     let c_str = std::ffi::CString::new("A").unwrap();
     c_dPrint_CompCol_Matrix(c_str.as_ptr() as *mut libc::c_char,
-			    &mut A.super_matrix);
+			    &mut A);
 
     let c_str = std::ffi::CString::new("U").unwrap();
     c_dPrint_CompCol_Matrix(c_str.as_ptr() as *mut libc::c_char, &mut U);
@@ -108,7 +108,7 @@ fn main() {
     let c_str = std::ffi::CString::new("L").unwrap();
     c_dPrint_SuperNode_Matrix(c_str.as_ptr() as *mut libc::c_char, &mut L);
 
-    c_Destroy_CompCol_Matrix(&mut A.super_matrix);
+    c_Destroy_CompCol_Matrix(&mut A);
     c_Destroy_SuperMatrix_Store(&mut X);
     c_Destroy_SuperNode_Matrix(&mut L);
     c_Destroy_CompCol_Matrix(&mut U);

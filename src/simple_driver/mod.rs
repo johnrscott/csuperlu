@@ -10,6 +10,10 @@ use crate::c::simple_driver::c_dgssv;
 
 /// Solve a sparse linear system AX = B.
 ///
+/// The inputs to the function are the matrix A, the rhs matrix B,
+/// and the permutation vectors. The outputs are the solution X
+/// (which uses the same storage as B), the L and U matrices of
+/// the LU decomposition, and 
 ///
 /// TODO: Need to think through ownership for this function -- e.g.
 /// B should be consumed, because the storage for B is reused as
@@ -21,8 +25,8 @@ pub fn dgssv(mut options: superlu_options_t,
 	     mut perm_c: Vec<i32>,
 	     mut perm_r: Vec<i32>,
 	     mut B: SuperMatrix,
-	     stat: &mut SuperLUStat_t)
-	     -> (SuperMatrix, SuperMatrix, SuperMatrix, i32) {
+	     mut stat: SuperLUStat_t)
+	     -> (SuperMatrix, SuperMatrix, SuperMatrix, SuperLUStat_t, i32) {
     let mut info = 0;
     unsafe {
     	let mut L = MaybeUninit::<SuperMatrix>::uninit();
@@ -31,12 +35,13 @@ pub fn dgssv(mut options: superlu_options_t,
     	c_dgssv(&mut options, A, perm_c.as_mut_ptr(),
     		perm_r.as_mut_ptr(),
     		L.as_mut_ptr(), U.as_mut_ptr(),
-    		&mut B, stat, &mut info);
+    		&mut B, &mut stat, &mut info);
     	(
 	    B,
     	    L.assume_init(),
     	    U.assume_init(),
-    	    info
+	    stat,
+	    info
     	)
     }
 }

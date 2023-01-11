@@ -91,9 +91,9 @@ fn main() {
 
     let mut stat = SuperLUStat_t::new();
 
-    let (mut X, mut L, mut U, mut info) = dgssv(options, &mut A,
-						perm_c, perm_r, B,
-						&mut stat);
+    let (mut X, mut L, mut U, mut stat, mut info) = dgssv(options, &mut A,
+							  perm_c, perm_r, B,
+							  stat);
     
     // Print the performance statistics
     c_StatPrint(&mut stat);

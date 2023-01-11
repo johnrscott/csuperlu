@@ -1,4 +1,4 @@
-//! The C module contains low-level interface to the SuperLU library.
+//! The C module contains the low-level interface to the SuperLU library.
 //!
 //! All functions that interface directly with SuperLU have the same names
 //! as the corresponding SuperLU functions, with an additional c_ prepended

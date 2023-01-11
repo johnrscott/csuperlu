@@ -12,26 +12,19 @@
 //! initialised by a function taking the uninitialised struct as an input/output
 //! parameter. 
 
-use std::mem::MaybeUninit;
 use csuperlu::c::comp_col::{
-    c_dCreate_CompCol_Matrix,
     c_dPrint_CompCol_Matrix,
     c_Destroy_CompCol_Matrix,
 };
-use csuperlu::c::dense::{
-    c_dCreate_Dense_Matrix,
-    c_Destroy_SuperMatrix_Store,
+use csuperlu::c::dense::c_Destroy_SuperMatrix_Store;
+use csuperlu::c::utils::{
+    Stype_t,
+    Mtype_t,
+    Dtype_t,
 };
 use csuperlu::c::super_node::{
     c_dPrint_SuperNode_Matrix,
     c_Destroy_SuperNode_Matrix,
-};
-use csuperlu::c::simple_driver::c_dgssv;
-use csuperlu::c::utils::{
-    SuperMatrix,
-    Stype_t,
-    Mtype_t,
-    Dtype_t,
 };
 use csuperlu::c::stat::{
     SuperLUStat_t,
@@ -100,9 +93,7 @@ fn main() {
 	mut U,
 	mut stat,
 	mut info
-    } = dgssv(options, &mut A,
-							  perm_c, perm_r, B,
-							  stat);
+    } = dgssv(options, &mut A, perm_c, perm_r, B, stat);
     
     // Print the performance statistics
     c_StatPrint(&mut stat);

@@ -72,6 +72,11 @@ impl SuperMatrix for CompColMatrix {
     fn super_matrix<'a>(&'a mut self) -> &'a mut c_SuperMatrix {
         &mut self.c_super_matrix
     }
+    fn print(&mut self, what: &str) {
+	let c_str = std::ffi::CString::new(what).unwrap();
+	c_dPrint_CompCol_Matrix(c_str.as_ptr() as *mut libc::c_char,
+				self.super_matrix());
+}
 }
 
 impl Drop for CompColMatrix {

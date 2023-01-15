@@ -1,9 +1,9 @@
 //! Functions to create dense matrices.
 //!
 
-use crate::c::dense::c_dCreate_Dense_Matrix;
-use crate::c::utils::{c_SuperMatrix, Dtype_t, Mtype_t, Stype_t};
 use crate::c::dense::c_Destroy_SuperMatrix_Store;
+use crate::c::dense::{c_dCreate_Dense_Matrix, c_dPrint_Dense_Matrix};
+use crate::c::utils::{c_SuperMatrix, Dtype_t, Mtype_t, Stype_t};
 use crate::super_matrix::SuperMatrix;
 use std::mem::MaybeUninit;
 
@@ -24,32 +24,30 @@ impl DenseMatrix {
     /// column- major or row-major order.
     ///
     pub fn new(
-	m: i32,
-	n: i32,
-	x: &mut Vec<f64>,
-	ldx: i32,
-	stype: Stype_t,
-	dtype: Dtype_t,
-	mtype: Mtype_t,
+        m: i32,
+        n: i32,
+        x: &mut Vec<f64>,
+        ldx: i32,
+        stype: Stype_t,
+        dtype: Dtype_t,
+        mtype: Mtype_t,
     ) -> Self {
-	let c_super_matrix = unsafe {
+        let c_super_matrix = unsafe {
             let mut c_super_matrix = MaybeUninit::<c_SuperMatrix>::uninit();
             c_dCreate_Dense_Matrix(
-		c_super_matrix.as_mut_ptr(),
-		m,
-		n,
-		x.as_mut_ptr(),
-		ldx,
-		stype,
-		dtype,
-		mtype,
+                c_super_matrix.as_mut_ptr(),
+                m,
+                n,
+                x.as_mut_ptr(),
+                ldx,
+                stype,
+                dtype,
+                mtype,
             );
             c_super_matrix.assume_init()
-	};
+        };
 
-         Self {
-            c_super_matrix,
-        }
+        Self { c_super_matrix }
     }
 }
 
@@ -57,10 +55,15 @@ impl SuperMatrix for DenseMatrix {
     fn super_matrix<'a>(&'a mut self) -> &'a mut c_SuperMatrix {
         &mut self.c_super_matrix
     }
+    fn print(&mut self, what: &str) {
+	let c_str = std::ffi::CString::new(what).unwrap();
+	c_dPrint_Dense_Matrix(c_str.as_ptr() as *mut libc::c_char,
+				self.super_matrix());
+    }
 }
 
 impl Drop for DenseMatrix {
     fn drop(&mut self) {
-	c_Destroy_SuperMatrix_Store(&mut self.c_super_matrix);	
+        c_Destroy_SuperMatrix_Store(&mut self.c_super_matrix);
     }
 }

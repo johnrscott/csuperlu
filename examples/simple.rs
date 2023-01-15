@@ -92,8 +92,9 @@ fn main() {
     // Print the performance statistics
     c_StatPrint(&mut stat);
 
-    dPrint_CompCol_Matrix("A", &mut A.super_matrix());
-    dPrint_CompCol_Matrix("U", &mut U);
+    //dPrint_CompCol_Matrix("A", &mut A.super_matrix());
+    A.print("A");
+    //U.print("U");
 
     let c_str = std::ffi::CString::new("L").unwrap();
     c_dPrint_SuperNode_Matrix(c_str.as_ptr() as *mut libc::c_char, &mut L);

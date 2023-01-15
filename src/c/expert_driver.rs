@@ -1,5 +1,5 @@
 use libc;
-use crate::c::utils::SuperMatrix;
+use crate::c::utils::c_SuperMatrix;
 use crate::c::stat::SuperLUStat_t;
 use crate::c::options::superlu_options_t;
 
@@ -13,19 +13,19 @@ pub struct mem_usage_t {
 #[link(name = "superlu")]
 extern {
     fn dgssvx(options: *mut superlu_options_t,
-	      A: *mut SuperMatrix,
+	      A: *mut c_SuperMatrix,
 	      perm_c: *mut libc::c_int,
 	      perm_r: *mut libc::c_int,
 	      etree: *mut libc::c_int,
 	      equed: *mut libc::c_char,
 	      R: libc::c_double,
 	      C: libc::c_double,
-	      L: *mut SuperMatrix,
-	      U: *mut SuperMatrix,
+	      L: *mut c_SuperMatrix,
+	      U: *mut c_SuperMatrix,
 	      work: *mut libc::c_void,
 	      lwork: libc::c_int,
-	      B: *mut SuperMatrix,
-	      X: *mut SuperMatrix,
+	      B: *mut c_SuperMatrix,
+	      X: *mut c_SuperMatrix,
 	      recip_pivot_growth: *mut libc::c_double,
 	      rcond: *mut libc::c_double,
 	      ferr: *mut libc::c_double,
@@ -37,19 +37,19 @@ extern {
 
 #[allow(non_snake_case)]
 pub fn c_dgssvx(options: *mut superlu_options_t,
-		A: *mut SuperMatrix,
+		A: *mut c_SuperMatrix,
 		perm_c: *mut libc::c_int,
 		perm_r: *mut libc::c_int,
 		etree: *mut libc::c_int,
 		equed: *mut libc::c_char,
 		R: libc::c_double,
 		C: libc::c_double,
-		L: *mut SuperMatrix,
-		U: *mut SuperMatrix,
+		L: *mut c_SuperMatrix,
+		U: *mut c_SuperMatrix,
 		work: *mut libc::c_void,
 		lwork: libc::c_int,
-		B: *mut SuperMatrix,
-		X: *mut SuperMatrix,
+		B: *mut c_SuperMatrix,
+		X: *mut c_SuperMatrix,
 		recip_pivot_growth: *mut libc::c_double,
 		rcond: *mut libc::c_double,
 		ferr: *mut libc::c_double,

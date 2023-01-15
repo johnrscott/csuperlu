@@ -3,7 +3,7 @@
 
 use std::mem::MaybeUninit;
 use crate::c::utils::{
-    SuperMatrix,
+    c_SuperMatrix,
     Stype_t,
     Mtype_t,
     Dtype_t,
@@ -15,7 +15,7 @@ use crate::c::comp_col::{
 
 /// Specify a compressed column matrix from input vectors.
 ///
-/// Use this function to make a SuperMatrix in compressed column
+/// Use this function to make a c_SuperMatrix in compressed column
 /// format, from the vector of values, row indices, and column
 /// offsets. Compressed column format is documented in Section
 /// 2.3 of the SuperLU manual.
@@ -29,9 +29,9 @@ pub fn dCreate_CompCol_Matrix(m: i32,
 			      mut colptr: Vec<i32>,
 			      stype: Stype_t,
 			      dtype: Dtype_t,
-			      mtype: Mtype_t) -> SuperMatrix {
+			      mtype: Mtype_t) -> c_SuperMatrix {
     unsafe {
-	let mut A = MaybeUninit::<SuperMatrix>::uninit();
+	let mut A = MaybeUninit::<c_SuperMatrix>::uninit();
 	c_dCreate_CompCol_Matrix(A.as_mut_ptr(), m, n, nnz,
 				 nzval.as_mut_ptr(), rowind.as_mut_ptr(),
 				 colptr.as_mut_ptr(), stype, dtype, mtype);
@@ -49,7 +49,7 @@ pub fn dCreate_CompCol_Matrix(m: i32,
 
 
 #[allow(non_snake_case)]
-pub fn dPrint_CompCol_Matrix(what: &str, A: &mut SuperMatrix) {
+pub fn dPrint_CompCol_Matrix(what: &str, A: &mut c_SuperMatrix) {
     let c_str = std::ffi::CString::new(what).unwrap();
     c_dPrint_CompCol_Matrix(c_str.as_ptr() as *mut libc::c_char, A);
 }

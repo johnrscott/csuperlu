@@ -18,9 +18,10 @@ use csuperlu::c::options::{colperm_t, superlu_options_t};
 use csuperlu::c::stat::{c_StatPrint, SuperLUStat_t};
 use csuperlu::c::super_node::{c_Destroy_SuperNode_Matrix, c_dPrint_SuperNode_Matrix};
 use csuperlu::c::utils::{Dtype_t, Mtype_t, Stype_t};
-use csuperlu::comp_col::{dCreate_CompCol_Matrix, dPrint_CompCol_Matrix};
+use csuperlu::comp_col::{CompColMatrix, dPrint_CompCol_Matrix};
 use csuperlu::dense::dCreate_Dense_Matrix;
 use csuperlu::simple_driver::{dgssv, DgssvSolution};
+use csuperlu::super_matrix::SuperMatrix;
 
 fn main() {
     // Matrix dimensions
@@ -48,7 +49,7 @@ fn main() {
     let xa = vec![0, 3, 6, 8, 10, 12];
 
     // Make the matrix
-    let mut A = dCreate_CompCol_Matrix(
+    let mut A = CompColMatrix::new(
         m,
         n,
         nnz,
@@ -92,13 +93,13 @@ fn main() {
     // Print the performance statistics
     c_StatPrint(&mut stat);
 
-    dPrint_CompCol_Matrix("A", &mut A);
+    dPrint_CompCol_Matrix("A", &mut A.super_matrix());
     dPrint_CompCol_Matrix("U", &mut U);
 
     let c_str = std::ffi::CString::new("L").unwrap();
     c_dPrint_SuperNode_Matrix(c_str.as_ptr() as *mut libc::c_char, &mut L);
 
-    c_Destroy_CompCol_Matrix(&mut A);
+    //c_Destroy_CompCol_Matrix(&mut A);
     c_Destroy_SuperMatrix_Store(&mut X);
     c_Destroy_SuperNode_Matrix(&mut L);
     c_Destroy_CompCol_Matrix(&mut U);

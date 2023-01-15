@@ -18,7 +18,7 @@ use csuperlu::c::options::{colperm_t, superlu_options_t};
 use csuperlu::c::stat::{c_StatPrint, SuperLUStat_t};
 use csuperlu::c::super_node::{c_Destroy_SuperNode_Matrix, c_dPrint_SuperNode_Matrix};
 use csuperlu::c::utils::{Dtype_t, Mtype_t, Stype_t};
-use csuperlu::comp_col::{CompColMatrix, dPrint_CompCol_Matrix};
+use csuperlu::comp_col::{dPrint_CompCol_Matrix, CompColMatrix};
 use csuperlu::dense::dCreate_Dense_Matrix;
 use csuperlu::simple_driver::{dgssv, DgssvSolution};
 use csuperlu::super_matrix::SuperMatrix;

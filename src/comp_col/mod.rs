@@ -24,48 +24,47 @@ impl CompColMatrix {
     /// 2.3 of the SuperLU manual.
     ///
     pub fn new(
-	m: i32,
-	n: i32,
-	nnz: i32,
-	mut nzval: Vec<f64>,
-	mut rowind: Vec<i32>,
-	mut colptr: Vec<i32>,
-	stype: Stype_t,
-	dtype: Dtype_t,
-	mtype: Mtype_t,
+        m: i32,
+        n: i32,
+        nnz: i32,
+        mut nzval: Vec<f64>,
+        mut rowind: Vec<i32>,
+        mut colptr: Vec<i32>,
+        stype: Stype_t,
+        dtype: Dtype_t,
+        mtype: Mtype_t,
     ) -> Self {
-	let c_super_matrix = unsafe {
+        let c_super_matrix = unsafe {
             let mut c_super_matrix = MaybeUninit::<c_SuperMatrix>::uninit();
             c_dCreate_CompCol_Matrix(
-		c_super_matrix.as_mut_ptr(),
-		m,
-		n,
-		nnz,
-		nzval.as_mut_ptr(),
-		rowind.as_mut_ptr(),
-		colptr.as_mut_ptr(),
-		stype,
-		dtype,
-		mtype,
+                c_super_matrix.as_mut_ptr(),
+                m,
+                n,
+                nnz,
+                nzval.as_mut_ptr(),
+                rowind.as_mut_ptr(),
+                colptr.as_mut_ptr(),
+                stype,
+                dtype,
+                mtype,
             );
-	    c_super_matrix.assume_init()
-	};
+            c_super_matrix.assume_init()
+        };
 
-	// When the CompCol matrix is created, the vectors a, asub and xa are
+        // When the CompCol matrix is created, the vectors a, asub and xa are
         // considered to be owned by the matrix. This means that the matrix free
         // function also frees these vectors. In order to avoid rust also freeing
         // them, forget them here.
-       std::mem::forget(nzval);
-       std::mem::forget(rowind);
-       std::mem::forget(colptr);
+        std::mem::forget(nzval);
+        std::mem::forget(rowind);
+        std::mem::forget(colptr);
 
-	
-	Self {
-	    // nzval,
-	    // rowind,
-	    // colptr,
-	    c_super_matrix,
-	}
+        Self {
+            // nzval,
+            // rowind,
+            // colptr,
+            c_super_matrix,
+        }
     }
 }
 
@@ -80,7 +79,6 @@ impl Drop for CompColMatrix {
         c_Destroy_CompCol_Matrix(&mut self.c_super_matrix);
     }
 }
-
 
 #[allow(non_snake_case)]
 pub fn dPrint_CompCol_Matrix(what: &str, A: &mut c_SuperMatrix) {

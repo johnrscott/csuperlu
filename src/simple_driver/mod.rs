@@ -23,7 +23,13 @@ pub struct DgssvSolution {
 /// The inputs to the function are the matrix A, the rhs matrix B,
 /// and the permutation vectors. The outputs are the solution X
 /// (which uses the same storage as B), the L and U matrices of
-/// the LU decomposition, and
+/// the LU decomposition.
+///
+/// The matrix A must be in column-major compressed-column format.
+/// (see Section 2.3 in the SuperLU manual.) If a row-major matrix
+/// is passed for A (CompRowMatrix), then the routine will decompose
+/// A^T. Make sure to convert the CompRowMatrix to a CompColumnMatrix
+/// if you want to solve A.
 ///
 ///
 #[allow(non_snake_case)]

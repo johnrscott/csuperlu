@@ -9,9 +9,9 @@ use crate::super_matrix::SuperMatrix;
 use std::mem::MaybeUninit;
 
 pub struct CompColMatrix {
-    nzval: Vec<f64>,
-    rowind: Vec<i32>,
-    colptr: Vec<i32>,
+    // nzval: Vec<f64>,
+    // rowind: Vec<i32>,
+    // colptr: Vec<i32>,
     c_super_matrix: c_SuperMatrix,
 }
 
@@ -50,11 +50,20 @@ impl CompColMatrix {
             );
 	    c_super_matrix.assume_init()
 	};
+
+	// When the CompCol matrix is created, the vectors a, asub and xa are
+        // considered to be owned by the matrix. This means that the matrix free
+        // function also frees these vectors. In order to avoid rust also freeing
+        // them, forget them here.
+       std::mem::forget(nzval);
+       std::mem::forget(rowind);
+       std::mem::forget(colptr);
+
 	
 	Self {
-	    nzval,
-	    rowind,
-	    colptr,
+	    // nzval,
+	    // rowind,
+	    // colptr,
 	    c_super_matrix,
 	}
     }
@@ -68,14 +77,6 @@ impl SuperMatrix for CompColMatrix {
 
 impl Drop for CompColMatrix {
     fn drop(&mut self) {
-	// When the CompCol matrix is created, the vectors a, asub and xa are
-        // considered to be owned by the matrix. This means that the matrix free
-        // function also frees these vectors. In order to avoid rust also freeing
-        // them, forget them here.
-        //std::mem::forget(&mut self.nzval);
-        //std::mem::forget(&mut self.rowind);
-        //std::mem::forget(&mut self.colptr);
-
         c_Destroy_CompCol_Matrix(&mut self.c_super_matrix);
     }
 }

@@ -13,13 +13,12 @@
 //! parameter.
 
 use csuperlu::c::comp_col::c_Destroy_CompCol_Matrix;
-use csuperlu::c::dense::c_Destroy_SuperMatrix_Store;
 use csuperlu::c::options::{colperm_t, superlu_options_t};
 use csuperlu::c::stat::{c_StatPrint, SuperLUStat_t};
 use csuperlu::c::super_node::{c_Destroy_SuperNode_Matrix, c_dPrint_SuperNode_Matrix};
 use csuperlu::c::utils::{Dtype_t, Mtype_t, Stype_t};
 use csuperlu::comp_col::{dPrint_CompCol_Matrix, CompColMatrix};
-use csuperlu::dense::dCreate_Dense_Matrix;
+use csuperlu::dense::DenseMatrix;
 use csuperlu::simple_driver::{dgssv, DgssvSolution};
 use csuperlu::super_matrix::SuperMatrix;
 
@@ -64,7 +63,7 @@ fn main() {
     // Make the RHS vector
     let nrhs = 1;
     let mut rhs = vec![1.0; m as usize];
-    let B = dCreate_Dense_Matrix(
+    let B = DenseMatrix::new(
         m,
         nrhs,
         &mut rhs,
@@ -100,7 +99,7 @@ fn main() {
     c_dPrint_SuperNode_Matrix(c_str.as_ptr() as *mut libc::c_char, &mut L);
 
     //c_Destroy_CompCol_Matrix(&mut A);
-    c_Destroy_SuperMatrix_Store(&mut X);
+    //c_Destroy_SuperMatrix_Store(&mut X);
     c_Destroy_SuperNode_Matrix(&mut L);
     c_Destroy_CompCol_Matrix(&mut U);
 }

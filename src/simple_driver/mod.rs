@@ -4,14 +4,16 @@
 use crate::c::options::superlu_options_t;
 use crate::c::stat::SuperLUStat_t;
 use crate::c::utils::c_SuperMatrix;
+use crate::dense::DenseMatrix;
 use crate::super_matrix::SuperMatrix;
+
 use std::mem::MaybeUninit;
 
 use crate::c::simple_driver::c_dgssv;
 
 #[allow(non_snake_case)]
 pub struct DgssvSolution {
-    pub X: c_SuperMatrix,
+    pub X: DenseMatrix,
     pub L: c_SuperMatrix,
     pub U: c_SuperMatrix,
     pub stat: SuperLUStat_t,
@@ -38,7 +40,7 @@ pub fn dgssv(
     A: &mut impl SuperMatrix,
     perm_c: &mut Vec<i32>,
     perm_r: &mut Vec<i32>,
-    mut B: c_SuperMatrix,
+    mut B: DenseMatrix,
     mut stat: SuperLUStat_t,
 ) -> DgssvSolution {
     let mut info = 0;
@@ -53,7 +55,7 @@ pub fn dgssv(
             perm_r.as_mut_ptr(),
             L.as_mut_ptr(),
             U.as_mut_ptr(),
-            &mut B,
+            B.super_matrix(),
             &mut stat,
             &mut info,
         );

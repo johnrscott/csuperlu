@@ -39,7 +39,8 @@ pub enum Stype_t {
 
 #[repr(C)]
 #[allow(non_snake_case)]
-pub struct SuperMatrix {
+#[allow(non_camel_case_types)]
+pub struct c_SuperMatrix {
     Stype: Stype_t,
     Dtype: Dtype_t,
     Mtype: Mtype_t,

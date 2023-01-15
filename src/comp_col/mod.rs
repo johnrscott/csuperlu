@@ -72,9 +72,9 @@ impl Drop for CompColMatrix {
         // considered to be owned by the matrix. This means that the matrix free
         // function also frees these vectors. In order to avoid rust also freeing
         // them, forget them here.
-        std::mem::forget(&mut self.nzval);
-        std::mem::forget(&mut self.rowind);
-        std::mem::forget(&mut self.colptr);
+        //std::mem::forget(&mut self.nzval);
+        //std::mem::forget(&mut self.rowind);
+        //std::mem::forget(&mut self.colptr);
 
         c_Destroy_CompCol_Matrix(&mut self.c_super_matrix);
     }

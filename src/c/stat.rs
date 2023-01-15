@@ -9,7 +9,7 @@
 //! up in new and drop.
 
 use std::mem::MaybeUninit;
-    
+
 #[allow(non_camel_case_types)]
 pub type flops_t = libc::c_float;
 
@@ -31,49 +31,48 @@ pub struct SuperLUStat_t {
 }
 
 #[link(name = "superlu")]
-extern {
+extern "C" {
     fn StatInit(stat: *mut SuperLUStat_t);
     fn StatFree(stat: *mut SuperLUStat_t);
-    fn StatPrint(stat: *mut SuperLUStat_t);	
+    fn StatPrint(stat: *mut SuperLUStat_t);
 }
 
 #[allow(non_snake_case)]
 pub fn c_StatInit(stat: *mut SuperLUStat_t) {
     unsafe {
-	StatInit(stat);
+        StatInit(stat);
     }
 }
 
 #[allow(non_snake_case)]
 pub fn c_StatFree(stat: *mut SuperLUStat_t) {
     unsafe {
-	StatFree(stat);
+        StatFree(stat);
     }
 }
 
 #[allow(non_snake_case)]
 pub fn c_StatPrint(stat: *mut SuperLUStat_t) {
     unsafe {
-	StatPrint(stat);
+        StatPrint(stat);
     }
 }
 
 impl SuperLUStat_t {
-
     // Create a new SuperLUStat_t. Memory is handled automatically
     // -- there is no need to run alloc and free functions manually
     // (as in the C library)
     pub fn new() -> Self {
-	unsafe {
-	    let mut stat = MaybeUninit::<SuperLUStat_t>::uninit();
-	    c_StatInit(stat.as_mut_ptr());
-	    stat.assume_init()
-	}
+        unsafe {
+            let mut stat = MaybeUninit::<SuperLUStat_t>::uninit();
+            c_StatInit(stat.as_mut_ptr());
+            stat.assume_init()
+        }
     }
 }
 
 impl Drop for SuperLUStat_t {
     fn drop(&mut self) {
-	c_StatFree(self);
+        c_StatFree(self);
     }
 }

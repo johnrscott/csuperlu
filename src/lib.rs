@@ -4,7 +4,7 @@
 //!
 //! The SuperLU User Guide is
 //! <https://portal.nersc.gov/project/sparse/superlu/superlu_ug.pdf>, and
-//! provides an overview of what SuperLU can do. 
+//! provides an overview of what SuperLU can do.
 //!
 //! SuperLU solves sparse systems of linear equations of the form $$AX = B,$$
 //! where $A$ is a sparse $n\times n$ matrix, $B$ is a dense
@@ -21,3 +21,4 @@ pub mod c;
 pub mod comp_col;
 pub mod dense;
 pub mod simple_driver;
+pub mod super_matrix;

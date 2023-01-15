@@ -5,7 +5,7 @@ pub enum Dtype_t {
     SLU_S,
     SLU_D,
     SLU_C,
-    SLU_Z
+    SLU_Z,
 }
 
 // Specifies some mathematical properties
@@ -48,4 +48,3 @@ pub struct c_SuperMatrix {
     ncol: libc::c_int,
     Store: *mut libc::c_void,
 }
-

@@ -1,14 +1,9 @@
 //! Functions to create dense matrices.
 //!
 
-use std::mem::MaybeUninit;
-use crate::c::utils::{
-    c_SuperMatrix,
-    Stype_t,
-    Mtype_t,
-    Dtype_t,
-};
 use crate::c::dense::c_dCreate_Dense_Matrix;
+use crate::c::utils::{c_SuperMatrix, Dtype_t, Mtype_t, Stype_t};
+use std::mem::MaybeUninit;
 
 /// Specify a dense matrix from an input vector.
 ///
@@ -22,17 +17,27 @@ use crate::c::dense::c_dCreate_Dense_Matrix;
 /// column- major or row-major order.
 ///
 #[allow(non_snake_case)]
-pub fn dCreate_Dense_Matrix(m: i32,
-			    n: i32,
-			    x: &mut Vec<f64>,
-			    ldx: i32,
-			    stype: Stype_t,
-			    dtype: Dtype_t,
-			    mtype: Mtype_t) -> c_SuperMatrix {
+pub fn dCreate_Dense_Matrix(
+    m: i32,
+    n: i32,
+    x: &mut Vec<f64>,
+    ldx: i32,
+    stype: Stype_t,
+    dtype: Dtype_t,
+    mtype: Mtype_t,
+) -> c_SuperMatrix {
     unsafe {
-	let mut A = MaybeUninit::<c_SuperMatrix>::uninit();
-	c_dCreate_Dense_Matrix(A.as_mut_ptr(), m, n, x.as_mut_ptr(), ldx,
-			       stype, dtype, mtype);	
-	A.assume_init()
+        let mut A = MaybeUninit::<c_SuperMatrix>::uninit();
+        c_dCreate_Dense_Matrix(
+            A.as_mut_ptr(),
+            m,
+            n,
+            x.as_mut_ptr(),
+            ldx,
+            stype,
+            dtype,
+            mtype,
+        );
+        A.assume_init()
     }
 }

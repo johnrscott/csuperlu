@@ -113,22 +113,22 @@ pub struct superlu_options_t {
 }
 
 #[link(name = "superlu")]
-extern {
+extern "C" {
     fn set_default_options(options: *mut superlu_options_t);
 }
 
 pub fn c_set_default_options(options: *mut superlu_options_t) {
     unsafe {
-	set_default_options(options);
+        set_default_options(options);
     }
 }
 
 impl superlu_options_t {
     pub fn new() -> Self {
-	unsafe {
-	    let mut options = MaybeUninit::<superlu_options_t>::uninit();
-	    c_set_default_options(options.as_mut_ptr());
-	    options.assume_init()
-	}
+        unsafe {
+            let mut options = MaybeUninit::<superlu_options_t>::uninit();
+            c_set_default_options(options.as_mut_ptr());
+            options.assume_init()
+        }
     }
 }

@@ -21,3 +21,4 @@ pub mod c;
 pub mod comp_col;
 pub mod dense;
 pub mod simple_driver;
+pub mod super_matrix;

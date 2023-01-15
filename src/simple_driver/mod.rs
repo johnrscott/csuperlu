@@ -5,6 +5,7 @@ use crate::c::options::superlu_options_t;
 use crate::c::stat::SuperLUStat_t;
 use crate::c::utils::c_SuperMatrix;
 use std::mem::MaybeUninit;
+use crate::super_matrix::SuperMatrix;
 
 use crate::c::simple_driver::c_dgssv;
 
@@ -28,7 +29,7 @@ pub struct DgssvSolution {
 #[allow(non_snake_case)]
 pub fn dgssv(
     mut options: superlu_options_t,
-    A: &mut c_SuperMatrix,
+    A: &mut impl SuperMatrix,
     mut perm_c: Vec<i32>,
     mut perm_r: Vec<i32>,
     mut B: c_SuperMatrix,

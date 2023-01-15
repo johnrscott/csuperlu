@@ -1,9 +1,28 @@
 //! Functions to create matrices in compressed column format.
 //!
 
-use crate::c::comp_col::{c_dCreate_CompCol_Matrix, c_dPrint_CompCol_Matrix};
+use crate::c::comp_col::{
+    c_Destroy_CompCol_Matrix, c_dCreate_CompCol_Matrix, c_dPrint_CompCol_Matrix,
+};
 use crate::c::utils::{c_SuperMatrix, Dtype_t, Mtype_t, Stype_t};
+use crate::super_matrix::SuperMatrix;
 use std::mem::MaybeUninit;
+
+struct CompColMatrix {
+    super_matrix: c_SuperMatrix,
+}
+
+impl SuperMatrix for CompColMatrix {
+    fn super_matrix<'a>(&'a mut self) -> &'a mut c_SuperMatrix {
+        &mut self.super_matrix
+    }
+}
+
+impl Drop for CompColMatrix {
+    fn drop(&mut self) {
+        c_Destroy_CompCol_Matrix(&mut self.super_matrix);
+    }
+}
 
 /// Specify a compressed column matrix from input vectors.
 ///

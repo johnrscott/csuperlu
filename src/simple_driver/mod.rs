@@ -4,8 +4,8 @@
 use crate::c::options::superlu_options_t;
 use crate::c::stat::SuperLUStat_t;
 use crate::c::utils::c_SuperMatrix;
-use std::mem::MaybeUninit;
 use crate::super_matrix::SuperMatrix;
+use std::mem::MaybeUninit;
 
 use crate::c::simple_driver::c_dgssv;
 
@@ -42,7 +42,7 @@ pub fn dgssv(
 
         c_dgssv(
             &mut options,
-            A,
+            A.super_matrix(),
             perm_c.as_mut_ptr(),
             perm_r.as_mut_ptr(),
             L.as_mut_ptr(),

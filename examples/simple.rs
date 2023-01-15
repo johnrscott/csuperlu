@@ -77,8 +77,8 @@ fn main() {
     let mut options = superlu_options_t::new();
     options.ColPerm = colperm_t::NATURAL;
 
-    let perm_r = Vec::<i32>::with_capacity(m as usize);
-    let perm_c = Vec::<i32>::with_capacity(n as usize);
+    let mut perm_r = Vec::<i32>::with_capacity(m as usize);
+    let mut perm_c = Vec::<i32>::with_capacity(n as usize);
 
     let stat = SuperLUStat_t::new();
 
@@ -88,7 +88,7 @@ fn main() {
         mut U,
         mut stat,
         mut info,
-    } = dgssv(options, &mut A, perm_c, perm_r, B, stat);
+    } = dgssv(options, &mut A, &mut perm_c, &mut perm_r, B, stat);
 
     // Print the performance statistics
     c_StatPrint(&mut stat);

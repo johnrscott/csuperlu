@@ -36,8 +36,8 @@ pub struct DgssvSolution {
 pub fn dgssv(
     mut options: superlu_options_t,
     A: &mut impl SuperMatrix,
-    mut perm_c: Vec<i32>,
-    mut perm_r: Vec<i32>,
+    perm_c: &mut Vec<i32>,
+    perm_r: &mut Vec<i32>,
     mut B: c_SuperMatrix,
     mut stat: SuperLUStat_t,
 ) -> DgssvSolution {

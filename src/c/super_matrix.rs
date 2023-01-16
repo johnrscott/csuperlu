@@ -24,6 +24,24 @@ pub enum Dtype_t {
     SLU_Z,
 }
 
+/// A simple method to turn a precision into a Dtype_t.
+/// This is a bit like metaprogramming tricks in C++.
+/// TODO: is this the best way to do this? (map a type to
+/// a value).
+struct GetDtype<PhantomData>;
+
+impl GetDtype<f64> {
+    fn get() -> Dtype_t {
+	Dtype_t::SLU_D
+    }
+}
+
+impl GetDtype<f32> {
+    fn get() -> Dtype_t {
+	Dtype_t::SLU_S
+    }
+}
+
 /// Specifies some mathematical properties of the matrix.
 #[repr(C)]
 #[allow(non_camel_case_types)]

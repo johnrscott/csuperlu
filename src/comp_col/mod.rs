@@ -1,5 +1,17 @@
 //! Functions to create matrices in compressed column format.
 //!
+//! Compressed-column matrices are very important in SuperLU, because
+//! the main solver routines assume that the imput matrix $A$ is in
+//! column-major format.
+//!
+//! A compressed-column matrix stored stores a sparse matrix in
+//! column-major order, but only stores the non-zero elements in
+//! each column. In order to identify which elements in the column
+//! are non-zero, a vector of integers is maintained which stores
+//! the row indices of the elements in the column. Arrays like this
+//! are stored one after the other, one for each column in the matrix.
+//! Since each column may be a different length, a third vector of
+//! integers is maintained showing where each new column starts.
 
 use crate::c::comp_col::{
     c_Destroy_CompCol_Matrix, c_dCreate_CompCol_Matrix, c_dPrint_CompCol_Matrix,
@@ -8,6 +20,9 @@ use crate::c::super_matrix::{c_SuperMatrix, Dtype_t, Mtype_t, Stype_t};
 use crate::super_matrix::SuperMatrix;
 use std::mem::MaybeUninit;
 
+/// Compressed-column matrix
+///
+///
 pub struct CompColMatrix {
     // nzval: Vec<f64>,
     // rowind: Vec<i32>,

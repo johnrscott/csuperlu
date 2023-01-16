@@ -3,7 +3,7 @@
 
 use crate::c::dense::c_Destroy_SuperMatrix_Store;
 use crate::c::dense::{c_dCreate_Dense_Matrix, c_dPrint_Dense_Matrix};
-use crate::c::utils::{c_SuperMatrix, Dtype_t, Mtype_t, Stype_t};
+use crate::c::super_matrix::{c_SuperMatrix, Dtype_t, Mtype_t, Stype_t};
 use crate::super_matrix::SuperMatrix;
 use std::mem::MaybeUninit;
 

@@ -4,7 +4,7 @@
 use crate::c::comp_col::{
     c_Destroy_CompCol_Matrix, c_dCreate_CompCol_Matrix, c_dPrint_CompCol_Matrix,
 };
-use crate::c::utils::{c_SuperMatrix, Dtype_t, Mtype_t, Stype_t};
+use crate::c::super_matrix::{c_SuperMatrix, Dtype_t, Mtype_t, Stype_t};
 use crate::super_matrix::SuperMatrix;
 use std::mem::MaybeUninit;
 

@@ -3,7 +3,7 @@
 
 use crate::c::options::superlu_options_t;
 use crate::c::stat::SuperLUStat_t;
-use crate::c::utils::c_SuperMatrix;
+use crate::c::super_matrix::c_SuperMatrix;
 use crate::dense::DenseMatrix;
 use crate::super_matrix::SuperMatrix;
 

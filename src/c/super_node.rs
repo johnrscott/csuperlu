@@ -1,4 +1,4 @@
-use crate::c::utils::c_SuperMatrix;
+use crate::c::super_matrix::c_SuperMatrix;
 use libc;
 
 #[link(name = "superlu")]

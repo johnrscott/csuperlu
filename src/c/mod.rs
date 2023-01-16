@@ -12,4 +12,4 @@ pub mod options;
 pub mod simple_driver;
 pub mod stat;
 pub mod super_node;
-pub mod utils;
+pub mod super_matrix;

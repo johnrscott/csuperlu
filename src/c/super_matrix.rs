@@ -1,10 +1,19 @@
-// Data type
+//! Structs and functions for interfacing to the SuperMatrix
+//! C struct. The SuperMatrix struct is responsible for defining
+//! the matrix types in SuperLU.
+
 #[repr(C)]
 #[allow(non_camel_case_types)]
+
+/// The matrix numerical type and floating-point precision
 pub enum Dtype_t {
+    /// Single-precision real
     SLU_S,
+    /// Double-precision real
     SLU_D,
+    /// Single-precision complex
     SLU_C,
+    /// Double-precision complex
     SLU_Z,
 }
 

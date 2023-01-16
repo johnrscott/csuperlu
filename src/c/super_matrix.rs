@@ -9,10 +9,9 @@
 //! C library interprets the enum integers correctly. Do not change
 //! the order without checking what effect it might have.
 
+/// The matrix numerical type and floating-point precision.
 #[repr(C)]
 #[allow(non_camel_case_types)]
-
-/// The matrix numerical type and floating-point precision.
 pub enum Dtype_t {
     /// Single-precision real
     SLU_S,
@@ -25,19 +24,18 @@ pub enum Dtype_t {
 }
 
 /// A simple method to turn a precision into a Dtype_t.
-/// This is a bit like metaprogramming tricks in C++.
-/// TODO: is this the best way to do this? (map a type to
-/// a value).
-struct GetDtype<PhantomData>;
+pub struct GetDtype<P> {
+    _marker: std::marker::PhantomData<P>,
+}
 
 impl GetDtype<f64> {
-    fn get() -> Dtype_t {
+    pub fn get() -> Dtype_t {
 	Dtype_t::SLU_D
     }
 }
 
 impl GetDtype<f32> {
-    fn get() -> Dtype_t {
+    pub fn get() -> Dtype_t {
 	Dtype_t::SLU_S
     }
 }

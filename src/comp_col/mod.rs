@@ -23,7 +23,7 @@ use std::mem::MaybeUninit;
 /// Compressed-column matrix
 ///
 ///
-pub struct CompColMatrix<P> {
+pub struct CompColMatrix<P: GetDtype> {
     // nzval: Vec<f64>,
     // rowind: Vec<i32>,
     // colptr: Vec<i32>,
@@ -31,7 +31,7 @@ pub struct CompColMatrix<P> {
     _marker: std::marker::PhantomData<P>,
 }
 
-impl<P> CompColMatrix<P> {
+impl<P: GetDtype> CompColMatrix<P> {
     /// Specify a compressed column matrix from input vectors.
     ///
     /// Use this function to make a c_SuperMatrix in compressed column
@@ -60,7 +60,7 @@ impl<P> CompColMatrix<P> {
                 rowind.as_mut_ptr(),
                 colptr.as_mut_ptr(),
                 stype,
-                GetDtype::<P>::get(),
+                P::get(),
                 mtype,
             );
             c_super_matrix.assume_init()
@@ -79,11 +79,12 @@ impl<P> CompColMatrix<P> {
             // rowind,
             // colptr,
             c_super_matrix,
+	    _marker: std::marker::PhantomData,
         }
     }
 }
 
-impl<P> SuperMatrix for CompColMatrix<P> {
+impl<P: GetDtype> SuperMatrix for CompColMatrix<P> {
     fn super_matrix<'a>(&'a mut self) -> &'a mut c_SuperMatrix {
         &mut self.c_super_matrix
     }
@@ -94,7 +95,7 @@ impl<P> SuperMatrix for CompColMatrix<P> {
     }
 }
 
-impl<P> Drop for CompColMatrix<P> {
+impl<P: GetDtype> Drop for CompColMatrix<P> {
     fn drop(&mut self) {
         c_Destroy_CompCol_Matrix(&mut self.c_super_matrix);
     }

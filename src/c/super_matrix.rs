@@ -24,18 +24,18 @@ pub enum Dtype_t {
 }
 
 /// A simple method to turn a precision into a Dtype_t.
-pub struct GetDtype<P> {
-    _marker: std::marker::PhantomData<P>,
+pub trait GetDtype {
+    fn get() -> Dtype_t;
 }
 
-impl GetDtype<f64> {
-    pub fn get() -> Dtype_t {
+impl GetDtype for f64 {
+    fn get() -> Dtype_t {
 	Dtype_t::SLU_D
     }
 }
 
-impl GetDtype<f32> {
-    pub fn get() -> Dtype_t {
+impl GetDtype for f32 {
+    fn get() -> Dtype_t {
 	Dtype_t::SLU_S
     }
 }

@@ -16,8 +16,8 @@ use csuperlu::c::comp_col::c_Destroy_CompCol_Matrix;
 use csuperlu::c::options::{colperm_t, superlu_options_t};
 use csuperlu::c::stat::{c_StatPrint, SuperLUStat_t};
 use csuperlu::c::super_node::{c_Destroy_SuperNode_Matrix, c_dPrint_SuperNode_Matrix};
-use csuperlu::c::utils::{Dtype_t, Mtype_t, Stype_t};
-use csuperlu::comp_col::{dPrint_CompCol_Matrix, CompColMatrix};
+use csuperlu::c::super_matrix::{Dtype_t, Mtype_t, Stype_t};
+use csuperlu::comp_col::CompColMatrix;
 use csuperlu::dense::DenseMatrix;
 use csuperlu::simple_driver::{dgssv, DgssvSolution};
 use csuperlu::super_matrix::SuperMatrix;
@@ -48,7 +48,7 @@ fn main() {
     let xa = vec![0, 3, 6, 8, 10, 12];
 
     // Make the matrix
-    let mut A = CompColMatrix::new(
+    let mut A = CompColMatrix::<f64>::new(
         m,
         n,
         nnz,
@@ -56,7 +56,6 @@ fn main() {
         asub,
         xa,
         Stype_t::SLU_NC,
-        Dtype_t::SLU_D,
         Mtype_t::SLU_GE,
     );
 

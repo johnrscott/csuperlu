@@ -15,12 +15,24 @@ extern "C" {
         dtype: Dtype_t,
         mtype: Mtype_t,
     );
+    fn sCreate_CompCol_Matrix(
+        A: *mut c_SuperMatrix,
+        m: libc::c_int,
+        n: libc::c_int,
+        nnz: libc::c_int,
+        nzval: *mut libc::c_float,
+        rowind: *mut libc::c_int,
+        colptr: *mut libc::c_int,
+        stype: Stype_t,
+        dtype: Dtype_t,
+        mtype: Mtype_t,
+    );
     fn Destroy_CompCol_Matrix(A: *mut c_SuperMatrix);
     fn dPrint_CompCol_Matrix(what: *mut libc::c_char, A: *mut c_SuperMatrix);
 }
 
 #[allow(non_snake_case)]
-pub fn c_dCreate_CompCol_Matrix<P>(
+pub fn c_dCreate_CompCol_Matrix(
     A: *mut c_SuperMatrix,
     m: libc::c_int,
     n: libc::c_int,
@@ -29,13 +41,32 @@ pub fn c_dCreate_CompCol_Matrix<P>(
     rowind: *mut libc::c_int,
     colptr: *mut libc::c_int,
     stype: Stype_t,
-    dtype: Dtype_t,
     mtype: Mtype_t,
 ) {
     unsafe {
-        dCreate_CompCol_Matrix(A, m, n, nnz, nzval, rowind, colptr, stype, dtype, mtype);
+        dCreate_CompCol_Matrix(A, m, n, nnz, nzval, rowind,
+			       colptr, stype, Dtype_t::SLU_D, mtype);
     }
 }
+
+#[allow(non_snake_case)]
+pub fn c_sCreate_CompCol_Matrix(
+    A: *mut c_SuperMatrix,
+    m: libc::c_int,
+    n: libc::c_int,
+    nnz: libc::c_int,
+    nzval: *mut libc::c_float,
+    rowind: *mut libc::c_int,
+    colptr: *mut libc::c_int,
+    stype: Stype_t,
+    mtype: Mtype_t,
+) {
+    unsafe {
+        dCreate_CompCol_Matrix(A, m, n, nnz, nzval, rowind,
+			       colptr, stype, Dtype_t::SLU_S, mtype);
+    }
+}
+
 
 /// This will attempt to deallocate the three input matrices used to
 /// create the comp_col matrix.

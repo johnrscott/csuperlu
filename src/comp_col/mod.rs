@@ -24,9 +24,9 @@ use std::mem::MaybeUninit;
 ///
 ///
 pub struct CompColMatrix<P: GetDtype> {
-    // nzval: Vec<f64>,
-    // rowind: Vec<i32>,
-    // colptr: Vec<i32>,
+    nzval: Vec<P>,
+    rowind: Vec<i32>,
+    colptr: Vec<i32>,
     c_super_matrix: c_SuperMatrix,
     _marker: std::marker::PhantomData<P>,
 }
@@ -43,7 +43,7 @@ impl<P: GetDtype> CompColMatrix<P> {
         m: i32,
         n: i32,
         nnz: i32,
-        mut nzval: Vec<f64>,
+        mut nzval: Vec<P>,
         mut rowind: Vec<i32>,
         mut colptr: Vec<i32>,
         stype: Stype_t,
@@ -70,14 +70,14 @@ impl<P: GetDtype> CompColMatrix<P> {
         // considered to be owned by the matrix. This means that the matrix free
         // function also frees these vectors. In order to avoid rust also freeing
         // them, forget them here.
-        std::mem::forget(nzval);
-        std::mem::forget(rowind);
-        std::mem::forget(colptr);
+        // std::mem::forget(nzval);
+        // std::mem::forget(rowind);
+        // std::mem::forget(colptr);
 
         Self {
-            // nzval,
-            // rowind,
-            // colptr,
+            nzval,
+            rowind,
+            colptr,
             c_super_matrix,
 	    _marker: std::marker::PhantomData,
         }

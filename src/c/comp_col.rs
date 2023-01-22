@@ -20,7 +20,7 @@ extern "C" {
 }
 
 #[allow(non_snake_case)]
-pub fn c_dCreate_CompCol_Matrix(
+pub fn c_dCreate_CompCol_Matrix<P>(
     A: *mut c_SuperMatrix,
     m: libc::c_int,
     n: libc::c_int,
@@ -37,6 +37,8 @@ pub fn c_dCreate_CompCol_Matrix(
     }
 }
 
+/// This will attempt to deallocate the three input matrices used to
+/// create the comp_col matrix.
 #[allow(non_snake_case)]
 pub fn c_Destroy_CompCol_Matrix(A: *mut c_SuperMatrix) {
     unsafe {

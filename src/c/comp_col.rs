@@ -62,7 +62,7 @@ pub fn c_sCreate_CompCol_Matrix(
     mtype: Mtype_t,
 ) {
     unsafe {
-        dCreate_CompCol_Matrix(A, m, n, nnz, nzval, rowind,
+        sCreate_CompCol_Matrix(A, m, n, nnz, nzval, rowind,
 			       colptr, stype, Dtype_t::SLU_S, mtype);
     }
 }

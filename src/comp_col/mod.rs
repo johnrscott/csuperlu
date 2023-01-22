@@ -28,7 +28,6 @@ pub struct CompColMatrix<P: GetDtype> {
     rowind: Vec<i32>,
     colptr: Vec<i32>,
     c_super_matrix: c_SuperMatrix,
-    _marker: std::marker::PhantomData<P>,
 }
 
 impl<P: GetDtype> CompColMatrix<P> {
@@ -79,7 +78,6 @@ impl<P: GetDtype> CompColMatrix<P> {
             rowind,
             colptr,
             c_super_matrix,
-	    _marker: std::marker::PhantomData,
         }
     }
 }

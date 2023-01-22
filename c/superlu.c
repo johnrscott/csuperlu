@@ -1,6 +1,7 @@
 #include <superlu/slu_ddefs.h>
 #include <superlu/slu_sdefs.h>
 #include <superlu/slu_cdefs.h>
+#include <superlu/slu_zdefs.h>
 
 int main(int argc, char *argv[])
 {
@@ -39,14 +40,14 @@ int main(int argc, char *argv[])
     xa[0] = 0; xa[1] = 3; xa[2] = 6; xa[3] = 8; xa[4] = 10; xa[5] = 12;
 
     /* Create matrix A in the format expected by SuperLU. */
-    dCreate_CompCol_Matrix(&A, m, n, nnz, a, asub, xa, SLU_NC, SLU_S, SLU_GE);
+    dCreate_CompCol_Matrix(&A, m, n, nnz, a, asub, xa, SLU_NC, SLU_C, SLU_GE);
 
     /* Create right-hand side matrix B. */
     nrhs = 1;
 
     if ( !(rhs = doubleMalloc(m * nrhs)) ) ABORT("Malloc fails for rhs[].");
     for (i = 0; i < m; ++i) rhs[i] = 1.0;
-    dCreate_Dense_Matrix(&B, m, nrhs, rhs, m, SLU_DN, SLU_S, SLU_GE);
+    dCreate_Dense_Matrix(&B, m, nrhs, rhs, m, SLU_DN, SLU_C, SLU_GE);
 
     if ( !(perm_r = intMalloc(m)) ) ABORT("Malloc fails for perm_r[].");
     if ( !(perm_c = intMalloc(n)) ) ABORT("Malloc fails for perm_c[].");
@@ -59,10 +60,10 @@ int main(int argc, char *argv[])
     StatInit(&stat);
 
     /* Solve the linear system. */
-    sgssv(&options, &A, perm_c, perm_r, &L, &U, &B, &stat, &info);
-    sPrint_CompCol_Matrix("A", &A);
-    sPrint_CompCol_Matrix("U", &U);
-    sPrint_SuperNode_Matrix("L", &L);
+    cgssv(&options, &A, perm_c, perm_r, &L, &U, &B, &stat, &info);
+    cPrint_CompCol_Matrix("A", &A);
+    cPrint_CompCol_Matrix("U", &U);
+    cPrint_SuperNode_Matrix("L", &L);
     print_int_vec("\nperm_r", m, perm_r);
     
     /* De-allocate storage */

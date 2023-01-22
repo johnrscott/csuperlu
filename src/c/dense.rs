@@ -14,6 +14,17 @@ extern "C" {
         mtype: Mtype_t,
     );
     fn dPrint_Dense_Matrix(what: *mut libc::c_char, A: *mut c_SuperMatrix);
+    fn sCreate_Dense_Matrix(
+        X: *mut c_SuperMatrix,
+        m: libc::c_int,
+        n: libc::c_int,
+        x: *mut libc::c_float,
+        ldx: libc::c_int,
+        stype: Stype_t,
+        dtype: Dtype_t,
+        mtype: Mtype_t,
+    );
+    fn sPrint_Dense_Matrix(what: *mut libc::c_char, A: *mut c_SuperMatrix);
     fn Destroy_SuperMatrix_Store(A: *mut c_SuperMatrix);
 }
 
@@ -25,13 +36,28 @@ pub fn c_dCreate_Dense_Matrix(
     x: *mut libc::c_double,
     ldx: libc::c_int,
     stype: Stype_t,
-    dtype: Dtype_t,
     mtype: Mtype_t,
 ) {
     unsafe {
-        dCreate_Dense_Matrix(X, m, n, x, ldx, stype, dtype, mtype);
+        dCreate_Dense_Matrix(X, m, n, x, ldx, stype, Dtype_t::SLU_D, mtype);
     }
 }
+
+#[allow(non_snake_case)]
+pub fn c_sCreate_Dense_Matrix(
+    X: *mut c_SuperMatrix,
+    m: libc::c_int,
+    n: libc::c_int,
+    x: *mut libc::c_float,
+    ldx: libc::c_int,
+    stype: Stype_t,
+    mtype: Mtype_t,
+) {
+    unsafe {
+        sCreate_Dense_Matrix(X, m, n, x, ldx, stype, Dtype_t::SLU_S, mtype);
+    }
+}
+
 
 #[allow(non_snake_case)]
 pub fn c_dPrint_Dense_Matrix(what: *mut libc::c_char, A: *mut c_SuperMatrix) {

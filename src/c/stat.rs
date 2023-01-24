@@ -1,4 +1,4 @@
-//! Performance statistics functions
+//! Performance statistics functions.
 //!
 //! SuperLU records performance statistics such as the number
 //! of floating-point operations and the execution time of the

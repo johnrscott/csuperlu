@@ -37,6 +37,11 @@ impl<P: CCreateCompColMatrix<P>> CompColMatrix<P> {
     /// offsets. Compressed column format is documented in Section
     /// 2.3 of the SuperLU manual.
     ///
+    /// Need to check what Mtype_t is used for. The table in Section 2.3
+    /// shows SLU_GE for A, but SLU_TRLU for L and U; however, does the
+    /// user of the library ever need to pick a different value? If not,
+    /// the argument can be removed.
+    ///
     pub fn new(
         m: i32,
         n: i32,

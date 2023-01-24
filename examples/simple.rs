@@ -61,7 +61,7 @@ fn main() {
     // Make the RHS vector
     let nrhs = 1;
     let mut rhs = vec![1.0; m as usize];
-    let B = DenseMatrix::new(
+    let b = DenseMatrix::new(
         m,
         nrhs,
         &mut rhs,
@@ -85,7 +85,7 @@ fn main() {
         mut U,
         mut stat,
         mut info,
-    } = dgssv(options, &mut a, &mut perm_c, &mut perm_r, B, stat);
+    } = dgssv(options, &mut a, &mut perm_c, &mut perm_r, b, stat);
 
     // Print the performance statistics
     c_StatPrint(&mut stat);

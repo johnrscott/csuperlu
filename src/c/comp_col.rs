@@ -1,3 +1,5 @@
+use std::mem::MaybeUninit;
+
 use crate::c::super_matrix::{c_SuperMatrix, Dtype_t, Mtype_t, Stype_t};
 use libc;
 
@@ -34,7 +36,7 @@ extern "C" {
 
 pub trait CCreateCompColMatrix<P> {
     fn c_create_comp_col_matrix(
-	A: &mut c_SuperMatrix,
+	A: &mut MaybeUninit<c_SuperMatrix>,
         m: i32,
         n: i32,
         nnz: i32,
@@ -52,7 +54,7 @@ pub trait CCreateCompColMatrix<P> {
 
 impl CCreateCompColMatrix<f64> for f64 {
     fn c_create_comp_col_matrix(
-	a: &mut c_SuperMatrix,
+	a: &mut MaybeUninit<c_SuperMatrix>,
         m: i32,
         n: i32,
         nnz: i32,
@@ -63,7 +65,7 @@ impl CCreateCompColMatrix<f64> for f64 {
         mtype: Mtype_t
     ) {
 	unsafe {
-            dCreate_CompCol_Matrix(a, m, n, nnz,
+            dCreate_CompCol_Matrix(a.as_mut_ptr(), m, n, nnz,
 				   nzval.as_mut_ptr(),
 				   rowind.as_mut_ptr(),
 				   colptr.as_mut_ptr(),
@@ -83,7 +85,7 @@ impl CCreateCompColMatrix<f64> for f64 {
 
 impl CCreateCompColMatrix<f32> for f32 {
     fn c_create_comp_col_matrix(
-	a: &mut c_SuperMatrix,
+	a: &mut MaybeUninit<c_SuperMatrix>,
         m: i32,
         n: i32,
         nnz: i32,
@@ -94,7 +96,7 @@ impl CCreateCompColMatrix<f32> for f32 {
         mtype: Mtype_t
     ) {
 	unsafe {
-            sCreate_CompCol_Matrix(a, m, n, nnz,
+            sCreate_CompCol_Matrix(a.as_mut_ptr(), m, n, nnz,
 				   nzval.as_mut_ptr(),
 				   rowind.as_mut_ptr(),
 				   colptr.as_mut_ptr(),

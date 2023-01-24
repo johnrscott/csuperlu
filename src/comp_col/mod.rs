@@ -51,7 +51,7 @@ impl<P: CCreateCompColMatrix<P>> CompColMatrix<P> {
         let c_super_matrix = unsafe {
             let mut c_super_matrix = MaybeUninit::<c_SuperMatrix>::uninit();
 	    P::c_create_comp_col_matrix(
-		c_super_matrix,
+		&mut c_super_matrix,
 		m,
 		n,
 		nnz,

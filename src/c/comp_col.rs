@@ -34,6 +34,18 @@ extern "C" {
     fn sPrint_CompCol_Matrix(what: *mut libc::c_char, A: *mut c_SuperMatrix);
 }
 
+/// Trait for access to low level C functions from SuperLU, which
+/// dispatches correctly based on the desired precision (and picks
+/// the right value for the Dtype argument).
+///
+/// The assumption of this trait is that it is necessary to pass the
+/// correct value of Dtype corresponding to the prefix in front of
+/// the function (d, s, c, z). This makes the Dtype argument redundant,
+/// but I don't understand what the purpose of it is otherwise; the
+/// SuperLU functions do not allocate their own memory for vectors
+/// (I don't think), so they cannot perform a precision conversion
+/// (one hypothesis for the Dtype argument), and it seems to lead to
+/// seg faults if the "wrong" Dtype is passed.
 pub trait CCreateCompColMatrix<P> {
     fn c_create_comp_col_matrix(
 	a: &mut MaybeUninit<c_SuperMatrix>,

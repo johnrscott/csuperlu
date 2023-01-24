@@ -13,10 +13,9 @@
 //! Since each column may be a different length, a third vector of
 //! integers is maintained showing where each new column starts.
 
-use crate::c::comp_col::{
-    c_Destroy_CompCol_Matrix, CCreateCompColMatrix
-};
+use crate::c::comp_col::CCreateCompColMatrix;
 use crate::c::super_matrix::{c_SuperMatrix, Mtype_t, Stype_t};
+use crate::c::dense::c_Destroy_SuperMatrix_Store;
 use crate::super_matrix::{SuperMatrix};
 use std::mem::MaybeUninit;
 
@@ -24,9 +23,9 @@ use std::mem::MaybeUninit;
 ///
 ///
 pub struct CompColMatrix<P: CCreateCompColMatrix<P>> {
-    nzval: Vec<P>,
-    rowind: Vec<i32>,
-    colptr: Vec<i32>,
+    pub nzval: Vec<P>,
+    pub rowind: Vec<i32>,
+    pub colptr: Vec<i32>,
     c_super_matrix: c_SuperMatrix,
 }
 
@@ -94,7 +93,8 @@ impl<P: CCreateCompColMatrix<P>> SuperMatrix for CompColMatrix<P> {
 
 impl<P: CCreateCompColMatrix<P>> Drop for CompColMatrix<P> {
     fn drop(&mut self) {
-        c_Destroy_CompCol_Matrix(&mut self.c_super_matrix);
+	// Note that the input vectors are not freed by this line
+        c_Destroy_SuperMatrix_Store(&mut self.c_super_matrix);
     }
 }
 

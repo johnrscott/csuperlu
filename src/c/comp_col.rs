@@ -36,7 +36,7 @@ extern "C" {
 
 pub trait CCreateCompColMatrix<P> {
     fn c_create_comp_col_matrix(
-	A: &mut MaybeUninit<c_SuperMatrix>,
+	a: &mut MaybeUninit<c_SuperMatrix>,
         m: i32,
         n: i32,
         nnz: i32,

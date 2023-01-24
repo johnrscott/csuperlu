@@ -14,23 +14,23 @@
 //! integers is maintained showing where each new column starts.
 
 use crate::c::comp_col::{
-    c_Destroy_CompCol_Matrix, CreateCompColMatrix
+    c_Destroy_CompCol_Matrix, CCreateCompColMatrix
 };
-use crate::c::super_matrix::{c_SuperMatrix, GetDtype, Mtype_t, Stype_t};
+use crate::c::super_matrix::{c_SuperMatrix, Mtype_t, Stype_t};
 use crate::super_matrix::{SuperMatrix};
 use std::mem::MaybeUninit;
 
 /// Compressed-column matrix
 ///
 ///
-pub struct CompColMatrix<P: CreateCompColMatrix<P>> {
+pub struct CompColMatrix<P: CCreateCompColMatrix<P>> {
     nzval: Vec<P>,
     rowind: Vec<i32>,
     colptr: Vec<i32>,
     c_super_matrix: c_SuperMatrix,
 }
 
-impl<P: CreateCompColMatrix<P>> CompColMatrix<P> {
+impl<P: CCreateCompColMatrix<P>> CompColMatrix<P> {
     /// Specify a compressed column matrix from input vectors.
     ///
     /// Use this function to make a c_SuperMatrix in compressed column
@@ -50,7 +50,7 @@ impl<P: CreateCompColMatrix<P>> CompColMatrix<P> {
     ) -> Self {
         let c_super_matrix = unsafe {
             let mut c_super_matrix = MaybeUninit::<c_SuperMatrix>::uninit();
-	    P::create_comp_col_matrix(
+	    P::c_create_comp_col_matrix(
 		c_super_matrix,
 		m,
 		n,
@@ -81,25 +81,25 @@ impl<P: CreateCompColMatrix<P>> CompColMatrix<P> {
     }
 }
 
-impl<P: GetDtype> SuperMatrix for CompColMatrix<P> {
+impl<P: CCreateCompColMatrix<P>> SuperMatrix for CompColMatrix<P> {
     fn super_matrix<'a>(&'a mut self) -> &'a mut c_SuperMatrix {
         &mut self.c_super_matrix
     }
     fn print(&mut self, what: &str) {
 	let c_str = std::ffi::CString::new(what).unwrap();
-	c_dPrint_CompCol_Matrix(c_str.as_ptr() as *mut libc::c_char,
-				self.super_matrix());
+	P::c_print_comp_col_matrix(c_str.as_ptr() as *mut libc::c_char,
+				   self.super_matrix());
     }
 }
 
-impl<P: GetDtype> Drop for CompColMatrix<P> {
+impl<P: CCreateCompColMatrix<P>> Drop for CompColMatrix<P> {
     fn drop(&mut self) {
         c_Destroy_CompCol_Matrix(&mut self.c_super_matrix);
     }
 }
 
-#[allow(non_snake_case)]
-pub fn dPrint_CompCol_Matrix(what: &str, A: &mut c_SuperMatrix) {
-    let c_str = std::ffi::CString::new(what).unwrap();
-    c_dPrint_CompCol_Matrix(c_str.as_ptr() as *mut libc::c_char, A);
-}
+// #[allow(non_snake_case)]
+// pub fn dPrint_CompCol_Matrix(what: &str, A: &mut c_SuperMatrix) {
+//     let c_str = std::ffi::CString::new(what).unwrap();
+//     c_dPrint_CompCol_Matrix(c_str.as_ptr() as *mut libc::c_char, A);
+// }

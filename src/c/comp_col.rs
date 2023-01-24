@@ -29,10 +29,11 @@ extern "C" {
     );
     fn Destroy_CompCol_Matrix(A: *mut c_SuperMatrix);
     fn dPrint_CompCol_Matrix(what: *mut libc::c_char, A: *mut c_SuperMatrix);
+    fn sPrint_CompCol_Matrix(what: *mut libc::c_char, A: *mut c_SuperMatrix);
 }
 
-pub trait CreateCompColMatrix<P> {
-    fn create_comp_col_matrix(
+pub trait CCreateCompColMatrix<P> {
+    fn c_create_comp_col_matrix(
 	A: &mut c_SuperMatrix,
         m: i32,
         n: i32,
@@ -43,10 +44,14 @@ pub trait CreateCompColMatrix<P> {
         stype: Stype_t,
         mtype: Mtype_t
     );
+    fn c_print_comp_col_matrix(
+    	what: *mut libc::c_char,
+	a: *mut c_SuperMatrix,
+    );
 }
 
-impl CreateCompColMatrix<f64> for f64 {
-    fn create_comp_col_matrix(
+impl CCreateCompColMatrix<f64> for f64 {
+    fn c_create_comp_col_matrix(
 	a: &mut c_SuperMatrix,
         m: i32,
         n: i32,
@@ -65,10 +70,19 @@ impl CreateCompColMatrix<f64> for f64 {
 				   stype, Dtype_t::SLU_D, mtype);
 	}	
     }
+
+    fn c_print_comp_col_matrix(
+    	what: *mut libc::c_char,
+	a: *mut c_SuperMatrix,
+    ) {
+	unsafe {
+            dPrint_CompCol_Matrix(what, a);
+	}	
+    }
 }
 
-impl CreateCompColMatrix<f32> for f32 {
-    fn create_comp_col_matrix(
+impl CCreateCompColMatrix<f32> for f32 {
+    fn c_create_comp_col_matrix(
 	a: &mut c_SuperMatrix,
         m: i32,
         n: i32,
@@ -87,6 +101,15 @@ impl CreateCompColMatrix<f32> for f32 {
 				   stype, Dtype_t::SLU_S, mtype);
 	}	
     }
+
+    fn c_print_comp_col_matrix(
+    	what: *mut libc::c_char,
+	a: *mut c_SuperMatrix,
+    ) {
+	unsafe {
+            sPrint_CompCol_Matrix(what, a);
+	}	
+    }
 }
 
 /// This will attempt to deallocate the three input matrices used to
@@ -98,9 +121,9 @@ pub fn c_Destroy_CompCol_Matrix(A: *mut c_SuperMatrix) {
     }
 }
 
-#[allow(non_snake_case)]
-pub fn c_dPrint_CompCol_Matrix(what: *mut libc::c_char, A: *mut c_SuperMatrix) {
-    unsafe {
-        dPrint_CompCol_Matrix(what, A);
-    }
-}
+// #[allow(non_snake_case)]
+// pub fn c_dPrint_CompCol_Matrix(what: *mut libc::c_char, A: *mut c_SuperMatrix) {
+//     unsafe {
+//         dPrint_CompCol_Matrix(what, A);
+//     }
+// }

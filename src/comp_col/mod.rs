@@ -44,7 +44,6 @@ impl<P: CCreateCompColMatrix<P>> CompColMatrix<P> {
         mut nzval: Vec<P>,
         mut rowind: Vec<i32>,
         mut colptr: Vec<i32>,
-        stype: Stype_t,
         mtype: Mtype_t,
     ) -> Self {
         let c_super_matrix = unsafe {
@@ -57,19 +56,10 @@ impl<P: CCreateCompColMatrix<P>> CompColMatrix<P> {
 		&mut nzval,
 		&mut rowind,
 		&mut colptr,
-		stype,
 		mtype,
             );
             c_super_matrix.assume_init()
         };
-
-        // When the CompCol matrix is created, the vectors a, asub and xa are
-        // considered to be owned by the matrix. This means that the matrix free
-        // function also frees these vectors. In order to avoid rust also freeing
-        // them, forget them here.
-        // std::mem::forget(nzval);
-        // std::mem::forget(rowind);
-        // std::mem::forget(colptr);
 
         Self {
             nzval,
@@ -98,8 +88,3 @@ impl<P: CCreateCompColMatrix<P>> Drop for CompColMatrix<P> {
     }
 }
 
-// #[allow(non_snake_case)]
-// pub fn dPrint_CompCol_Matrix(what: &str, A: &mut c_SuperMatrix) {
-//     let c_str = std::ffi::CString::new(what).unwrap();
-//     c_dPrint_CompCol_Matrix(c_str.as_ptr() as *mut libc::c_char, A);
-// }

@@ -34,18 +34,23 @@ extern "C" {
     fn sPrint_CompCol_Matrix(what: *mut libc::c_char, A: *mut c_SuperMatrix);
 }
 
+/// Create compressed column matrix of particular precision
+///
 /// Trait for access to low level C functions from SuperLU, which
 /// dispatches correctly based on the desired precision (and picks
 /// the right value for the Dtype argument).
 ///
 /// The assumption of this trait is that it is necessary to pass the
 /// correct value of Dtype corresponding to the prefix in front of
-/// the function (d, s, c, z). This makes the Dtype argument redundant,
+/// the function (d, s, c, z). This would make the Dtype argument redundant,
 /// but I don't understand what the purpose of it is otherwise; the
-/// SuperLU functions do not allocate their own memory for vectors
-/// (I don't think), so they cannot perform a precision conversion
+/// SuperLU functions do not allocate their own memory for vectors,
+/// so they cannot perform a precision conversion
 /// (one hypothesis for the Dtype argument), and it seems to lead to
 /// seg faults if the "wrong" Dtype is passed.
+///
+/// For a similar reason, the Stype parameter is also omitted, because this
+/// is always SLU_NC for this function (as stated in the doxygen docs).
 pub trait CCreateCompColMatrix<P> {
     fn c_create_comp_col_matrix(
 	a: &mut MaybeUninit<c_SuperMatrix>,
@@ -55,7 +60,6 @@ pub trait CCreateCompColMatrix<P> {
         nzval: &mut Vec<P>,
         rowind: &mut Vec<i32>,
         colptr: &mut Vec<i32>,
-        stype: Stype_t,
         mtype: Mtype_t
     );
     fn c_print_comp_col_matrix(
@@ -73,7 +77,6 @@ impl CCreateCompColMatrix<f64> for f64 {
         nzval: &mut Vec<f64>,
         rowind: &mut Vec<i32>,
         colptr: &mut Vec<i32>,
-        stype: Stype_t,
         mtype: Mtype_t
     ) {
 	unsafe {
@@ -81,7 +84,8 @@ impl CCreateCompColMatrix<f64> for f64 {
 				   nzval.as_mut_ptr(),
 				   rowind.as_mut_ptr(),
 				   colptr.as_mut_ptr(),
-				   stype, Dtype_t::SLU_D, mtype);
+				   Stype_t::SLU_NC,
+				   Dtype_t::SLU_D, mtype);
 	}	
     }
 
@@ -104,7 +108,6 @@ impl CCreateCompColMatrix<f32> for f32 {
         nzval: &mut Vec<f32>,
         rowind: &mut Vec<i32>,
         colptr: &mut Vec<i32>,
-        stype: Stype_t,
         mtype: Mtype_t
     ) {
 	unsafe {
@@ -112,7 +115,8 @@ impl CCreateCompColMatrix<f32> for f32 {
 				   nzval.as_mut_ptr(),
 				   rowind.as_mut_ptr(),
 				   colptr.as_mut_ptr(),
-				   stype, Dtype_t::SLU_S, mtype);
+				   Stype_t::SLU_NC,
+				   Dtype_t::SLU_S, mtype);
 	}	
     }
 

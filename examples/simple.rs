@@ -47,15 +47,14 @@ fn main() {
     // Vector of ints of length n+1
     let xa = vec![0, 3, 6, 8, 10, 12];
 
-    // Make the matrix
-    let mut A = CompColMatrix::<f64>::new(
+    // Make the left-hand side matrix
+    let mut a = CompColMatrix::new(
         m,
         n,
         nnz,
         a,
         asub,
         xa,
-        Stype_t::SLU_NC,
         Mtype_t::SLU_GE,
     );
 
@@ -86,13 +85,13 @@ fn main() {
         mut U,
         mut stat,
         mut info,
-    } = dgssv(options, &mut A, &mut perm_c, &mut perm_r, B, stat);
+    } = dgssv(options, &mut a, &mut perm_c, &mut perm_r, B, stat);
 
     // Print the performance statistics
     c_StatPrint(&mut stat);
 
     //dPrint_CompCol_Matrix("A", &mut A.super_matrix());
-    A.print("A");
+    a.print("a");
     //U.print("U");
 
     let c_str = std::ffi::CString::new("L").unwrap();

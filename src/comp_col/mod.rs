@@ -14,7 +14,7 @@
 //! integers is maintained showing where each new column starts.
 
 use crate::c::comp_col::{
-    c_Destroy_CompCol_Matrix, c_dCreate_CompCol_Matrix, c_dPrint_CompCol_Matrix,
+    c_Destroy_CompCol_Matrix, CreateCompColMatrix
 };
 use crate::c::super_matrix::{c_SuperMatrix, GetDtype, Mtype_t, Stype_t};
 use crate::super_matrix::{SuperMatrix};
@@ -23,14 +23,14 @@ use std::mem::MaybeUninit;
 /// Compressed-column matrix
 ///
 ///
-pub struct CompColMatrix<P: GetDtype> {
+pub struct CompColMatrix<P: CreateCompColMatrix<P>> {
     nzval: Vec<P>,
     rowind: Vec<i32>,
     colptr: Vec<i32>,
     c_super_matrix: c_SuperMatrix,
 }
 
-impl<P: GetDtype> CompColMatrix<P> {
+impl<P: CreateCompColMatrix<P>> CompColMatrix<P> {
     /// Specify a compressed column matrix from input vectors.
     ///
     /// Use this function to make a c_SuperMatrix in compressed column
@@ -50,17 +50,16 @@ impl<P: GetDtype> CompColMatrix<P> {
     ) -> Self {
         let c_super_matrix = unsafe {
             let mut c_super_matrix = MaybeUninit::<c_SuperMatrix>::uninit();
-            c_dCreate_CompCol_Matrix(
-                c_super_matrix.as_mut_ptr(),
-                m,
-                n,
-                nnz,
-                nzval.as_mut_ptr(),
-                rowind.as_mut_ptr(),
-                colptr.as_mut_ptr(),
-                stype,
-                P::get(),
-                mtype,
+	    P::create_comp_col_matrix(
+		c_super_matrix,
+		m,
+		n,
+		nnz,
+		&mut nzval,
+		&mut rowind,
+		&mut colptr,
+		stype,
+		mtype,
             );
             c_super_matrix.assume_init()
         };

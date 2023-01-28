@@ -64,7 +64,7 @@ fn main() {
     let b = DenseMatrix::new(
         m,
         nrhs,
-        &mut rhs,
+        rhs,
         m,
         Stype_t::SLU_DN,
         Dtype_t::SLU_D,
@@ -97,8 +97,6 @@ fn main() {
     let c_str = std::ffi::CString::new("L").unwrap();
     c_dPrint_SuperNode_Matrix(c_str.as_ptr() as *mut libc::c_char, &mut L);
 
-    //c_Destroy_CompCol_Matrix(&mut A);
-    //c_Destroy_SuperMatrix_Store(&mut X);
     c_Destroy_SuperNode_Matrix(&mut L);
     c_Destroy_CompCol_Matrix(&mut U);
 }

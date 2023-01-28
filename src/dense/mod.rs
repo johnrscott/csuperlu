@@ -8,6 +8,7 @@ use crate::super_matrix::SuperMatrix;
 use std::mem::MaybeUninit;
 
 pub struct DenseMatrix {
+    pub x: Vec<f64>, 
     c_super_matrix: c_SuperMatrix,
 }
 
@@ -26,7 +27,7 @@ impl DenseMatrix {
     pub fn new(
         m: i32,
         n: i32,
-        x: &mut Vec<f64>,
+        mut x: Vec<f64>,
         ldx: i32,
         stype: Stype_t,
         dtype: Dtype_t,
@@ -47,7 +48,10 @@ impl DenseMatrix {
             c_super_matrix.assume_init()
         };
 
-        Self { c_super_matrix }
+        Self {
+	    x,
+	    c_super_matrix
+	}
     }
 }
 
@@ -64,6 +68,7 @@ impl SuperMatrix for DenseMatrix {
 
 impl Drop for DenseMatrix {
     fn drop(&mut self) {
+	// Note that the input vectors are not freed by this line
         c_Destroy_SuperMatrix_Store(&mut self.c_super_matrix);
     }
 }

@@ -60,14 +60,12 @@ fn main() {
 
     // Make the RHS vector
     let nrhs = 1;
-    let mut rhs = vec![1.0; m as usize];
+    let rhs = vec![1.0; m as usize];
     let b = DenseMatrix::new(
         m,
         nrhs,
         rhs,
         m,
-        Stype_t::SLU_DN,
-        Dtype_t::SLU_D,
         Mtype_t::SLU_GE,
     );
 

@@ -14,7 +14,7 @@
 //! integers is maintained showing where each new column starts.
 
 use crate::c::comp_col::CCreateCompColMatrix;
-use crate::c::super_matrix::{c_SuperMatrix, Mtype_t, Stype_t};
+use crate::c::super_matrix::{c_SuperMatrix, Mtype_t};
 use crate::c::dense::c_Destroy_SuperMatrix_Store;
 use crate::super_matrix::{SuperMatrix};
 use std::mem::MaybeUninit;

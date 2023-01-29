@@ -1,10 +1,14 @@
 //! Solve sparse linear systems using the simple driver
 //!
 
+use crate::c::comp_col::CCreateCompColMatrix;
+use crate::c::dense::CCreateDenseMatrix;
 use crate::c::options::superlu_options_t;
 use crate::c::stat::SuperLUStat_t;
 use crate::c::super_matrix::c_SuperMatrix;
 use crate::dense::DenseMatrix;
+use crate::comp_col::CompColMatrix;
+
 use crate::super_matrix::SuperMatrix;
 
 use std::mem::MaybeUninit;
@@ -12,8 +16,8 @@ use std::mem::MaybeUninit;
 use crate::c::simple_driver::c_dgssv;
 
 #[allow(non_snake_case)]
-pub struct DgssvSolution {
-    pub X: DenseMatrix,
+pub struct DgssvSolution<P: CCreateDenseMatrix<P>> {
+    pub X: DenseMatrix<P>,
     pub L: c_SuperMatrix,
     pub U: c_SuperMatrix,
     pub stat: SuperLUStat_t,
@@ -35,14 +39,14 @@ pub struct DgssvSolution {
 ///
 ///
 #[allow(non_snake_case)]
-pub fn dgssv(
+pub fn dgssv<P: CCreateCompColMatrix<P> + CCreateDenseMatrix<P>>(
     mut options: superlu_options_t,
-    A: &mut impl SuperMatrix,
+    A: &mut CompColMatrix<P>,
     perm_c: &mut Vec<i32>,
     perm_r: &mut Vec<i32>,
-    mut B: DenseMatrix,
+    mut B: DenseMatrix<P>,
     mut stat: SuperLUStat_t,
-) -> DgssvSolution {
+) -> DgssvSolution<P> {
     let mut info = 0;
     unsafe {
         let mut L = MaybeUninit::<c_SuperMatrix>::uninit();

@@ -65,7 +65,6 @@ impl<P: CCreateCompColMatrix<P>> CompColMatrix<P> {
             );
             c_super_matrix.assume_init()
         };
-
         Self {
             nzval,
             rowind,

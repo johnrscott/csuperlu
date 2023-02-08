@@ -16,18 +16,21 @@
 use crate::c::comp_col::CCreateCompColMatrix;
 use crate::c::super_matrix::{c_SuperMatrix, Mtype_t, c_NCformat};
 use crate::c::dense::c_Destroy_SuperMatrix_Store;
-use crate::super_matrix::{SuperMatrix};
+use crate::super_matrix::SuperMatrix;
 use std::mem::MaybeUninit;
 
 /// Compressed-column matrix
 ///
 ///
-pub struct CompColMatrix<P: CCreateCompColMatrix<P>> {
+pub struct CompColMatrix<'a, P>
+where P: CCreateCompColMatrix<P> {
     c_super_matrix: c_SuperMatrix,
-    c_ncformat: c_NCformat,
+    c_ncformat: &'a mut c_NCformat,
+    marker: std::marker::PhantomData<P>,
 }
 
-impl<P: CCreateCompColMatrix<P>> CompColMatrix<P> {
+impl<'a, P> CompColMatrix<'a, P>
+where P: CCreateCompColMatrix<P> {
     /// Specify a compressed column matrix from input vectors.
     ///
     /// Use this function to make a c_SuperMatrix in compressed column
@@ -40,7 +43,7 @@ impl<P: CCreateCompColMatrix<P>> CompColMatrix<P> {
     /// user of the library ever need to pick a different value? If not,
     /// the argument can be removed.
     ///
-    pub fn new(
+    pub fn from_vectors(
         m: i32,
         n: i32,
         nnz: i32,
@@ -63,10 +66,13 @@ impl<P: CCreateCompColMatrix<P>> CompColMatrix<P> {
             );
             c_super_matrix.assume_init()
         };
-	let c_ncformat = c_super_matrix.Store;
+	let c_ncformat = unsafe {
+	    &mut *(c_super_matrix.Store as *mut c_NCformat);
+	}
         Self {
             c_super_matrix,
 	    c_ncformat,
+	    marker: std::marker::PhantomData,
         }
     }
 }

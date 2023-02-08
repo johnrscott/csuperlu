@@ -96,6 +96,8 @@ pub enum Stype_t {
     SLU_NR_loc,
 }
 
+/// The SuperMatrix structure, which stores all types of matrices
+/// in SuperLU.
 #[repr(C)]
 #[allow(non_snake_case)]
 #[allow(non_camel_case_types)]
@@ -107,3 +109,19 @@ pub struct c_SuperMatrix {
     ncol: libc::c_int,
     Store: *mut libc::c_void,
 }
+
+/// The C structure for the compressed-column format.
+#[repr(C)]
+#[allow(non_snake_case)]
+#[allow(non_camel_case_types)]
+pub struct NCformat {
+    /// Number of non-zeroes in the matrix
+    nnz: libc::c_int,
+    /// Array of non-zero values, column-major order
+    nzval: *mut libc::c_void,
+    /// Array containing the row indices of the non-zeroes
+    rowind: *mut libc::c_int,
+    /// Array of indices showing where each new column starts in rowind
+    colptr: *mut libc::c_int,
+}
+

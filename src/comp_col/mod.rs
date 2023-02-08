@@ -14,7 +14,7 @@
 //! integers is maintained showing where each new column starts.
 
 use crate::c::comp_col::CCreateCompColMatrix;
-use crate::c::super_matrix::{c_SuperMatrix, Mtype_t};
+use crate::c::super_matrix::{c_SuperMatrix, Mtype_t, c_NCformat};
 use crate::c::dense::c_Destroy_SuperMatrix_Store;
 use crate::super_matrix::{SuperMatrix};
 use std::mem::MaybeUninit;
@@ -23,10 +23,8 @@ use std::mem::MaybeUninit;
 ///
 ///
 pub struct CompColMatrix<P: CCreateCompColMatrix<P>> {
-    pub nzval: Vec<P>,
-    pub rowind: Vec<i32>,
-    pub colptr: Vec<i32>,
     c_super_matrix: c_SuperMatrix,
+    c_ncformat: c_NCformat,
 }
 
 impl<P: CCreateCompColMatrix<P>> CompColMatrix<P> {
@@ -65,11 +63,10 @@ impl<P: CCreateCompColMatrix<P>> CompColMatrix<P> {
             );
             c_super_matrix.assume_init()
         };
+	let c_ncformat = c_super_matrix.Store;
         Self {
-            nzval,
-            rowind,
-            colptr,
             c_super_matrix,
+	    c_ncformat,
         }
     }
 }

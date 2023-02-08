@@ -24,21 +24,21 @@ pub enum Dtype_t {
 }
 
 /// A simple method to turn a precision into a Dtype_t.
-pub trait GetDtype {
-    fn get() -> Dtype_t;
-}
+// pub trait GetDtype {
+//     fn get() -> Dtype_t;
+// }
 
-impl GetDtype for f64 {
-    fn get() -> Dtype_t {
-	Dtype_t::SLU_D
-    }
-}
+// impl GetDtype for f64 {
+//     fn get() -> Dtype_t {
+// 	Dtype_t::SLU_D
+//     }
+// }
 
-impl GetDtype for f32 {
-    fn get() -> Dtype_t {
-	Dtype_t::SLU_S
-    }
-}
+// impl GetDtype for f32 {
+//     fn get() -> Dtype_t {
+// 	Dtype_t::SLU_S
+//     }
+// }
 
 /// Specifies some mathematical properties of the matrix.
 #[repr(C)]
@@ -104,47 +104,47 @@ pub enum Stype_t {
 pub struct c_SuperMatrix {
     /// The storage format for the matrix data (determines the
     /// type of Store).
-    Stype: Stype_t,
+    pub Stype: Stype_t,
     /// Specifies the precision
-    Dtype: Dtype_t,
+    pub Dtype: Dtype_t,
     /// Any mathematical properties of the matrix
-    Mtype: Mtype_t,
+    pub Mtype: Mtype_t,
     /// Number of rows
-    nrow: libc::c_int,
+    pub nrow: libc::c_int,
     /// Number of columns
-    ncol: libc::c_int,
+    pub ncol: libc::c_int,
     /// The data structure storing the values in the matrix. The
     /// format depends on the Stype.
-    Store: *mut libc::c_void,
+    pub Store: *mut libc::c_void,
 }
 
 /// The C structure for the compressed-column format.
 #[repr(C)]
 #[allow(non_snake_case)]
 #[allow(non_camel_case_types)]
-pub struct NCformat {
+pub struct c_NCformat {
     /// Total number of non-zeroes in the matrix
-    nnz: libc::c_int,
+    pub nnz: libc::c_int,
     /// Array of non-zero values, column-major order
-    nzval: *mut libc::c_void,
+    pub nzval: *mut libc::c_void,
     /// Array containing the row indices of the non-zeroes
-    rowind: *mut libc::c_int,
+    pub rowind: *mut libc::c_int,
     /// Array of indices showing where each new column starts in rowind
-    colptr: *mut libc::c_int,
+    pub colptr: *mut libc::c_int,
 }
 
 /// The C structure for the compressed-row format.
 #[repr(C)]
 #[allow(non_snake_case)]
 #[allow(non_camel_case_types)]
-pub struct NRformat {
+pub struct c_NRformat {
     /// Total number of non-zeroes in the matrix
-    nnz: libc::c_int,
+    pub nnz: libc::c_int,
     /// Array of non-zero values, column-major order
-    nzval: *mut libc::c_void,
+    pub nzval: *mut libc::c_void,
     /// Array containing the column indices of the non-zeroes
-    colind: *mut libc::c_int,
+    pub colind: *mut libc::c_int,
     /// Array of indices showing where each new row starts in colind
-    rowptr: *mut libc::c_int,
+    pub rowptr: *mut libc::c_int,
 }
 

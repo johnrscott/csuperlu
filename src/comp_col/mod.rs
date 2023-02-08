@@ -67,8 +67,8 @@ where P: CCreateCompColMatrix<P> {
             c_super_matrix.assume_init()
         };
 	let c_ncformat = unsafe {
-	    &mut *(c_super_matrix.Store as *mut c_NCformat);
-	}
+	    &mut *(c_super_matrix.Store as *mut c_NCformat)
+	};
         Self {
             c_super_matrix,
 	    c_ncformat,
@@ -77,8 +77,8 @@ where P: CCreateCompColMatrix<P> {
     }
 }
 
-impl<P: CCreateCompColMatrix<P>> SuperMatrix for CompColMatrix<P> {
-    fn super_matrix<'a>(&'a mut self) -> &'a mut c_SuperMatrix {
+impl<'a, 'b, P: CCreateCompColMatrix<P>> SuperMatrix for CompColMatrix<'a, P> {
+    fn super_matrix<'b>(&'a mut self) -> &'b mut c_SuperMatrix {
         &mut self.c_super_matrix
     }
     fn print(&mut self, what: &str) {
@@ -88,7 +88,7 @@ impl<P: CCreateCompColMatrix<P>> SuperMatrix for CompColMatrix<P> {
     }
 }
 
-impl<P: CCreateCompColMatrix<P>> Drop for CompColMatrix<P> {
+impl<'a, P: CCreateCompColMatrix<P>> Drop for CompColMatrix<'a, P> {
     fn drop(&mut self) {
 	// Note that the input vectors are not freed by this line
         c_Destroy_SuperMatrix_Store(&mut self.c_super_matrix);

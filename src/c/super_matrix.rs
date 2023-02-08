@@ -102,11 +102,19 @@ pub enum Stype_t {
 #[allow(non_snake_case)]
 #[allow(non_camel_case_types)]
 pub struct c_SuperMatrix {
+    /// The storage format for the matrix data (determines the
+    /// type of Store).
     Stype: Stype_t,
+    /// Specifies the precision
     Dtype: Dtype_t,
+    /// Any mathematical properties of the matrix
     Mtype: Mtype_t,
+    /// Number of rows
     nrow: libc::c_int,
+    /// Number of columns
     ncol: libc::c_int,
+    /// The data structure storing the values in the matrix. The
+    /// format depends on the Stype.
     Store: *mut libc::c_void,
 }
 
@@ -115,7 +123,7 @@ pub struct c_SuperMatrix {
 #[allow(non_snake_case)]
 #[allow(non_camel_case_types)]
 pub struct NCformat {
-    /// Number of non-zeroes in the matrix
+    /// Total number of non-zeroes in the matrix
     nnz: libc::c_int,
     /// Array of non-zero values, column-major order
     nzval: *mut libc::c_void,
@@ -123,5 +131,20 @@ pub struct NCformat {
     rowind: *mut libc::c_int,
     /// Array of indices showing where each new column starts in rowind
     colptr: *mut libc::c_int,
+}
+
+/// The C structure for the compressed-row format.
+#[repr(C)]
+#[allow(non_snake_case)]
+#[allow(non_camel_case_types)]
+pub struct NRformat {
+    /// Total number of non-zeroes in the matrix
+    nnz: libc::c_int,
+    /// Array of non-zero values, column-major order
+    nzval: *mut libc::c_void,
+    /// Array containing the column indices of the non-zeroes
+    colind: *mut libc::c_int,
+    /// Array of indices showing where each new row starts in colind
+    rowptr: *mut libc::c_int,
 }
 

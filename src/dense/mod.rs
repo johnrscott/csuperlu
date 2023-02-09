@@ -43,6 +43,7 @@ impl<P: CCreateDenseMatrix<P>> DenseMatrix<P> {
             );
             c_super_matrix.assume_init()
         };
+	std::mem::forget(x);
         Self {
 	    c_super_matrix,
 	    marker: std::marker::PhantomData,

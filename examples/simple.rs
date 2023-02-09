@@ -47,25 +47,12 @@ fn main() {
     let xa = vec![0, 3, 6, 8, 10, 12];
 
     // Make the left-hand side matrix
-    let mut a = CompColMatrix::from_vectors(
-        m,
-        n,
-        nnz,
-        a,
-        asub,
-        xa,
-        Mtype_t::SLU_GE,
-    );
+    let mut a = CompColMatrix::from_vectors(m, n, nnz, a, asub, xa, Mtype_t::SLU_GE);
 
     // Make the RHS vector
     let nrhs = 1;
     let rhs = vec![1.0; m as usize];
-    let b = DenseMatrix::from_vectors(
-        m,
-        nrhs,
-        rhs,
-        Mtype_t::SLU_GE,
-    );
+    let b = DenseMatrix::from_vectors(m, nrhs, rhs, Mtype_t::SLU_GE);
 
     let mut options = superlu_options_t::new();
     options.ColPerm = colperm_t::NATURAL;
@@ -86,12 +73,8 @@ fn main() {
     // Print the performance statistics
     c_StatPrint(&mut stat);
 
-    //dPrint_CompCol_Matrix("A", &mut A.super_matrix());
-    a.print("a");
-    //U.print("U");
-
+    // Print solution
+    a.print("A");
+    U.print("U");
     L.print("L");
-    
-    //c_Destroy_SuperNode_Matrix(&mut L);
-    c_Destroy_CompCol_Matrix(&mut U);
 }

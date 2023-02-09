@@ -14,7 +14,6 @@ extern "C" {
     fn Destroy_SuperMatrix_Store(A: *mut c_SuperMatrix);
 }
 
-
 // This will deallocate only the data structure allocated by
 // the Create_*_Matrix routine (leaving the input vectors to
 // be freed by the caller).
@@ -24,7 +23,6 @@ pub fn c_Destroy_SuperMatrix_Store(A: *mut c_SuperMatrix) {
         Destroy_SuperMatrix_Store(A);
     }
 }
-
 
 /// The matrix numerical type and floating-point precision.
 #[repr(C)]
@@ -160,7 +158,7 @@ pub struct c_SCformat {
     /// Array of non-zero values, column-major order
     pub nzval: *mut libc::c_void,
     /// Array of indices showing where each new column starts
-    /// in nzval. These are the 
+    /// in nzval. These are the
     pub nzval_colptr: *mut libc::c_int,
     /// Array of compressed row indices of rectangular super nodes
     pub rowind: *mut libc::c_int,
@@ -171,7 +169,6 @@ pub struct c_SCformat {
     /// Map super node index to the first column in the super node
     pub sup_to_col: *mut libc::c_int,
 }
-
 
 /// The C structure for the dense matrix format, which is
 /// column major format.

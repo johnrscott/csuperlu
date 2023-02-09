@@ -7,8 +7,8 @@ use crate::c::options::superlu_options_t;
 use crate::c::stat::SuperLUStat_t;
 use crate::c::super_matrix::c_SuperMatrix;
 use crate::c::super_node::CSuperNodeMatrixUtils;
-use crate::dense::DenseMatrix;
 use crate::comp_col::CompColMatrix;
+use crate::dense::DenseMatrix;
 
 use crate::super_matrix::SuperMatrix;
 use crate::super_node::SuperNodeMatrix;
@@ -19,10 +19,12 @@ use crate::c::simple_driver::c_dgssv;
 
 #[allow(non_snake_case)]
 pub struct DgssvSolution<P>
-where P: CSuperNodeMatrixUtils<P> + CCreateDenseMatrix<P> {
+where
+    P: CSuperNodeMatrixUtils<P> + CCreateDenseMatrix<P> + CCreateCompColMatrix<P>,
+{
     pub X: DenseMatrix<P>,
     pub L: SuperNodeMatrix<P>,
-    pub U: c_SuperMatrix,
+    pub U: CompColMatrix<P>,
     pub stat: SuperLUStat_t,
     pub info: i32,
 }
@@ -50,9 +52,8 @@ pub fn dgssv<P>(
     mut B: DenseMatrix<P>,
     mut stat: SuperLUStat_t,
 ) -> DgssvSolution<P>
-where P: CSuperNodeMatrixUtils<P>
-    + CCreateDenseMatrix<P>
-    + CCreateCompColMatrix<P>
+where
+    P: CSuperNodeMatrixUtils<P> + CCreateDenseMatrix<P> + CCreateCompColMatrix<P>,
 {
     let mut info = 0;
     unsafe {
@@ -73,7 +74,7 @@ where P: CSuperNodeMatrixUtils<P>
         DgssvSolution {
             X: B,
             L: SuperNodeMatrix::from_super_matrix(L.assume_init()),
-            U: U.assume_init(),
+            U: CompColMatrix::from_super_matrix(U.assume_init()),
             stat,
             info,
         }

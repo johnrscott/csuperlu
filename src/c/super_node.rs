@@ -9,14 +9,14 @@ extern "C" {
 }
 
 pub trait CSuperNodeMatrixUtils<P> {
-    fn c_print_comp_col_matrix(
+    fn c_print_super_node_matrix(
     	what: *mut libc::c_char,
 	a: *mut c_SuperMatrix,
     );
 }
 
 impl CSuperNodeMatrixUtils<f64> for f64 {
-    fn c_print_comp_col_matrix(
+    fn c_print_super_node_matrix(
     	what: *mut libc::c_char,
 	a: *mut c_SuperMatrix,
     ) {
@@ -27,7 +27,7 @@ impl CSuperNodeMatrixUtils<f64> for f64 {
 }
 
 impl CSuperNodeMatrixUtils<f32> for f32 {
-    fn c_print_comp_col_matrix(
+    fn c_print_super_node_matrix(
     	what: *mut libc::c_char,
 	a: *mut c_SuperMatrix,
     ) {

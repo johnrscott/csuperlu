@@ -24,7 +24,7 @@ extern "C" {
         dtype: Dtype_t,
         mtype: Mtype_t,
     );
-    fn Destroy_SuperMatrix_Store(A: *mut c_SuperMatrix);
+    fn Destroy_Dense_Matrix(A: *mut c_SuperMatrix);
     fn dPrint_Dense_Matrix(what: *mut libc::c_char, A: *mut c_SuperMatrix);
     fn sPrint_Dense_Matrix(what: *mut libc::c_char, A: *mut c_SuperMatrix);
 }
@@ -42,12 +42,9 @@ pub trait CCreateDenseMatrix<P> {
         n: i32,
         values: &mut Vec<P>,
         ldx: i32,
-        mtype: Mtype_t,	
+        mtype: Mtype_t,
     );
-    fn c_print_dense_matrix(
-    	what: *mut libc::c_char,
-	a: *mut c_SuperMatrix,
-    );
+    fn c_print_dense_matrix(what: *mut libc::c_char, a: *mut c_SuperMatrix);
 }
 
 impl CCreateDenseMatrix<f64> for f64 {
@@ -57,23 +54,26 @@ impl CCreateDenseMatrix<f64> for f64 {
         n: i32,
         values: &mut Vec<f64>,
         ldx: i32,
-        mtype: Mtype_t,	
+        mtype: Mtype_t,
     ) {
-	unsafe {
-	    dCreate_Dense_Matrix(x.as_mut_ptr(), m, n,
-				 values.as_mut_ptr(), ldx,
-				 Stype_t::SLU_DN,
-				 Dtype_t::SLU_D, mtype);
-	}
+        unsafe {
+            dCreate_Dense_Matrix(
+                x.as_mut_ptr(),
+                m,
+                n,
+                values.as_mut_ptr(),
+                ldx,
+                Stype_t::SLU_DN,
+                Dtype_t::SLU_D,
+                mtype,
+            );
+        }
     }
-    
-    fn c_print_dense_matrix(
-    	what: *mut libc::c_char,
-	a: *mut c_SuperMatrix,
-    ) {
-	unsafe {
+
+    fn c_print_dense_matrix(what: *mut libc::c_char, a: *mut c_SuperMatrix) {
+        unsafe {
             dPrint_Dense_Matrix(what, a);
-	}	
+        }
     }
 }
 
@@ -84,35 +84,34 @@ impl CCreateDenseMatrix<f32> for f32 {
         n: i32,
         values: &mut Vec<f32>,
         ldx: i32,
-        mtype: Mtype_t,	
+        mtype: Mtype_t,
     ) {
-	unsafe {
-	    sCreate_Dense_Matrix(x.as_mut_ptr(), m, n,
-				 values.as_mut_ptr(), ldx,
-				 Stype_t::SLU_DN,
-				 Dtype_t::SLU_D, mtype);
-	}
+        unsafe {
+            sCreate_Dense_Matrix(
+                x.as_mut_ptr(),
+                m,
+                n,
+                values.as_mut_ptr(),
+                ldx,
+                Stype_t::SLU_DN,
+                Dtype_t::SLU_D,
+                mtype,
+            );
+        }
     }
-    
-    fn c_print_dense_matrix(
-    	what: *mut libc::c_char,
-	a: *mut c_SuperMatrix,
-    ) {
-	unsafe {
+
+    fn c_print_dense_matrix(what: *mut libc::c_char, a: *mut c_SuperMatrix) {
+        unsafe {
             sPrint_Dense_Matrix(what, a);
-	}	
+        }
     }
 }
 
-
-
-
-// This will deallocate only the data structure allocated by
-// the Create_*_Matrix routine (leaving the input vectors to
-// be freed by the caller).
+/// This will attempt to deallocate the three input vectors used to
+/// create the comp_col matrix.
 #[allow(non_snake_case)]
-pub fn c_Destroy_SuperMatrix_Store(A: *mut c_SuperMatrix) {
+pub fn c_Destroy_Dense_Matrix(A: *mut c_SuperMatrix) {
     unsafe {
-        Destroy_SuperMatrix_Store(A);
+        Destroy_Dense_Matrix(A);
     }
 }

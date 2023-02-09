@@ -6,20 +6,25 @@ use crate::c::dense::CCreateDenseMatrix;
 use crate::c::options::superlu_options_t;
 use crate::c::stat::SuperLUStat_t;
 use crate::c::super_matrix::c_SuperMatrix;
-use crate::dense::DenseMatrix;
+use crate::c::super_node::CSuperNodeMatrixUtils;
 use crate::comp_col::CompColMatrix;
+use crate::dense::DenseMatrix;
 
 use crate::super_matrix::SuperMatrix;
+use crate::super_node::SuperNodeMatrix;
 
 use std::mem::MaybeUninit;
 
 use crate::c::simple_driver::c_dgssv;
 
 #[allow(non_snake_case)]
-pub struct DgssvSolution<P: CCreateDenseMatrix<P>> {
+pub struct DgssvSolution<P>
+where
+    P: CSuperNodeMatrixUtils<P> + CCreateDenseMatrix<P> + CCreateCompColMatrix<P>,
+{
     pub X: DenseMatrix<P>,
-    pub L: c_SuperMatrix,
-    pub U: c_SuperMatrix,
+    pub L: SuperNodeMatrix<P>,
+    pub U: CompColMatrix<P>,
     pub stat: SuperLUStat_t,
     pub info: i32,
 }
@@ -39,14 +44,17 @@ pub struct DgssvSolution<P: CCreateDenseMatrix<P>> {
 ///
 ///
 #[allow(non_snake_case)]
-pub fn dgssv<P: CCreateCompColMatrix<P> + CCreateDenseMatrix<P>>(
+pub fn dgssv<P>(
     mut options: superlu_options_t,
     A: &mut CompColMatrix<P>,
     perm_c: &mut Vec<i32>,
     perm_r: &mut Vec<i32>,
     mut B: DenseMatrix<P>,
     mut stat: SuperLUStat_t,
-) -> DgssvSolution<P> {
+) -> DgssvSolution<P>
+where
+    P: CSuperNodeMatrixUtils<P> + CCreateDenseMatrix<P> + CCreateCompColMatrix<P>,
+{
     let mut info = 0;
     unsafe {
         let mut L = MaybeUninit::<c_SuperMatrix>::uninit();
@@ -65,8 +73,8 @@ pub fn dgssv<P: CCreateCompColMatrix<P> + CCreateDenseMatrix<P>>(
         );
         DgssvSolution {
             X: B,
-            L: L.assume_init(),
-            U: U.assume_init(),
+            L: SuperNodeMatrix::from_super_matrix(L.assume_init()),
+            U: CompColMatrix::from_super_matrix(U.assume_init()),
             stat,
             info,
         }

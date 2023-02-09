@@ -9,6 +9,21 @@
 //! C library interprets the enum integers correctly. Do not change
 //! the order without checking what effect it might have.
 
+#[link(name = "superlu")]
+extern "C" {
+    fn Destroy_SuperMatrix_Store(A: *mut c_SuperMatrix);
+}
+
+// This will deallocate only the data structure allocated by
+// the Create_*_Matrix routine (leaving the input vectors to
+// be freed by the caller).
+#[allow(non_snake_case)]
+pub fn c_Destroy_SuperMatrix_Store(A: *mut c_SuperMatrix) {
+    unsafe {
+        Destroy_SuperMatrix_Store(A);
+    }
+}
+
 /// The matrix numerical type and floating-point precision.
 #[repr(C)]
 #[allow(non_camel_case_types)]
@@ -131,3 +146,40 @@ pub struct c_NRformat {
     pub rowptr: *mut libc::c_int,
 }
 
+/// The C structure for the (compressed-column) super-node format.
+#[repr(C)]
+#[allow(non_snake_case)]
+#[allow(non_camel_case_types)]
+pub struct c_SCformat {
+    /// Total number of non-zeroes in the matrix
+    pub nnz: libc::c_int,
+    /// Index of the last super node
+    pub nsuper: libc::c_int,
+    /// Array of non-zero values, column-major order
+    pub nzval: *mut libc::c_void,
+    /// Array of indices showing where each new column starts
+    /// in nzval. These are the
+    pub nzval_colptr: *mut libc::c_int,
+    /// Array of compressed row indices of rectangular super nodes
+    pub rowind: *mut libc::c_int,
+    /// Location in rowind which starts each new column
+    pub rowind_colptr: *mut libc::c_int,
+    /// Map column number to super node index
+    pub col_to_sup: *mut libc::c_int,
+    /// Map super node index to the first column in the super node
+    pub sup_to_col: *mut libc::c_int,
+}
+
+/// The C structure for the dense matrix format, which is
+/// column major format.
+#[repr(C)]
+#[allow(non_snake_case)]
+#[allow(non_camel_case_types)]
+pub struct c_DNformat {
+    /// The leading dimension of the array, equal to the
+    /// number of rows
+    pub lda: libc::c_int,
+    /// Array of non-zero values, column-major order, of
+    /// length lda * ncol ( = nrow * ncol)
+    pub nzval: *mut libc::c_void,
+}

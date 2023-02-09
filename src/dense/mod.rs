@@ -1,15 +1,16 @@
 //! Functions to create dense matrices.
 //!
 
-use crate::c::dense::c_Destroy_SuperMatrix_Store;
+use crate::c::dense::c_Destroy_Dense_Matrix;
 use crate::c::dense::CCreateDenseMatrix;
+use crate::c::super_matrix::c_DNformat;
 use crate::c::super_matrix::{c_SuperMatrix, Mtype_t};
 use crate::super_matrix::SuperMatrix;
 use std::mem::MaybeUninit;
 
 pub struct DenseMatrix<P: CCreateDenseMatrix<P>> {
-    pub x: Vec<P>, 
     c_super_matrix: c_SuperMatrix,
+    marker: std::marker::PhantomData<P>,
 }
 
 impl<P: CCreateDenseMatrix<P>> DenseMatrix<P> {
@@ -21,32 +22,23 @@ impl<P: CCreateDenseMatrix<P>> DenseMatrix<P> {
     /// the solver when the dense matrix is used as the right-hand
     /// side matrix.
     ///
-    /// TODO: check that the ldx parameter is used to specify
-    /// column- major or row-major order.
-    ///
-    pub fn new(
-        m: i32,
-        n: i32,
-        mut x: Vec<P>,
-        ldx: i32,
-        mtype: Mtype_t,
-    ) -> Self {
+    pub fn from_vectors(m: i32, n: i32, mut x: Vec<P>, mtype: Mtype_t) -> Self {
         let c_super_matrix = unsafe {
             let mut c_super_matrix = MaybeUninit::<c_SuperMatrix>::uninit();
-            P::c_create_dense_matrix(
-                &mut c_super_matrix,
-                m,
-                n,
-                &mut x,
-                ldx,
-                mtype,
-            );
+            P::c_create_dense_matrix(&mut c_super_matrix, m, n, &mut x, m, mtype);
             c_super_matrix.assume_init()
         };
+        std::mem::forget(x);
         Self {
-	    x,
-	    c_super_matrix
-	}
+            c_super_matrix,
+            marker: std::marker::PhantomData,
+        }
+    }
+    pub fn values(&mut self) -> &mut Vec<P> {
+        unsafe {
+            let c_dnformat = &mut *(self.c_super_matrix.Store as *mut c_DNformat);
+            &mut *(c_dnformat.nzval as *mut Vec<P>)
+        }
     }
 }
 
@@ -55,15 +47,14 @@ impl<P: CCreateDenseMatrix<P>> SuperMatrix for DenseMatrix<P> {
         &mut self.c_super_matrix
     }
     fn print(&mut self, what: &str) {
-	let c_str = std::ffi::CString::new(what).unwrap();
-	P::c_print_dense_matrix(c_str.as_ptr() as *mut libc::c_char,
-				self.super_matrix());
+        let c_str = std::ffi::CString::new(what).unwrap();
+        P::c_print_dense_matrix(c_str.as_ptr() as *mut libc::c_char, self.super_matrix());
     }
 }
 
 impl<P: CCreateDenseMatrix<P>> Drop for DenseMatrix<P> {
     fn drop(&mut self) {
-	// Note that the input vectors are not freed by this line
-        c_Destroy_SuperMatrix_Store(&mut self.c_super_matrix);
+        // Note that the input vectors are not freed by this line
+        c_Destroy_Dense_Matrix(&mut self.c_super_matrix);
     }
 }

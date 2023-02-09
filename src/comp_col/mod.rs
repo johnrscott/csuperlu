@@ -13,9 +13,9 @@
 //! Since each column may be a different length, a third vector of
 //! integers is maintained showing where each new column starts.
 
-use crate::c::comp_col::CCreateCompColMatrix;
-use crate::c::super_matrix::{c_SuperMatrix, Mtype_t, c_NCformat};
 use crate::c::comp_col::c_Destroy_CompCol_Matrix;
+use crate::c::comp_col::CCreateCompColMatrix;
+use crate::c::super_matrix::{c_NCformat, c_SuperMatrix, Mtype_t};
 use crate::super_matrix::SuperMatrix;
 use std::mem::MaybeUninit;
 
@@ -28,6 +28,15 @@ pub struct CompColMatrix<P: CCreateCompColMatrix<P>> {
 }
 
 impl<P: CCreateCompColMatrix<P>> CompColMatrix<P> {
+    /// Create a compressed-column matrix from a c_SuperMatrix structure
+    ///
+    pub fn from_super_matrix(c_super_matrix: c_SuperMatrix) -> Self {
+        Self {
+            c_super_matrix,
+            marker: std::marker::PhantomData,
+        }
+    }
+
     /// Specify a compressed column matrix from input vectors.
     ///
     /// Use this function to make a c_SuperMatrix in compressed column
@@ -51,33 +60,33 @@ impl<P: CCreateCompColMatrix<P>> CompColMatrix<P> {
     ) -> Self {
         let c_super_matrix = unsafe {
             let mut c_super_matrix = MaybeUninit::<c_SuperMatrix>::uninit();
-	    P::c_create_comp_col_matrix(
-		&mut c_super_matrix,
-		m,
-		n,
-		nnz,
-		&mut nzval,
-		&mut rowind,
-		&mut colptr,
-		mtype,
+            P::c_create_comp_col_matrix(
+                &mut c_super_matrix,
+                m,
+                n,
+                nnz,
+                &mut nzval,
+                &mut rowind,
+                &mut colptr,
+                mtype,
             );
-	    // The freeing of the input vectors is handed over
-	    // to the C library functions (see drop)
-	    std::mem::forget(nzval);
-	    std::mem::forget(rowind);
-	    std::mem::forget(colptr);
+            // The freeing of the input vectors is handed over
+            // to the C library functions (see drop)
+            std::mem::forget(nzval);
+            std::mem::forget(rowind);
+            std::mem::forget(colptr);
             c_super_matrix.assume_init()
         };
         Self {
             c_super_matrix,
-	    marker: std::marker::PhantomData,
+            marker: std::marker::PhantomData,
         }
     }
     pub fn values(&mut self) -> &mut Vec<P> {
-	unsafe {
-	    let c_ncformat = &mut *(self.c_super_matrix.Store as *mut c_NCformat);
-	    &mut *(c_ncformat.nzval as *mut Vec<P>)
-	}
+        unsafe {
+            let c_ncformat = &mut *(self.c_super_matrix.Store as *mut c_NCformat);
+            &mut *(c_ncformat.nzval as *mut Vec<P>)
+        }
     }
 }
 
@@ -86,16 +95,14 @@ impl<P: CCreateCompColMatrix<P>> SuperMatrix for CompColMatrix<P> {
         &mut self.c_super_matrix
     }
     fn print(&mut self, what: &str) {
-	let c_str = std::ffi::CString::new(what).unwrap();
-	P::c_print_comp_col_matrix(c_str.as_ptr() as *mut libc::c_char,
-				   self.super_matrix());
+        let c_str = std::ffi::CString::new(what).unwrap();
+        P::c_print_comp_col_matrix(c_str.as_ptr() as *mut libc::c_char, self.super_matrix());
     }
 }
 
 impl<P: CCreateCompColMatrix<P>> Drop for CompColMatrix<P> {
     fn drop(&mut self) {
-	// Note that the input vectors are also freed by this line
+        // Note that the input vectors are also freed by this line
         c_Destroy_CompCol_Matrix(&mut self.c_super_matrix);
     }
 }
-

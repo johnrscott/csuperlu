@@ -2,8 +2,7 @@
 //!
 
 use crate::c::super_matrix::{c_SuperMatrix, c_SCformat};
-use crate::c::comp_col::c_Destroy_CompCol_Matrix;
-use crate::c::super_node::CSuperNodeMatrixUtils;
+use crate::c::super_node::{CSuperNodeMatrixUtils, c_Destroy_SuperNode_Matrix};
 use crate::super_matrix::SuperMatrix;
 
 /// Super-node matrix
@@ -44,7 +43,7 @@ impl<P: CSuperNodeMatrixUtils<P>> SuperMatrix for SuperNodeMatrix<P> {
 impl<P: CSuperNodeMatrixUtils<P>> Drop for SuperNodeMatrix<P> {
     fn drop(&mut self) {
 	// Note that the input vectors are also freed by this line
-        c_Destroy_CompCol_Matrix(&mut self.c_super_matrix);
+        c_Destroy_SuperNode_Matrix(&mut self.c_super_matrix);
     }
 }
 

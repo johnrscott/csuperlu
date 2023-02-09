@@ -91,9 +91,8 @@ fn main() {
     a.print("a");
     //U.print("U");
 
-    let c_str = std::ffi::CString::new("L").unwrap();
-    c_dPrint_SuperNode_Matrix(c_str.as_ptr() as *mut libc::c_char, &mut L);
-
-    c_Destroy_SuperNode_Matrix(&mut L);
+    L.print("L");
+    
+    //c_Destroy_SuperNode_Matrix(&mut L);
     c_Destroy_CompCol_Matrix(&mut U);
 }

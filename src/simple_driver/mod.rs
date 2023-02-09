@@ -10,6 +10,7 @@ use crate::dense::DenseMatrix;
 use crate::comp_col::CompColMatrix;
 
 use crate::super_matrix::SuperMatrix;
+use crate::super_node::SuperNodeMatrix;
 
 use std::mem::MaybeUninit;
 
@@ -18,7 +19,7 @@ use crate::c::simple_driver::c_dgssv;
 #[allow(non_snake_case)]
 pub struct DgssvSolution<P: CCreateDenseMatrix<P>> {
     pub X: DenseMatrix<P>,
-    pub L: c_SuperMatrix,
+    pub L: SuperNodeMatrix<P>,
     pub U: c_SuperMatrix,
     pub stat: SuperLUStat_t,
     pub info: i32,
@@ -65,7 +66,7 @@ pub fn dgssv<P: CCreateCompColMatrix<P> + CCreateDenseMatrix<P>>(
         );
         DgssvSolution {
             X: B,
-            L: L.assume_init(),
+            L: SuperNodeMatrix::from_super_matrix(L.assume_init()),
             U: U.assume_init(),
             stat,
             info,

@@ -12,7 +12,6 @@
 //! initialised by a function taking the uninitialised struct as an input/output
 //! parameter.
 
-use csuperlu::c::comp_col::c_Destroy_CompCol_Matrix;
 use csuperlu::c::options::{colperm_t, superlu_options_t};
 use csuperlu::c::stat::{c_StatPrint, SuperLUStat_t};
 use csuperlu::c::super_matrix::Mtype_t;

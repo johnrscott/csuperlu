@@ -22,9 +22,6 @@ impl<P: CCreateDenseMatrix<P>> DenseMatrix<P> {
     /// the solver when the dense matrix is used as the right-hand
     /// side matrix.
     ///
-    /// TODO: check that the ldx parameter is used to specify
-    /// column- major or row-major order.
-    ///
     pub fn from_vectors(
         m: i32,
         n: i32,
@@ -55,7 +52,6 @@ impl<P: CCreateDenseMatrix<P>> DenseMatrix<P> {
 	    &mut *(c_dnformat.nzval as *mut Vec<P>)
 	}
     }
-
 }
 
 impl<P: CCreateDenseMatrix<P>> SuperMatrix for DenseMatrix<P> {

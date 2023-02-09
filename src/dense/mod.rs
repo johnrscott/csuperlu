@@ -1,7 +1,7 @@
 //! Functions to create dense matrices.
 //!
 
-use crate::c::dense::c_Destroy_SuperMatrix_Store;
+use crate::c::dense::c_Destroy_Dense_Matrix;
 use crate::c::dense::CCreateDenseMatrix;
 use crate::c::super_matrix::c_DNformat;
 use crate::c::super_matrix::{c_SuperMatrix, Mtype_t};
@@ -71,6 +71,6 @@ impl<P: CCreateDenseMatrix<P>> SuperMatrix for DenseMatrix<P> {
 impl<P: CCreateDenseMatrix<P>> Drop for DenseMatrix<P> {
     fn drop(&mut self) {
 	// Note that the input vectors are not freed by this line
-        c_Destroy_SuperMatrix_Store(&mut self.c_super_matrix);
+        c_Destroy_Dense_Matrix(&mut self.c_super_matrix);
     }
 }

@@ -9,6 +9,23 @@
 //! C library interprets the enum integers correctly. Do not change
 //! the order without checking what effect it might have.
 
+#[link(name = "superlu")]
+extern "C" {
+    fn Destroy_SuperMatrix_Store(A: *mut c_SuperMatrix);
+}
+
+
+// This will deallocate only the data structure allocated by
+// the Create_*_Matrix routine (leaving the input vectors to
+// be freed by the caller).
+#[allow(non_snake_case)]
+pub fn c_Destroy_SuperMatrix_Store(A: *mut c_SuperMatrix) {
+    unsafe {
+        Destroy_SuperMatrix_Store(A);
+    }
+}
+
+
 /// The matrix numerical type and floating-point precision.
 #[repr(C)]
 #[allow(non_camel_case_types)]

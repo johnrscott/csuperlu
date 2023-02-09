@@ -138,10 +138,3 @@ pub fn c_Destroy_CompCol_Matrix(A: *mut c_SuperMatrix) {
         Destroy_CompCol_Matrix(A);
     }
 }
-
-// #[allow(non_snake_case)]
-// pub fn c_dPrint_CompCol_Matrix(what: *mut libc::c_char, A: *mut c_SuperMatrix) {
-//     unsafe {
-//         dPrint_CompCol_Matrix(what, A);
-//     }
-// }

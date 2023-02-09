@@ -61,11 +61,10 @@ fn main() {
     // Make the RHS vector
     let nrhs = 1;
     let rhs = vec![1.0; m as usize];
-    let b = DenseMatrix::new(
+    let b = DenseMatrix::from_vectors(
         m,
         nrhs,
         rhs,
-        m,
         Mtype_t::SLU_GE,
     );
 

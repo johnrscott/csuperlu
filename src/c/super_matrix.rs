@@ -131,3 +131,18 @@ pub struct c_NRformat {
     pub rowptr: *mut libc::c_int,
 }
 
+
+/// The C structure for the dense matrix format, which is
+/// column major format.
+#[repr(C)]
+#[allow(non_snake_case)]
+#[allow(non_camel_case_types)]
+pub struct c_DNformat {
+    /// The leading dimension of the array, equal to the
+    /// number of rows
+    pub lda: libc::c_int,
+    /// Array of non-zero values, column-major order, of
+    /// length lda * ncol ( = nrow * ncol)
+    pub nzval: *mut libc::c_void,
+}
+

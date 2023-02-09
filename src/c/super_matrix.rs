@@ -23,23 +23,6 @@ pub enum Dtype_t {
     SLU_Z,
 }
 
-/// A simple method to turn a precision into a Dtype_t.
-// pub trait GetDtype {
-//     fn get() -> Dtype_t;
-// }
-
-// impl GetDtype for f64 {
-//     fn get() -> Dtype_t {
-// 	Dtype_t::SLU_D
-//     }
-// }
-
-// impl GetDtype for f32 {
-//     fn get() -> Dtype_t {
-// 	Dtype_t::SLU_S
-//     }
-// }
-
 /// Specifies some mathematical properties of the matrix.
 #[repr(C)]
 #[allow(non_camel_case_types)]

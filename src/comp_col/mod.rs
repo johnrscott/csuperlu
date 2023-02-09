@@ -15,7 +15,7 @@
 
 use crate::c::comp_col::CCreateCompColMatrix;
 use crate::c::super_matrix::{c_SuperMatrix, Mtype_t, c_NCformat};
-use crate::c::dense::c_Destroy_SuperMatrix_Store;
+use crate::c::comp_col::c_Destroy_CompCol_Matrix;
 use crate::super_matrix::SuperMatrix;
 use std::mem::MaybeUninit;
 
@@ -61,6 +61,11 @@ impl<P: CCreateCompColMatrix<P>> CompColMatrix<P> {
 		&mut colptr,
 		mtype,
             );
+	    // The freeing of the input vectors is handed over
+	    // to the C library functions (see drop)
+	    std::mem::forget(nzval);
+	    std::mem::forget(rowind);
+	    std::mem::forget(colptr);
             c_super_matrix.assume_init()
         };
         Self {
@@ -69,10 +74,10 @@ impl<P: CCreateCompColMatrix<P>> CompColMatrix<P> {
         }
     }
     pub fn values(&mut self) -> &mut Vec<P> {
-	let c_ncformat = unsafe {
-	    &mut *(self.c_super_matrix.Store as *mut c_NCformat)
-	};
-	unsafe { &mut *(c_ncformat.nzval as *mut Vec<P>) } 
+	unsafe {
+	    let c_ncformat = &mut *(self.c_super_matrix.Store as *mut c_NCformat);
+	    &mut *(c_ncformat.nzval as *mut Vec<P>)
+	}
     }
 }
 
@@ -89,8 +94,8 @@ impl<P: CCreateCompColMatrix<P>> SuperMatrix for CompColMatrix<P> {
 
 impl<P: CCreateCompColMatrix<P>> Drop for CompColMatrix<P> {
     fn drop(&mut self) {
-	// Note that the input vectors are not freed by this line
-        c_Destroy_SuperMatrix_Store(&mut self.c_super_matrix);
+	// Note that the input vectors are also freed by this line
+        c_Destroy_CompCol_Matrix(&mut self.c_super_matrix);
     }
 }
 

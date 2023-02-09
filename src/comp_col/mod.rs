@@ -14,19 +14,17 @@
 //! integers is maintained showing where each new column starts.
 
 use crate::c::comp_col::CCreateCompColMatrix;
-use crate::c::super_matrix::{c_SuperMatrix, Mtype_t};
-use crate::c::dense::c_Destroy_SuperMatrix_Store;
-use crate::super_matrix::{SuperMatrix};
+use crate::c::super_matrix::{c_SuperMatrix, Mtype_t, c_NCformat};
+use crate::c::comp_col::c_Destroy_CompCol_Matrix;
+use crate::super_matrix::SuperMatrix;
 use std::mem::MaybeUninit;
 
 /// Compressed-column matrix
 ///
 ///
 pub struct CompColMatrix<P: CCreateCompColMatrix<P>> {
-    pub nzval: Vec<P>,
-    pub rowind: Vec<i32>,
-    pub colptr: Vec<i32>,
     c_super_matrix: c_SuperMatrix,
+    marker: std::marker::PhantomData<P>,
 }
 
 impl<P: CCreateCompColMatrix<P>> CompColMatrix<P> {
@@ -42,7 +40,7 @@ impl<P: CCreateCompColMatrix<P>> CompColMatrix<P> {
     /// user of the library ever need to pick a different value? If not,
     /// the argument can be removed.
     ///
-    pub fn new(
+    pub fn from_vectors(
         m: i32,
         n: i32,
         nnz: i32,
@@ -63,14 +61,23 @@ impl<P: CCreateCompColMatrix<P>> CompColMatrix<P> {
 		&mut colptr,
 		mtype,
             );
+	    // The freeing of the input vectors is handed over
+	    // to the C library functions (see drop)
+	    std::mem::forget(nzval);
+	    std::mem::forget(rowind);
+	    std::mem::forget(colptr);
             c_super_matrix.assume_init()
         };
         Self {
-            nzval,
-            rowind,
-            colptr,
             c_super_matrix,
+	    marker: std::marker::PhantomData,
         }
+    }
+    pub fn values(&mut self) -> &mut Vec<P> {
+	unsafe {
+	    let c_ncformat = &mut *(self.c_super_matrix.Store as *mut c_NCformat);
+	    &mut *(c_ncformat.nzval as *mut Vec<P>)
+	}
     }
 }
 
@@ -87,8 +94,8 @@ impl<P: CCreateCompColMatrix<P>> SuperMatrix for CompColMatrix<P> {
 
 impl<P: CCreateCompColMatrix<P>> Drop for CompColMatrix<P> {
     fn drop(&mut self) {
-	// Note that the input vectors are not freed by this line
-        c_Destroy_SuperMatrix_Store(&mut self.c_super_matrix);
+	// Note that the input vectors are also freed by this line
+        c_Destroy_CompCol_Matrix(&mut self.c_super_matrix);
     }
 }
 

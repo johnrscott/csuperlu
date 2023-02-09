@@ -130,7 +130,7 @@ impl CCreateCompColMatrix<f32> for f32 {
     }
 }
 
-/// This will attempt to deallocate the three input matrices used to
+/// This will attempt to deallocate the three input vectors used to
 /// create the comp_col matrix.
 #[allow(non_snake_case)]
 pub fn c_Destroy_CompCol_Matrix(A: *mut c_SuperMatrix) {

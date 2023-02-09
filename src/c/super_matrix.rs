@@ -23,23 +23,6 @@ pub enum Dtype_t {
     SLU_Z,
 }
 
-/// A simple method to turn a precision into a Dtype_t.
-pub trait GetDtype {
-    fn get() -> Dtype_t;
-}
-
-impl GetDtype for f64 {
-    fn get() -> Dtype_t {
-	Dtype_t::SLU_D
-    }
-}
-
-impl GetDtype for f32 {
-    fn get() -> Dtype_t {
-	Dtype_t::SLU_S
-    }
-}
-
 /// Specifies some mathematical properties of the matrix.
 #[repr(C)]
 #[allow(non_camel_case_types)]
@@ -96,14 +79,55 @@ pub enum Stype_t {
     SLU_NR_loc,
 }
 
+/// The SuperMatrix structure, which stores all types of matrices
+/// in SuperLU.
 #[repr(C)]
 #[allow(non_snake_case)]
 #[allow(non_camel_case_types)]
 pub struct c_SuperMatrix {
-    Stype: Stype_t,
-    Dtype: Dtype_t,
-    Mtype: Mtype_t,
-    nrow: libc::c_int,
-    ncol: libc::c_int,
-    Store: *mut libc::c_void,
+    /// The storage format for the matrix data (determines the
+    /// type of Store).
+    pub Stype: Stype_t,
+    /// Specifies the precision
+    pub Dtype: Dtype_t,
+    /// Any mathematical properties of the matrix
+    pub Mtype: Mtype_t,
+    /// Number of rows
+    pub nrow: libc::c_int,
+    /// Number of columns
+    pub ncol: libc::c_int,
+    /// The data structure storing the values in the matrix. The
+    /// format depends on the Stype.
+    pub Store: *mut libc::c_void,
 }
+
+/// The C structure for the compressed-column format.
+#[repr(C)]
+#[allow(non_snake_case)]
+#[allow(non_camel_case_types)]
+pub struct c_NCformat {
+    /// Total number of non-zeroes in the matrix
+    pub nnz: libc::c_int,
+    /// Array of non-zero values, column-major order
+    pub nzval: *mut libc::c_void,
+    /// Array containing the row indices of the non-zeroes
+    pub rowind: *mut libc::c_int,
+    /// Array of indices showing where each new column starts in rowind
+    pub colptr: *mut libc::c_int,
+}
+
+/// The C structure for the compressed-row format.
+#[repr(C)]
+#[allow(non_snake_case)]
+#[allow(non_camel_case_types)]
+pub struct c_NRformat {
+    /// Total number of non-zeroes in the matrix
+    pub nnz: libc::c_int,
+    /// Array of non-zero values, column-major order
+    pub nzval: *mut libc::c_void,
+    /// Array containing the column indices of the non-zeroes
+    pub colind: *mut libc::c_int,
+    /// Array of indices showing where each new row starts in colind
+    pub rowptr: *mut libc::c_int,
+}
+

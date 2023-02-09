@@ -101,7 +101,7 @@ pub enum Stype_t {
 #[repr(C)]
 #[allow(non_snake_case)]
 #[allow(non_camel_case_types)]
-pub struct c_SuperMatrix<T> {
+pub struct c_SuperMatrix {
     /// The storage format for the matrix data (determines the
     /// type of Store).
     pub Stype: Stype_t,
@@ -115,7 +115,7 @@ pub struct c_SuperMatrix<T> {
     pub ncol: libc::c_int,
     /// The data structure storing the values in the matrix. The
     /// format depends on the Stype.
-    pub Store: *mut T,
+    pub Store: *mut libc::c_void,
 }
 
 /// The C structure for the compressed-column format.

@@ -22,15 +22,12 @@ use std::mem::MaybeUninit;
 /// Compressed-column matrix
 ///
 ///
-pub struct CompColMatrix<'a, P>
-where P: CCreateCompColMatrix<P> {
+pub struct CompColMatrix<P: CCreateCompColMatrix<P>> {
     c_super_matrix: c_SuperMatrix,
-    c_ncformat: &'a mut c_NCformat,
     marker: std::marker::PhantomData<P>,
 }
 
-impl<'a, P> CompColMatrix<'a, P>
-where P: CCreateCompColMatrix<P> {
+impl<P: CCreateCompColMatrix<P>> CompColMatrix<P> {
     /// Specify a compressed column matrix from input vectors.
     ///
     /// Use this function to make a c_SuperMatrix in compressed column
@@ -66,19 +63,21 @@ where P: CCreateCompColMatrix<P> {
             );
             c_super_matrix.assume_init()
         };
-	let c_ncformat = unsafe {
-	    &mut *(c_super_matrix.Store as *mut c_NCformat)
-	};
         Self {
             c_super_matrix,
-	    c_ncformat,
 	    marker: std::marker::PhantomData,
         }
     }
+    pub fn values(&mut self) -> &mut Vec<P> {
+	let c_ncformat = unsafe {
+	    &mut *(self.c_super_matrix.Store as *mut c_NCformat)
+	};
+	unsafe { &mut *(c_ncformat.nzval as *mut Vec<P>) } 
+    }
 }
 
-impl<'a, 'b, P: CCreateCompColMatrix<P>> SuperMatrix for CompColMatrix<'a, P> {
-    fn super_matrix<'b>(&'a mut self) -> &'b mut c_SuperMatrix {
+impl<P: CCreateCompColMatrix<P>> SuperMatrix for CompColMatrix<P> {
+    fn super_matrix<'a>(&'a mut self) -> &'a mut c_SuperMatrix {
         &mut self.c_super_matrix
     }
     fn print(&mut self, what: &str) {
@@ -88,7 +87,7 @@ impl<'a, 'b, P: CCreateCompColMatrix<P>> SuperMatrix for CompColMatrix<'a, P> {
     }
 }
 
-impl<'a, P: CCreateCompColMatrix<P>> Drop for CompColMatrix<'a, P> {
+impl<P: CCreateCompColMatrix<P>> Drop for CompColMatrix<P> {
     fn drop(&mut self) {
 	// Note that the input vectors are not freed by this line
         c_Destroy_SuperMatrix_Store(&mut self.c_super_matrix);

@@ -48,7 +48,7 @@ fn main() {
     let xa = vec![0, 3, 6, 8, 10, 12];
 
     // Make the left-hand side matrix
-    let mut a = CompColMatrix::new(
+    let mut a = CompColMatrix::from_vectors(
         m,
         n,
         nnz,

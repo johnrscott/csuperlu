@@ -13,8 +13,12 @@
 //! of unknowns (the same size as $B$).
 //!
 //!
-//! The (C) function reference for SuperLU is provided  
-//! <https://portal.nersc.gov/project/sparse/superlu/superlu_code_html/index.html>
+//! The (C) function reference for SuperLU is provided
+//! [here](https://portal.nersc.gov/project/sparse/superlu/superlu_code_html/index.html). 
+//! The functioning of SuperLU is described in detail in the paper *Demmel, James W.,
+//! et al. "A supernodal approach to sparse partial pivoting." SIAM Journal on Matrix
+//! Analysis and Applications 20.3 (1999): 720-755.*, available
+//! [here](https://portal.nersc.gov/project/sparse/xiaoye-web/simax-29176.pdf).
 //!
 
 //#![warn(missing_docs)]

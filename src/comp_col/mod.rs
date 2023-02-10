@@ -82,10 +82,10 @@ impl<P: CCreateCompColMatrix<P>> CompColMatrix<P> {
             marker: std::marker::PhantomData,
         }
     }
-    pub fn values(&mut self) -> &mut Vec<P> {
+    pub fn values(&mut self) -> &[P] {
         unsafe {
             let c_ncformat = &mut *(self.c_super_matrix.Store as *mut c_NCformat);
-            &mut *(c_ncformat.nzval as *mut Vec<P>)
+            std::slice::from_raw_parts(c_ncformat.nzval as *mut P, c_ncformat.nnz as usize) 
         }
     }
 }

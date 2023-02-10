@@ -76,4 +76,11 @@ fn main() {
     a.print("A");
     U.print("U");
     L.print("L");
+
+    let u_vals = U.values();
+    let l_vals = L.values();
+
+    //println!("{:?}", u_vals);
+    println!("{:?}", l_vals);
+
 }

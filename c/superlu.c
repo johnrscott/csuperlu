@@ -49,7 +49,7 @@ int main(int argc, char *argv[])
     if ( !(rhs = doubleMalloc(m * nrhs)) ) ABORT("Malloc fails for rhs[].");
     for (i = 0; i < m; ++i) rhs[i] = 1.0;
     dCreate_Dense_Matrix(&B, m, nrhs, rhs, m, SLU_DN, SLU_D, SLU_GE);
-    dPrint_Dense_Matrix("B", &U);
+    dPrint_Dense_Matrix("B", &B);
 
     if ( !(perm_r = intMalloc(m)) ) ABORT("Malloc fails for perm_r[].");
     if ( !(perm_c = intMalloc(n)) ) ABORT("Malloc fails for perm_c[].");
@@ -76,7 +76,5 @@ int main(int argc, char *argv[])
     Destroy_SuperNode_Matrix(&L);
     Destroy_CompCol_Matrix(&U);
     StatFree(&stat);
-
-    printf("Hello\n");
 }
 

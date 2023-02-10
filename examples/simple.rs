@@ -81,6 +81,6 @@ fn main() {
     let l_vals = L.values();
 
     println!("{:?}", u_vals);
-    println!("{:?}", l_vals);
+    //println!("{:?}", l_vals);
 
 }

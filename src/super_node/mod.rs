@@ -21,10 +21,10 @@ impl<P: CSuperNodeMatrixUtils<P>> SuperNodeMatrix<P> {
             marker: std::marker::PhantomData,
         }
     }
-    pub fn values(&mut self) -> &mut Vec<P> {
+    pub fn values(&mut self) -> &[P] {
         unsafe {
             let c_scformat = &mut *(self.c_super_matrix.Store as *mut c_SCformat);
-            &mut *(c_scformat.nzval as *mut Vec<P>)
+	    std::slice::from_raw_parts(c_scformat.nzval as *mut P, c_scformat.nnz as usize)
         }
     }
 }

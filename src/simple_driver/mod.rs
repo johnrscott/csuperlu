@@ -18,7 +18,7 @@ use std::mem::MaybeUninit;
 use crate::c::simple_driver::c_dgssv;
 
 #[allow(non_snake_case)]
-pub struct DgssvSolution<P>
+pub struct Solution<P>
 where
     P: CSuperNodeMatrixUtils<P> + CCreateDenseMatrix<P> + CCreateCompColMatrix<P>,
 {
@@ -44,14 +44,14 @@ where
 ///
 ///
 #[allow(non_snake_case)]
-pub fn dgssv<P>(
+pub fn simple_driver<P>(
     mut options: superlu_options_t,
     A: &mut CompColMatrix<P>,
     perm_c: &mut Vec<i32>,
     perm_r: &mut Vec<i32>,
     mut B: DenseMatrix<P>,
     mut stat: SuperLUStat_t,
-) -> DgssvSolution<P>
+) -> Solution<P>
 where
     P: CSuperNodeMatrixUtils<P> + CCreateDenseMatrix<P> + CCreateCompColMatrix<P>,
 {
@@ -71,7 +71,7 @@ where
             &mut stat,
             &mut info,
         );
-        DgssvSolution {
+        Solution {
             X: B,
             L: SuperNodeMatrix::from_super_matrix(L.assume_init()),
             U: CompColMatrix::from_super_matrix(U.assume_init()),

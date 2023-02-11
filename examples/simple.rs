@@ -17,7 +17,7 @@ use csuperlu::c::stat::{c_StatPrint, SuperLUStat_t};
 use csuperlu::c::super_matrix::Mtype_t;
 use csuperlu::comp_col::CompColMatrix;
 use csuperlu::dense::DenseMatrix;
-use csuperlu::simple_driver::{dgssv, DgssvSolution};
+use csuperlu::simple_driver::{simple_driver, Solution};
 use csuperlu::super_matrix::SuperMatrix;
 
 fn main() {
@@ -61,13 +61,13 @@ fn main() {
 
     let stat = SuperLUStat_t::new();
 
-    let DgssvSolution {
+    let Solution {
         mut X,
         mut L,
         mut U,
         mut stat,
         mut info,
-    } = dgssv(options, &mut a, &mut perm_c, &mut perm_r, b, stat);
+    } = simple_driver(options, &mut a, &mut perm_c, &mut perm_r, b, stat);
 
     // Print the performance statistics
     c_StatPrint(&mut stat);

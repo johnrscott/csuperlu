@@ -63,8 +63,22 @@ int main(int argc, char *argv[])
 
     /* Solve the linear system. */
     dgssv(&options, &A, perm_c, perm_r, &L, &U, &B, &stat, &info);
+
+    // Print the L and U factors. In this example, there is only one supernode
+    // in L (nsuper = 0). As per the paper (Fig. 2.3), the entirety of this super node
+    // block is stored in L, as a dense matrix expressed in compressed column format
+    // (have a look at nzval_colptr, rowind, rowind_colptr). Even though the arrays of
+    // U are empty, it still states nnz = 15. The giveaway that there is each entry
+    // in colptr is zero (the last entry is the size of nzval). In L, similarly, the
+    // rowind_colptr ends with 25 (the size nzval), which is not equal to nnz (=15).
+    // This all implies that the interpretation of U and L are tied together. The
+    // only discrepancy with the user guide is that there is only 1 super node, not
+    // 3 (nsuper = 2 in Fig 2.3 of the user guide (note: not the same Fig 2.3 as above)).
     dPrint_CompCol_Matrix("U", &U);
     dPrint_SuperNode_Matrix("L", &L);
+
+    // Print the solution 
+    dPrint_Dense_Matrix("X", &B);
     print_int_vec("\nperm_r", m, perm_r);
     
     /* De-allocate storage */
@@ -76,5 +90,6 @@ int main(int argc, char *argv[])
     Destroy_SuperNode_Matrix(&L);
     Destroy_CompCol_Matrix(&U);
     StatFree(&stat);
+
 }
 

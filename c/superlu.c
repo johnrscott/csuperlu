@@ -65,6 +65,7 @@ int main(int argc, char *argv[])
     dgssv(&options, &A, perm_c, perm_r, &L, &U, &B, &stat, &info);
     dPrint_CompCol_Matrix("U", &U);
     dPrint_SuperNode_Matrix("L", &L);
+    dPrint_Dense_Matrix("X", &B);
     print_int_vec("\nperm_r", m, perm_r);
     
     /* De-allocate storage */

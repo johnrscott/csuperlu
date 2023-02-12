@@ -100,7 +100,11 @@ mod tests {
 	let x_vals = X.values();
 
 	// True solution
-	let x_true =  vec![];
+	let x_true =  vec![-0.031249999999999976, 0.06547619047619045,
+			   0.013392857142857161, 0.06249999999999996,
+			   0.03273809523809525];
+
+	assert_eq!(x_vals[0], x_true[0]);
 	
 	//println!("{:?}", u_vals);
 	println!("{:?}", l_vals);

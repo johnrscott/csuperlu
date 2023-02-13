@@ -29,6 +29,14 @@ pub mod super_node;
 #[cfg(test)]
 mod tests {
 
+    fn distance(v1: &[f64], v2: Vec<f64>) -> f64 {
+	let mut val = 0.0;
+	for n in 0..v2.len() {
+	    val += (v1[n] - v2[n]) * (v1[n] - v2[n]);
+	}
+	val
+    }
+    
     use crate::c::options::{colperm_t, superlu_options_t};
     use crate::c::stat::{c_StatPrint, SuperLUStat_t};
     use crate::c::super_matrix::Mtype_t;
@@ -104,7 +112,7 @@ mod tests {
 			   0.013392857142857161, 0.06249999999999996,
 			   0.03273809523809525];
 
-	assert_eq!(x_vals[0], x_true[0]);
+	assert_eq!(distance(x_vals, x_true) < 1e-8, true);
 	
 	//println!("{:?}", u_vals);
 	println!("{:?}", l_vals);

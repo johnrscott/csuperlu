@@ -34,12 +34,20 @@ impl<P: CCreateDenseMatrix<P>> DenseMatrix<P> {
             marker: std::marker::PhantomData,
         }
     }
-    pub fn values(&mut self) -> &mut Vec<P> {
+    // pub fn values(&mut self) -> &mut Vec<P> {
+    //     unsafe {
+    //         let c_dnformat = &mut *(self.c_super_matrix.Store as *mut c_DNformat);
+    //         &mut *(c_dnformat.nzval as *mut Vec<P>)
+    //     }
+    // }
+    pub fn values(&mut self) -> &[P] {
         unsafe {
             let c_dnformat = &mut *(self.c_super_matrix.Store as *mut c_DNformat);
-            &mut *(c_dnformat.nzval as *mut Vec<P>)
+	    let size = self.c_super_matrix.nrow * self.c_super_matrix.ncol;
+            std::slice::from_raw_parts(c_dnformat.nzval as *mut P, size as usize) 
         }
     }
+
 }
 
 impl<P: CCreateDenseMatrix<P>> SuperMatrix for DenseMatrix<P> {

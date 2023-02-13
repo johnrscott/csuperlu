@@ -79,8 +79,12 @@ fn main() {
 
     let u_vals = U.values();
     let l_vals = L.values();
-
+    
     //println!("{:?}", u_vals);
     println!("{:?}", l_vals);
 
+    X.print("X");
+    let x_vals = X.values();
+    println!("{:?}", x_vals);
+    
 }

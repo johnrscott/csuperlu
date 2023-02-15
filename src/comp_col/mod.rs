@@ -83,12 +83,38 @@ impl<P: CCreateCompColMatrix<P>> CompColMatrix<P> {
         }
     }
 
-    pub fn values(&mut self) -> &[P] {
+    pub fn value(&mut self, row: usize, col: usize) {
+	let c_super_matrix = self.super_matrix();
+	assert!(row < c_super_matrix.nrow as usize,
+		"Row index out of range");
+	assert!(col < c_super_matrix.ncol as usize,
+		"Column index out of range");
+	let nonzero_values = self.nonzero_values();
+	let column_pointers = self.column_pointers();
+	let row_indices = self.row_indices();
+	
+    }
+
+    
+    pub fn nonzero_values(&mut self) -> &[P] {
         unsafe {
             let c_ncformat = &mut *(self.c_super_matrix.Store as *mut c_NCformat);
             std::slice::from_raw_parts(c_ncformat.nzval as *mut P, c_ncformat.nnz as usize) 
         }
     }
+    pub fn column_pointers(&mut self) -> &[P] {
+        unsafe {
+            let c_ncformat = &mut *(self.c_super_matrix.Store as *mut c_NCformat);
+            std::slice::from_raw_parts(c_ncformat.colptr as *mut P, self.c_super_matrix.ncol as usize + 1) 
+        }
+    }
+    pub fn row_indices(&mut self) -> &[P] {
+        unsafe {
+            let c_ncformat = &mut *(self.c_super_matrix.Store as *mut c_NCformat);
+            std::slice::from_raw_parts(c_ncformat.rowind as *mut P, c_ncformat.nnz as usize) 
+        }
+    }
+
 }
 
 impl<P: CCreateCompColMatrix<P>> SuperMatrix for CompColMatrix<P> {

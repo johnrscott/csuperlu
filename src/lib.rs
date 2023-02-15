@@ -25,6 +25,7 @@ pub mod dense;
 pub mod simple_driver;
 pub mod super_matrix;
 pub mod super_node;
+pub mod lu_decomp;
 
 #[cfg(test)]
 mod tests {

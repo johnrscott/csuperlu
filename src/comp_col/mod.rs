@@ -82,6 +82,7 @@ impl<P: CCreateCompColMatrix<P>> CompColMatrix<P> {
             marker: std::marker::PhantomData,
         }
     }
+
     pub fn values(&mut self) -> &[P] {
         unsafe {
             let c_ncformat = &mut *(self.c_super_matrix.Store as *mut c_NCformat);

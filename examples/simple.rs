@@ -63,8 +63,7 @@ fn main() {
 
     let Solution {
         mut X,
-        mut L,
-        mut U,
+	mut lu,
         mut stat,
         mut info,
     } = simple_driver(options, &mut a, &mut perm_c, &mut perm_r, b, stat);
@@ -74,14 +73,10 @@ fn main() {
 
     // Print solution
     a.print("A");
-    U.print("U");
-    L.print("L");
-
-    let u_vals = U.values();
-    let l_vals = L.values();
+    lu.print();
     
     //println!("{:?}", u_vals);
-    println!("{:?}", l_vals);
+    //println!("{:?}", l_vals);
 
     X.print("X");
     let x_vals = X.values();

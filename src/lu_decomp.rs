@@ -29,7 +29,7 @@ where P: CSuperNodeMatrixUtils<P> + CCreateCompColMatrix<P> {
 	self.l.print("L");
 	self.u.print("U");
     }
-    pub fn value(&mut self, row: usize, col: usize) {
+    pub fn value(&mut self, row: usize, col: usize) -> P {
 	let l_c_super_matrix = self.l.super_matrix();
 	let u_c_super_matrix = self.u.super_matrix();
 	assert!(row < l_c_super_matrix.nrow as usize,
@@ -42,7 +42,6 @@ where P: CSuperNodeMatrixUtils<P> + CCreateCompColMatrix<P> {
 	let u_c_ncformat = unsafe {
 	    &mut *(u_c_super_matrix.Store as *mut c_NCformat)
 	};
-	
-
+	todo!("Finish this off later");
     }
 }

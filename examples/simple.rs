@@ -74,10 +74,13 @@ fn main() {
     // Print solution
     a.print("A");
     lu.print();
+    println!("{}", lu.value(2,2));
     
     //println!("{:?}", u_vals);
     //println!("{:?}", l_vals);
 
+    
+    
     X.print("X");
     let x_vals = X.values();
     println!("{:?}", x_vals);

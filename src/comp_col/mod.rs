@@ -90,12 +90,12 @@ impl<P: CCreateCompColMatrix<P> + Clone> CompColMatrix<P> {
 		"Row index out of range");
 	assert!(col < c_super_matrix.ncol as usize,
 		"Column index out of range");
-	let column_pointers = self.column_pointers();
-	let col_ptr = column_pointers[col] as usize;
-	let row_indices = &self.row_indices()[col_ptr..];
-	let row_ptr = row_indices.binary_search(&(row as i32))
+	let col_start = self.column_pointers()[col] as usize;
+	let col_end = self.column_pointers()[col+1] as usize;
+	let row_indices = &self.row_indices()[col_start..col_end];
+	let row_index = row_indices.binary_search(&(row as i32))
 	    .unwrap();
-	self.nonzero_values()[col_ptr + row_ptr].clone()
+	self.nonzero_values()[col_start + row_index].clone()
     }
 
     

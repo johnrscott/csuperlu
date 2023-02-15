@@ -78,6 +78,9 @@ fn main() {
     println!("{:?}", a.nonzero_values());
     println!("{:?}", a.column_pointers());
     println!("{:?}", a.row_indices());
+
+    println!("{}", a.value(0,0));
+
     
     X.print("X");
     let x_vals = X.values();

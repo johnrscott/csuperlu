@@ -88,6 +88,9 @@ mod tests {
 	assert_eq!((a.value(4,0) - l).abs() < 1e-8, true);
 	assert_eq!((a.value(4,1) - l).abs() < 1e-8, true);
 	assert_eq!((a.value(4,4) - r).abs() < 1e-8, true);
+
+	// Check (identically) zero matrix values
+	assert_eq!(a.value(0,1), 0.0);	
 	
     }
     

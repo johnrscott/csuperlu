@@ -19,16 +19,17 @@ use crate::c::super_matrix::{c_NCformat, c_SuperMatrix, Mtype_t};
 use crate::super_matrix::SuperMatrix;
 use std::mem::MaybeUninit;
 use std::clone::Clone;
+use num::Float;
 
 /// Compressed-column matrix
 ///
 ///
-pub struct CompColMatrix<P: CCreateCompColMatrix<P> + Clone> {
+pub struct CompColMatrix<P: CCreateCompColMatrix<P> + Clone + Float> {
     c_super_matrix: c_SuperMatrix,
     marker: std::marker::PhantomData<P>,
 }
 
-impl<P: CCreateCompColMatrix<P> + Clone> CompColMatrix<P> {
+impl<P: CCreateCompColMatrix<P> + Clone + Float> CompColMatrix<P> {
     /// Create a compressed-column matrix from a c_SuperMatrix structure
     ///
     pub fn from_super_matrix(c_super_matrix: c_SuperMatrix) -> Self {
@@ -93,9 +94,11 @@ impl<P: CCreateCompColMatrix<P> + Clone> CompColMatrix<P> {
 	let col_start = self.column_pointers()[col] as usize;
 	let col_end = self.column_pointers()[col+1] as usize;
 	let row_indices = &self.row_indices()[col_start..col_end];
-	let row_index = row_indices.binary_search(&(row as i32))
-	    .unwrap();
-	self.nonzero_values()[col_start + row_index].clone()
+	match row_indices.binary_search(&(row as i32)) {
+	    Ok(row_index) =>
+		self.nonzero_values()[col_start + row_index].clone(),
+	    Err(_) => 0.0
+	}
     }
 
     
@@ -120,7 +123,7 @@ impl<P: CCreateCompColMatrix<P> + Clone> CompColMatrix<P> {
 
 }
 
-impl<P: CCreateCompColMatrix<P> + Clone> SuperMatrix for CompColMatrix<P> {
+impl<P: CCreateCompColMatrix<P> + Clone + Float> SuperMatrix for CompColMatrix<P> {
     fn super_matrix<'a>(&'a mut self) -> &'a mut c_SuperMatrix {
         &mut self.c_super_matrix
     }
@@ -130,7 +133,7 @@ impl<P: CCreateCompColMatrix<P> + Clone> SuperMatrix for CompColMatrix<P> {
     }
 }
 
-impl<P: CCreateCompColMatrix<P> + Clone> Drop for CompColMatrix<P> {
+impl<P: CCreateCompColMatrix<P> + Clone + Float> Drop for CompColMatrix<P> {
     fn drop(&mut self) {
         // Note that the input vectors are also freed by this line
         c_Destroy_CompCol_Matrix(&mut self.c_super_matrix);

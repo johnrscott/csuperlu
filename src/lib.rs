@@ -25,6 +25,7 @@ pub mod dense;
 pub mod simple_driver;
 pub mod super_matrix;
 pub mod super_node;
+pub mod lu_decomp;
 
 #[cfg(test)]
 mod tests {
@@ -45,6 +46,65 @@ mod tests {
     use crate::simple_driver::{simple_driver, Solution};
     use crate::super_matrix::SuperMatrix;
 
+    #[test]
+    fn comp_col_matrix_values() {
+	// Matrix dimensions
+	let m: i32 = 5;
+	let n: i32 = 5;
+
+	// Number of non-zeros
+	let nnz: i32 = 12;
+
+	// Matrix elements
+	let s: f64 = 19.0;
+	let u: f64 = 21.0;
+	let p: f64 = 16.0;
+	let e: f64 = 5.0;
+	let r: f64 = 18.0;
+	let l: f64 = 12.0;
+
+	// Vector of doubles of length nnz
+	let a = vec![s, l, l, u, l, l, u, p, u, e, u, r];
+
+	// Vector of ints of length nnz
+	let asub = vec![0, 1, 4, 1, 2, 4, 0, 2, 0, 3, 3, 4];
+
+	// Vector of ints of length n+1
+	let xa = vec![0, 3, 6, 8, 10, 12];
+
+	// Make the left-hand side matrix
+	let mut a = CompColMatrix::from_vectors(m, n, nnz, a, asub, xa, Mtype_t::SLU_GE);
+
+	// Check non-zero matrix values
+	assert_eq!((a.value(0,0) - s).abs() < 1e-8, true);
+	assert_eq!((a.value(0,2) - u).abs() < 1e-8, true);
+	assert_eq!((a.value(0,3) - u).abs() < 1e-8, true);
+	assert_eq!((a.value(1,0) - l).abs() < 1e-8, true);
+	assert_eq!((a.value(1,1) - u).abs() < 1e-8, true);
+	assert_eq!((a.value(2,1) - l).abs() < 1e-8, true);
+	assert_eq!((a.value(2,2) - p).abs() < 1e-8, true);
+	assert_eq!((a.value(3,3) - e).abs() < 1e-8, true);
+	assert_eq!((a.value(3,4) - u).abs() < 1e-8, true);
+	assert_eq!((a.value(4,0) - l).abs() < 1e-8, true);
+	assert_eq!((a.value(4,1) - l).abs() < 1e-8, true);
+	assert_eq!((a.value(4,4) - r).abs() < 1e-8, true);
+
+	// Check (identically) zero matrix values
+	assert_eq!(a.value(0,1), 0.0);
+	assert_eq!(a.value(0,4), 0.0);
+	assert_eq!(a.value(1,2), 0.0);
+	assert_eq!(a.value(1,3), 0.0);
+	assert_eq!(a.value(1,4), 0.0);
+	assert_eq!(a.value(2,0), 0.0);
+	assert_eq!(a.value(2,3), 0.0);
+	assert_eq!(a.value(2,4), 0.0);
+	assert_eq!(a.value(3,0), 0.0);
+	assert_eq!(a.value(3,1), 0.0);
+	assert_eq!(a.value(3,2), 0.0);
+	assert_eq!(a.value(4,2), 0.0);
+	assert_eq!(a.value(4,3), 0.0);
+    }
+    
     #[test]
     fn user_guide_example() {
 	// Matrix dimensions
@@ -86,35 +146,19 @@ mod tests {
 	let mut perm_c = Vec::<i32>::with_capacity(n as usize);
 
 	let stat = SuperLUStat_t::new();
-
 	let Solution {
             mut X,
-            mut L,
-            mut U,
-            mut stat,
-            mut info,
+            lu: _,
+            stat: _,
+            info: _,
 	} = simple_driver(options, &mut a, &mut perm_c, &mut perm_r, b, stat);
 
-	// Print the performance statistics
-	c_StatPrint(&mut stat);
-
-	// Print solution
-	a.print("A");
-	U.print("U");
-	L.print("L");
-
-	let u_vals = U.values();
-	let l_vals = L.values();
 	let x_vals = X.values();
 
 	// True solution
 	let x_true =  vec![-0.031249999999999976, 0.06547619047619045,
 			   0.013392857142857161, 0.06249999999999996,
 			   0.03273809523809525];
-
 	assert_eq!(distance(x_vals, x_true) < 1e-8, true);
-	
-	//println!("{:?}", u_vals);
-	println!("{:?}", l_vals);
     }
 }

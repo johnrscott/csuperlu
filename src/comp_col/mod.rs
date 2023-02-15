@@ -18,16 +18,18 @@ use crate::c::comp_col::CCreateCompColMatrix;
 use crate::c::super_matrix::{c_NCformat, c_SuperMatrix, Mtype_t};
 use crate::super_matrix::SuperMatrix;
 use std::mem::MaybeUninit;
+use std::clone::Clone;
+use num::FromPrimitive;
 
 /// Compressed-column matrix
 ///
 ///
-pub struct CompColMatrix<P: CCreateCompColMatrix<P>> {
+pub struct CompColMatrix<P: CCreateCompColMatrix<P> + Clone + FromPrimitive> {
     c_super_matrix: c_SuperMatrix,
     marker: std::marker::PhantomData<P>,
 }
 
-impl<P: CCreateCompColMatrix<P>> CompColMatrix<P> {
+impl<P: CCreateCompColMatrix<P> + Clone + FromPrimitive> CompColMatrix<P> {
     /// Create a compressed-column matrix from a c_SuperMatrix structure
     ///
     pub fn from_super_matrix(c_super_matrix: c_SuperMatrix) -> Self {
@@ -82,15 +84,46 @@ impl<P: CCreateCompColMatrix<P>> CompColMatrix<P> {
             marker: std::marker::PhantomData,
         }
     }
-    pub fn values(&mut self) -> &[P] {
+
+    pub fn value(&mut self, row: usize, col: usize) -> P {
+	let c_super_matrix = self.super_matrix();
+	assert!(row < c_super_matrix.nrow as usize,
+		"Row index out of range");
+	assert!(col < c_super_matrix.ncol as usize,
+		"Column index out of range");
+	let col_start = self.column_pointers()[col] as usize;
+	let col_end = self.column_pointers()[col+1] as usize;
+	let row_indices = &self.row_indices()[col_start..col_end];
+	match row_indices.binary_search(&(row as i32)) {
+	    Ok(row_index) =>
+		self.nonzero_values()[col_start + row_index].clone(),
+	    Err(_) => P::from_f32(0.0).unwrap()
+	}
+    }
+
+    
+    pub fn nonzero_values(&mut self) -> &[P] {
         unsafe {
             let c_ncformat = &mut *(self.c_super_matrix.Store as *mut c_NCformat);
             std::slice::from_raw_parts(c_ncformat.nzval as *mut P, c_ncformat.nnz as usize) 
         }
     }
+    pub fn column_pointers(&mut self) -> &[i32] {
+        unsafe {
+            let c_ncformat = &mut *(self.c_super_matrix.Store as *mut c_NCformat);
+            std::slice::from_raw_parts(c_ncformat.colptr as *mut i32, self.c_super_matrix.ncol as usize + 1) 
+        }
+    }
+    pub fn row_indices(&mut self) -> &[i32] {
+        unsafe {
+            let c_ncformat = &mut *(self.c_super_matrix.Store as *mut c_NCformat);
+            std::slice::from_raw_parts(c_ncformat.rowind as *mut i32, c_ncformat.nnz as usize) 
+        }
+    }
+
 }
 
-impl<P: CCreateCompColMatrix<P>> SuperMatrix for CompColMatrix<P> {
+impl<P: CCreateCompColMatrix<P> + Clone + FromPrimitive> SuperMatrix for CompColMatrix<P> {
     fn super_matrix<'a>(&'a mut self) -> &'a mut c_SuperMatrix {
         &mut self.c_super_matrix
     }
@@ -100,7 +133,7 @@ impl<P: CCreateCompColMatrix<P>> SuperMatrix for CompColMatrix<P> {
     }
 }
 
-impl<P: CCreateCompColMatrix<P>> Drop for CompColMatrix<P> {
+impl<P: CCreateCompColMatrix<P> + Clone + FromPrimitive> Drop for CompColMatrix<P> {
     fn drop(&mut self) {
         // Note that the input vectors are also freed by this line
         c_Destroy_CompCol_Matrix(&mut self.c_super_matrix);

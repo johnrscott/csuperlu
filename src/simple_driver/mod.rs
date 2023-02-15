@@ -10,21 +10,23 @@ use crate::c::super_node::CSuperNodeMatrixUtils;
 use crate::comp_col::CompColMatrix;
 use crate::dense::DenseMatrix;
 
+use crate::lu_decomp::LUDecomp;
 use crate::super_matrix::SuperMatrix;
 use crate::super_node::SuperNodeMatrix;
 
 use std::mem::MaybeUninit;
+use std::clone::Clone;
+use num::FromPrimitive;
 
 use crate::c::simple_driver::c_dgssv;
 
 #[allow(non_snake_case)]
 pub struct Solution<P>
 where
-    P: CSuperNodeMatrixUtils<P> + CCreateDenseMatrix<P> + CCreateCompColMatrix<P>,
+    P: CSuperNodeMatrixUtils<P> + CCreateDenseMatrix<P> + CCreateCompColMatrix<P> + Clone + FromPrimitive,
 {
     pub X: DenseMatrix<P>,
-    pub L: SuperNodeMatrix<P>,
-    pub U: CompColMatrix<P>,
+    pub lu: LUDecomp<P>,
     pub stat: SuperLUStat_t,
     pub info: i32,
 }
@@ -53,7 +55,7 @@ pub fn simple_driver<P>(
     mut stat: SuperLUStat_t,
 ) -> Solution<P>
 where
-    P: CSuperNodeMatrixUtils<P> + CCreateDenseMatrix<P> + CCreateCompColMatrix<P>,
+    P: CSuperNodeMatrixUtils<P> + CCreateDenseMatrix<P> + CCreateCompColMatrix<P> + Clone + FromPrimitive,
 {
     let mut info = 0;
     unsafe {
@@ -71,10 +73,12 @@ where
             &mut stat,
             &mut info,
         );
+	let l = SuperNodeMatrix::from_super_matrix(L.assume_init());
+	let u = CompColMatrix::from_super_matrix(U.assume_init());
+	let lu = LUDecomp::from_matrices(l, u);
         Solution {
             X: B,
-            L: SuperNodeMatrix::from_super_matrix(L.assume_init()),
-            U: CompColMatrix::from_super_matrix(U.assume_init()),
+	    lu,
             stat,
             info,
         }

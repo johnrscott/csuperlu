@@ -90,8 +90,19 @@ mod tests {
 	assert_eq!((a.value(4,4) - r).abs() < 1e-8, true);
 
 	// Check (identically) zero matrix values
-	assert_eq!(a.value(0,1), 0.0);	
-	
+	assert_eq!(a.value(0,1), 0.0);
+	assert_eq!(a.value(0,4), 0.0);
+	assert_eq!(a.value(1,2), 0.0);
+	assert_eq!(a.value(1,3), 0.0);
+	assert_eq!(a.value(1,4), 0.0);
+	assert_eq!(a.value(2,0), 0.0);
+	assert_eq!(a.value(2,3), 0.0);
+	assert_eq!(a.value(2,4), 0.0);
+	assert_eq!(a.value(3,0), 0.0);
+	assert_eq!(a.value(3,1), 0.0);
+	assert_eq!(a.value(3,2), 0.0);
+	assert_eq!(a.value(4,2), 0.0);
+	assert_eq!(a.value(4,3), 0.0);
     }
     
     #[test]

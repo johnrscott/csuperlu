@@ -97,7 +97,7 @@ impl<P: CCreateCompColMatrix<P> + Clone + FromPrimitive> CompColMatrix<P> {
 	match row_indices.binary_search(&(row as i32)) {
 	    Ok(row_index) =>
 		self.nonzero_values()[col_start + row_index].clone(),
-	    Err(_) => P::from_i32(0.0)
+	    Err(_) => P::from_f32(0.0).unwrap()
 	}
     }
 

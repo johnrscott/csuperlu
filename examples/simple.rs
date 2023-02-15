@@ -75,10 +75,9 @@ fn main() {
     a.print("A");
     lu.print();
     
-    //println!("{:?}", u_vals);
-    //println!("{:?}", l_vals);
-
-    
+    println!("{:?}", a.nonzero_values());
+    println!("{:?}", a.column_pointers());
+    println!("{:?}", a.row_indices());
     
     X.print("X");
     let x_vals = X.values();

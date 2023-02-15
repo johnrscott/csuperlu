@@ -15,13 +15,14 @@ use crate::super_matrix::SuperMatrix;
 use crate::super_node::SuperNodeMatrix;
 
 use std::mem::MaybeUninit;
+use std::clone::Clone;
 
 use crate::c::simple_driver::c_dgssv;
 
 #[allow(non_snake_case)]
 pub struct Solution<P>
 where
-    P: CSuperNodeMatrixUtils<P> + CCreateDenseMatrix<P> + CCreateCompColMatrix<P>,
+    P: CSuperNodeMatrixUtils<P> + CCreateDenseMatrix<P> + CCreateCompColMatrix<P> + Clone,
 {
     pub X: DenseMatrix<P>,
     pub lu: LUDecomp<P>,
@@ -53,7 +54,7 @@ pub fn simple_driver<P>(
     mut stat: SuperLUStat_t,
 ) -> Solution<P>
 where
-    P: CSuperNodeMatrixUtils<P> + CCreateDenseMatrix<P> + CCreateCompColMatrix<P>,
+    P: CSuperNodeMatrixUtils<P> + CCreateDenseMatrix<P> + CCreateCompColMatrix<P> + Clone,
 {
     let mut info = 0;
     unsafe {

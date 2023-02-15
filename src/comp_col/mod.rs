@@ -102,16 +102,16 @@ impl<P: CCreateCompColMatrix<P>> CompColMatrix<P> {
             std::slice::from_raw_parts(c_ncformat.nzval as *mut P, c_ncformat.nnz as usize) 
         }
     }
-    pub fn column_pointers(&mut self) -> &[P] {
+    pub fn column_pointers(&mut self) -> &[i32] {
         unsafe {
             let c_ncformat = &mut *(self.c_super_matrix.Store as *mut c_NCformat);
-            std::slice::from_raw_parts(c_ncformat.colptr as *mut P, self.c_super_matrix.ncol as usize + 1) 
+            std::slice::from_raw_parts(c_ncformat.colptr as *mut i32, self.c_super_matrix.ncol as usize + 1) 
         }
     }
-    pub fn row_indices(&mut self) -> &[P] {
+    pub fn row_indices(&mut self) -> &[i32] {
         unsafe {
             let c_ncformat = &mut *(self.c_super_matrix.Store as *mut c_NCformat);
-            std::slice::from_raw_parts(c_ncformat.rowind as *mut P, c_ncformat.nnz as usize) 
+            std::slice::from_raw_parts(c_ncformat.rowind as *mut i32, c_ncformat.nnz as usize) 
         }
     }
 

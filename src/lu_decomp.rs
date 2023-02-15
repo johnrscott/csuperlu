@@ -5,16 +5,16 @@ use crate::comp_col::CompColMatrix;
 use crate::super_node::SuperNodeMatrix;
 use crate::super_matrix::SuperMatrix;
 use std::clone::Clone;
-use num::Float;
+use num::FromPrimitive;
 
 pub struct LUDecomp<P>
-where P: CSuperNodeMatrixUtils<P> + CCreateCompColMatrix<P> + Clone + Float {
+where P: CSuperNodeMatrixUtils<P> + CCreateCompColMatrix<P> + Clone + FromPrimitive {
     l: SuperNodeMatrix<P>,
     u: CompColMatrix<P>,
 }
 
 impl<P> LUDecomp<P>
-where P: CSuperNodeMatrixUtils<P> + CCreateCompColMatrix<P> + Clone + Float {
+where P: CSuperNodeMatrixUtils<P> + CCreateCompColMatrix<P> + Clone + FromPrimitive {
     pub fn from_matrices(mut l: SuperNodeMatrix<P>, mut u: CompColMatrix<P>) -> Self {
 	let l_c_super_matrix = l.super_matrix();
 	let u_c_super_matrix = u.super_matrix();

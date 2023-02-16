@@ -6,18 +6,6 @@ use num::FromPrimitive;
 
 #[link(name = "superlu")]
 extern "C" {
-    fn dCreate_CompCol_Matrix(
-        A: *mut c_SuperMatrix,
-        m: libc::c_int,
-        n: libc::c_int,
-        nnz: libc::c_int,
-        nzval: *mut libc::c_double,
-        rowind: *mut libc::c_int,
-        colptr: *mut libc::c_int,
-        stype: Stype_t,
-        dtype: Dtype_t,
-        mtype: Mtype_t,
-    );
     fn sCreate_CompCol_Matrix(
         A: *mut c_SuperMatrix,
         m: libc::c_int,
@@ -30,9 +18,48 @@ extern "C" {
         dtype: Dtype_t,
         mtype: Mtype_t,
     );
+    fn dCreate_CompCol_Matrix(
+        A: *mut c_SuperMatrix,
+        m: libc::c_int,
+        n: libc::c_int,
+        nnz: libc::c_int,
+        nzval: *mut libc::c_double,
+        rowind: *mut libc::c_int,
+        colptr: *mut libc::c_int,
+        stype: Stype_t,
+        dtype: Dtype_t,
+        mtype: Mtype_t,
+    );
+    fn cCreate_CompCol_Matrix(
+        A: *mut c_SuperMatrix,
+        m: libc::c_int,
+        n: libc::c_int,
+        nnz: libc::c_int,
+        nzval: *mut libc::c_float,
+        rowind: *mut libc::c_int,
+        colptr: *mut libc::c_int,
+        stype: Stype_t,
+        dtype: Dtype_t,
+        mtype: Mtype_t,
+    );
+    fn zCreate_CompCol_Matrix(
+        A: *mut c_SuperMatrix,
+        m: libc::c_int,
+        n: libc::c_int,
+        nnz: libc::c_int,
+        nzval: *mut libc::c_double,
+        rowind: *mut libc::c_int,
+        colptr: *mut libc::c_int,
+        stype: Stype_t,
+        dtype: Dtype_t,
+        mtype: Mtype_t,
+    );
+
     fn Destroy_CompCol_Matrix(A: *mut c_SuperMatrix);
-    fn dPrint_CompCol_Matrix(what: *mut libc::c_char, A: *mut c_SuperMatrix);
     fn sPrint_CompCol_Matrix(what: *mut libc::c_char, A: *mut c_SuperMatrix);
+    fn dPrint_CompCol_Matrix(what: *mut libc::c_char, A: *mut c_SuperMatrix);
+    fn cPrint_CompCol_Matrix(what: *mut libc::c_char, A: *mut c_SuperMatrix);
+    fn zPrint_CompCol_Matrix(what: *mut libc::c_char, A: *mut c_SuperMatrix);
 }
 
 /// Create compressed column matrix of particular precision
@@ -137,6 +164,75 @@ impl CCompColMatrix<f32> for f32 {
         }
     }
 }
+
+impl CCompColMatrix<num::Complex<f32>> for num::Complex<f32> {
+    fn c_create_comp_col_matrix(
+        a: &mut MaybeUninit<c_SuperMatrix>,
+        m: i32,
+        n: i32,
+        nnz: i32,
+        nzval: &mut Vec<num::Complex<f32>>,
+        rowind: &mut Vec<i32>,
+        colptr: &mut Vec<i32>,
+        mtype: Mtype_t,
+    ) {
+        unsafe {
+            cCreate_CompCol_Matrix(
+                a.as_mut_ptr(),
+                m,
+                n,
+                nnz,
+                nzval.as_mut_ptr() as *mut libc::c_float,
+                rowind.as_mut_ptr(),
+                colptr.as_mut_ptr(),
+                Stype_t::SLU_NC,
+                Dtype_t::SLU_C,
+                mtype,
+            );
+        }
+    }
+
+    fn c_print_comp_col_matrix(what: *mut libc::c_char, a: *mut c_SuperMatrix) {
+        unsafe {
+            cPrint_CompCol_Matrix(what, a);
+        }
+    }
+}
+
+impl CCompColMatrix<num::Complex<f64>> for num::Complex<f64> {
+    fn c_create_comp_col_matrix(
+        a: &mut MaybeUninit<c_SuperMatrix>,
+        m: i32,
+        n: i32,
+        nnz: i32,
+        nzval: &mut Vec<num::Complex<f64>>,
+        rowind: &mut Vec<i32>,
+        colptr: &mut Vec<i32>,
+        mtype: Mtype_t,
+    ) {
+        unsafe {
+            zCreate_CompCol_Matrix(
+                a.as_mut_ptr(),
+                m,
+                n,
+                nnz,
+                nzval.as_mut_ptr() as *mut libc::c_double,
+                rowind.as_mut_ptr(),
+                colptr.as_mut_ptr(),
+                Stype_t::SLU_NC,
+                Dtype_t::SLU_Z,
+                mtype,
+            );
+        }
+    }
+
+    fn c_print_comp_col_matrix(what: *mut libc::c_char, a: *mut c_SuperMatrix) {
+        unsafe {
+            zPrint_CompCol_Matrix(what, a);
+        }
+    }
+}
+
 
 /// This will attempt to deallocate the three input vectors used to
 /// create the comp_col matrix.

@@ -38,6 +38,40 @@ pub enum Dtype_t {
     SLU_Z,
 }
 
+pub trait Dtype {
+    /// The numerical type represented by the Dtype
+    type Value;
+    fn get_dtype() -> Dtype_t;
+}
+
+impl Dtype for f32 {
+    type Value = f32;
+    fn get_dtype() -> Dtype_t {
+	Dtype_t::SLU_S
+    }
+}
+
+impl Dtype for f64 {
+    type Value = f64;
+    fn get_dtype() -> Dtype_t {
+	Dtype_t::SLU_D
+    }
+}
+
+impl Dtype for num::Complex<f32> {
+    type Value = num::Complex<f32>;
+    fn get_dtype() -> Dtype_t {
+	Dtype_t::SLU_C
+    }
+}
+
+impl Dtype for num::Complex<f64> {
+    type Value = num::Complex<f64>;
+    fn get_dtype() -> Dtype_t {
+	Dtype_t::SLU_Z
+    }
+}
+
 /// Specifies some mathematical properties of the matrix.
 #[repr(C)]
 #[allow(non_camel_case_types)]

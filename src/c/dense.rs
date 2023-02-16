@@ -35,24 +35,26 @@ extern "C" {
 /// dispatches correctly based on the desired precision (and picks
 /// the right value for the Dtype argument).
 ///
-pub trait CCreateDenseMatrix<P> {
+pub trait CDenseMatrix {
+    type Value;
     fn c_create_dense_matrix(
         x: &mut MaybeUninit<c_SuperMatrix>,
         m: i32,
         n: i32,
-        values: &mut Vec<P>,
+        values: &mut Vec<Self::Value>,
         ldx: i32,
         mtype: Mtype_t,
     );
     fn c_print_dense_matrix(what: *mut libc::c_char, a: *mut c_SuperMatrix);
 }
 
-impl CCreateDenseMatrix<f64> for f64 {
+impl CDenseMatrix for f64 {
+    type Value = f64;
     fn c_create_dense_matrix(
         x: &mut MaybeUninit<c_SuperMatrix>,
         m: i32,
         n: i32,
-        values: &mut Vec<f64>,
+        values: &mut Vec<Self::Value>,
         ldx: i32,
         mtype: Mtype_t,
     ) {
@@ -77,12 +79,13 @@ impl CCreateDenseMatrix<f64> for f64 {
     }
 }
 
-impl CCreateDenseMatrix<f32> for f32 {
+impl CDenseMatrix for f32 {
+    type Value = f32;
     fn c_create_dense_matrix(
         x: &mut MaybeUninit<c_SuperMatrix>,
         m: i32,
         n: i32,
-        values: &mut Vec<f32>,
+        values: &mut Vec<Self::Value>,
         ldx: i32,
         mtype: Mtype_t,
     ) {

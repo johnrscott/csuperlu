@@ -13,8 +13,7 @@
 //! Since each column may be a different length, a third vector of
 //! integers is maintained showing where each new column starts.
 
-use crate::c::comp_col::c_Destroy_CompCol_Matrix;
-use crate::c::comp_col::CCreateCompColMatrix;
+use crate::c::comp_col::{c_Destroy_CompCol_Matrix, CCompColMatrix};
 use crate::c::super_matrix::{c_NCformat, c_SuperMatrix, Mtype_t};
 use crate::super_matrix::SuperMatrix;
 use std::mem::MaybeUninit;
@@ -24,12 +23,12 @@ use num::FromPrimitive;
 /// Compressed-column matrix
 ///
 ///
-pub struct CompColMatrix<P: CCreateCompColMatrix<P> + Clone + FromPrimitive> {
+pub struct CompColMatrix<P: CCompColMatrix> {
     c_super_matrix: c_SuperMatrix,
     marker: std::marker::PhantomData<P>,
 }
 
-impl<P: CCreateCompColMatrix<P> + Clone + FromPrimitive> CompColMatrix<P> {
+impl<P: CCompColMatrix> CompColMatrix<P> {
     /// Create a compressed-column matrix from a c_SuperMatrix structure
     ///
     pub fn from_super_matrix(c_super_matrix: c_SuperMatrix) -> Self {

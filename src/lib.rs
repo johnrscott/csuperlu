@@ -145,13 +145,12 @@ mod tests {
 	let mut perm_r = Vec::<i32>::with_capacity(m as usize);
 	let mut perm_c = Vec::<i32>::with_capacity(n as usize);
 
-	let stat = SuperLUStat_t::new();
+	let mut stat = SuperLUStat_t::new();
 	let SimpleSolution {
             mut x,
             lu: _,
-            stat: _,
             info: _,
-	} = simple_driver(options, &mut a, &mut perm_c, &mut perm_r, b, stat);
+	} = simple_driver(options, &mut a, &mut perm_c, &mut perm_r, b, &mut stat);
 
 	let x_vals = x.values();
 

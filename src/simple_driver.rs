@@ -22,7 +22,6 @@ use crate::c::simple_driver::c_dgssv;
 pub struct SimpleSolution<P: CSuperNodeMatrix<P> + CCreateDenseMatrix<P> + CCompColMatrix<P>> {
     pub x: DenseMatrix<P>,
     pub lu: LUDecomp<P>,
-    pub stat: SuperLUStat_t,
     pub info: i32,
 }
 
@@ -39,7 +38,6 @@ pub struct SimpleSolution<P: CSuperNodeMatrix<P> + CCreateDenseMatrix<P> + CComp
 /// A^T. Make sure to convert the CompRowMatrix to a CompColumnMatrix
 /// if you want to solve A.
 ///
-///
 #[allow(non_snake_case)]
 pub fn simple_driver<P: CSuperNodeMatrix<P> + CCreateDenseMatrix<P> + CCompColMatrix<P>>(
     mut options: superlu_options_t,
@@ -47,7 +45,7 @@ pub fn simple_driver<P: CSuperNodeMatrix<P> + CCreateDenseMatrix<P> + CCompColMa
     perm_c: &mut Vec<i32>,
     perm_r: &mut Vec<i32>,
     mut B: DenseMatrix<P>,
-    mut stat: SuperLUStat_t,
+    stat: &mut SuperLUStat_t,
 ) -> SimpleSolution<P> {
     let mut info = 0;
     unsafe {
@@ -62,17 +60,16 @@ pub fn simple_driver<P: CSuperNodeMatrix<P> + CCreateDenseMatrix<P> + CCompColMa
             L.as_mut_ptr(),
             U.as_mut_ptr(),
             B.super_matrix(),
-            &mut stat,
+            stat,
             &mut info,
         );
-	let l = SuperNodeMatrix::from_super_matrix(L.assume_init());
-	let u = CompColMatrix::from_super_matrix(U.assume_init());
-	let lu = LUDecomp::from_matrices(l, u);
+        let l = SuperNodeMatrix::from_super_matrix(L.assume_init());
+        let u = CompColMatrix::from_super_matrix(U.assume_init());
+        let lu = LUDecomp::from_matrices(l, u);
         SimpleSolution {
             x: B,
-	    lu,
-            stat,
-            info,
+            lu,
+	    info,
         }
     }
 }

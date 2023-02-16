@@ -59,14 +59,13 @@ fn main() {
     let mut perm_r = Vec::<i32>::with_capacity(m as usize);
     let mut perm_c = Vec::<i32>::with_capacity(n as usize);
 
-    let stat = SuperLUStat_t::new();
+    let mut stat = SuperLUStat_t::new();
 
     let SimpleSolution {
         mut x,
 	mut lu,
-        mut stat,
         mut info,
-    } = simple_driver(options, &mut a, &mut perm_c, &mut perm_r, b, stat);
+    } = simple_driver(options, &mut a, &mut perm_c, &mut perm_r, b, &mut stat);
 
     // Print the performance statistics
     c_StatPrint(&mut stat);
@@ -81,7 +80,6 @@ fn main() {
 
     println!("{}", a.value(0,0));
 
-    
     x.print("X");
     let x_vals = x.values();
     println!("{:?}", x_vals);

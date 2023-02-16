@@ -1,17 +1,17 @@
-use crate::c::comp_col::CCreateCompColMatrix;
+use crate::c::comp_col::CCompColMatrix;
 use crate::c::super_matrix::{c_SCformat, c_NCformat};
-use crate::c::super_node::CSuperNodeMatrixUtils;
+use crate::c::super_node::CSuperNodeMatrix;
 use crate::comp_col::CompColMatrix;
 use crate::super_node::SuperNodeMatrix;
 use crate::super_matrix::SuperMatrix;
 
-pub struct LUDecomp<P: CSuperNodeMatrixUtils<P> + CCreateCompColMatrix<P>> {
+pub struct LUDecomp<P: CSuperNodeMatrix<P> + CCompColMatrix<P>> {
     l: SuperNodeMatrix<P>,
     u: CompColMatrix<P>,
 }
 
 impl<P> LUDecomp<P>
-where P: CSuperNodeMatrixUtils<P> + CCreateCompColMatrix<P> {
+where P: CSuperNodeMatrix<P> + CCompColMatrix<P> {
     pub fn from_matrices(mut l: SuperNodeMatrix<P>, mut u: CompColMatrix<P>) -> Self {
 	let l_c_super_matrix = l.super_matrix();
 	let u_c_super_matrix = u.super_matrix();

@@ -56,7 +56,7 @@ extern "C" {
 /// is always SLU_NC for this function (as stated in the doxygen docs).
 ///
 /// Rename this to something like CompColUtils
-pub trait CCreateCompColMatrix<P>: Clone + FromPrimitive {
+pub trait CCompColMatrix<P>: Clone + FromPrimitive {
     fn c_create_comp_col_matrix(
         a: &mut MaybeUninit<c_SuperMatrix>,
         m: i32,
@@ -70,7 +70,7 @@ pub trait CCreateCompColMatrix<P>: Clone + FromPrimitive {
     fn c_print_comp_col_matrix(what: *mut libc::c_char, a: *mut c_SuperMatrix);
 }
 
-impl CCreateCompColMatrix<f64> for f64 {
+impl CCompColMatrix<f64> for f64 {
     fn c_create_comp_col_matrix(
         a: &mut MaybeUninit<c_SuperMatrix>,
         m: i32,
@@ -104,7 +104,7 @@ impl CCreateCompColMatrix<f64> for f64 {
     }
 }
 
-impl CCreateCompColMatrix<f32> for f32 {
+impl CCompColMatrix<f32> for f32 {
     fn c_create_comp_col_matrix(
         a: &mut MaybeUninit<c_SuperMatrix>,
         m: i32,

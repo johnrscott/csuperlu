@@ -1,12 +1,12 @@
 //! Solve sparse linear systems using the simple driver
 //!
 
-use crate::c::comp_col::CCreateCompColMatrix;
+use crate::c::comp_col::CCompColMatrix;
 use crate::c::dense::CCreateDenseMatrix;
 use crate::c::options::superlu_options_t;
 use crate::c::stat::SuperLUStat_t;
 use crate::c::super_matrix::c_SuperMatrix;
-use crate::c::super_node::CSuperNodeMatrixUtils;
+use crate::c::super_node::CSuperNodeMatrix;
 use crate::comp_col::CompColMatrix;
 use crate::dense::DenseMatrix;
 
@@ -19,7 +19,7 @@ use std::mem::MaybeUninit;
 use crate::c::simple_driver::c_dgssv;
 
 #[allow(non_snake_case)]
-pub struct SimpleSolution<P: CSuperNodeMatrixUtils<P> + CCreateDenseMatrix<P> + CCreateCompColMatrix<P>> {
+pub struct SimpleSolution<P: CSuperNodeMatrix<P> + CCreateDenseMatrix<P> + CCompColMatrix<P>> {
     pub x: DenseMatrix<P>,
     pub lu: LUDecomp<P>,
     pub stat: SuperLUStat_t,
@@ -41,7 +41,7 @@ pub struct SimpleSolution<P: CSuperNodeMatrixUtils<P> + CCreateDenseMatrix<P> + 
 ///
 ///
 #[allow(non_snake_case)]
-pub fn simple_driver<P: CSuperNodeMatrixUtils<P> + CCreateDenseMatrix<P> + CCreateCompColMatrix<P>>(
+pub fn simple_driver<P: CSuperNodeMatrix<P> + CCreateDenseMatrix<P> + CCompColMatrix<P>>(
     mut options: superlu_options_t,
     A: &mut CompColMatrix<P>,
     perm_c: &mut Vec<i32>,

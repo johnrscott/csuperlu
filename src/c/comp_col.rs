@@ -54,12 +54,11 @@ extern "C" {
         dtype: Dtype_t,
         mtype: Mtype_t,
     );
-
-    fn Destroy_CompCol_Matrix(A: *mut c_SuperMatrix);
     fn sPrint_CompCol_Matrix(what: *mut libc::c_char, A: *mut c_SuperMatrix);
     fn dPrint_CompCol_Matrix(what: *mut libc::c_char, A: *mut c_SuperMatrix);
     fn cPrint_CompCol_Matrix(what: *mut libc::c_char, A: *mut c_SuperMatrix);
     fn zPrint_CompCol_Matrix(what: *mut libc::c_char, A: *mut c_SuperMatrix);
+    fn Destroy_CompCol_Matrix(A: *mut c_SuperMatrix);
 }
 
 /// Create compressed column matrix of particular precision

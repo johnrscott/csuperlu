@@ -1,3 +1,5 @@
+use num::FromPrimitive;
+
 use crate::c::comp_col::CCompColMatrix;
 use crate::c::super_matrix::{c_SCformat, c_NCformat};
 use crate::c::super_node::CSuperNodeMatrix;
@@ -5,12 +7,13 @@ use crate::comp_col::CompColMatrix;
 use crate::super_node::SuperNodeMatrix;
 use crate::super_matrix::SuperMatrix;
 
-pub struct LUDecomp<P: CSuperNodeMatrix + CCompColMatrix> {
+
+pub struct LUDecomp<P: CSuperNodeMatrix + CCompColMatrix + Clone + FromPrimitive> {
     l: SuperNodeMatrix<P>,
     u: CompColMatrix<P>,
 }
 
-impl<P> LUDecomp<P: CSuperNodeMatrix + CCompColMatrix> {
+impl<P: CSuperNodeMatrix + CCompColMatrix + Clone + FromPrimitive> LUDecomp<P> {
     pub fn from_matrices(mut l: SuperNodeMatrix<P>, mut u: CompColMatrix<P>) -> Self {
 	let l_c_super_matrix = l.super_matrix();
 	let u_c_super_matrix = u.super_matrix();

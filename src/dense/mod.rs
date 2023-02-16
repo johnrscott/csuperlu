@@ -1,8 +1,6 @@
 //! Functions to create dense matrices.
 //!
 
-use num::FromPrimitive;
-
 use crate::c::dense::c_Destroy_Dense_Matrix;
 use crate::c::dense::CDenseMatrix;
 use crate::c::super_matrix::c_DNformat;
@@ -10,12 +8,12 @@ use crate::c::super_matrix::{c_SuperMatrix, Mtype_t};
 use crate::super_matrix::SuperMatrix;
 use std::mem::MaybeUninit;
 
-pub struct DenseMatrix<P: CDenseMatrix + Clone + FromPrimitive> {
+pub struct DenseMatrix<P: CDenseMatrix> {
     c_super_matrix: c_SuperMatrix,
     marker: std::marker::PhantomData<P>,
 }
 
-impl<P: CDenseMatrix + Clone + FromPrimitive> DenseMatrix<P> {
+impl<P: CDenseMatrix> DenseMatrix<P> {
     /// Specify a dense matrix from an input vector.
     ///
     /// Use this function to make a dense c_SuperMatrix. The vector
@@ -24,7 +22,7 @@ impl<P: CDenseMatrix + Clone + FromPrimitive> DenseMatrix<P> {
     /// the solver when the dense matrix is used as the right-hand
     /// side matrix.
     ///
-    pub fn from_vectors(m: i32, n: i32, mut x: Vec<P::Value>, mtype: Mtype_t) -> Self {
+    pub fn from_vectors(m: i32, n: i32, mut x: Vec<P>, mtype: Mtype_t) -> Self {
         let c_super_matrix = unsafe {
             let mut c_super_matrix = MaybeUninit::<c_SuperMatrix>::uninit();
             P::c_create_dense_matrix(&mut c_super_matrix, m, n, &mut x, m, mtype);
@@ -52,7 +50,7 @@ impl<P: CDenseMatrix + Clone + FromPrimitive> DenseMatrix<P> {
 
 }
 
-impl<P: CDenseMatrix + Clone + FromPrimitive> SuperMatrix for DenseMatrix<P> {
+impl<P: CDenseMatrix> SuperMatrix for DenseMatrix<P> {
     fn super_matrix<'a>(&'a mut self) -> &'a mut c_SuperMatrix {
         &mut self.c_super_matrix
     }
@@ -62,7 +60,7 @@ impl<P: CDenseMatrix + Clone + FromPrimitive> SuperMatrix for DenseMatrix<P> {
     }
 }
 
-impl<P: CDenseMatrix + Clone + FromPrimitive> Drop for DenseMatrix<P> {
+impl<P: CDenseMatrix> Drop for DenseMatrix<P> {
     fn drop(&mut self) {
         // Note that the input vectors are not freed by this line
         c_Destroy_Dense_Matrix(&mut self.c_super_matrix);

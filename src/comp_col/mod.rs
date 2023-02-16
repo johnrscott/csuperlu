@@ -23,12 +23,12 @@ use num::FromPrimitive;
 /// Compressed-column matrix
 ///
 ///
-pub struct CompColMatrix<P: CCompColMatrix + Clone + FromPrimitive> {
+pub struct CompColMatrix<P: CCompColMatrix> {
     c_super_matrix: c_SuperMatrix,
     marker: std::marker::PhantomData<P>,
 }
 
-impl<P: CCompColMatrix + Clone + FromPrimitive> CompColMatrix<P> {
+impl<P: CCompColMatrix> CompColMatrix<P> {
     /// Create a compressed-column matrix from a c_SuperMatrix structure
     ///
     pub fn from_super_matrix(c_super_matrix: c_SuperMatrix) -> Self {
@@ -54,7 +54,7 @@ impl<P: CCompColMatrix + Clone + FromPrimitive> CompColMatrix<P> {
         m: i32,
         n: i32,
         nnz: i32,
-        mut nzval: Vec<P::Value>,
+        mut nzval: Vec<P>,
         mut rowind: Vec<i32>,
         mut colptr: Vec<i32>,
         mtype: Mtype_t,
@@ -122,7 +122,7 @@ impl<P: CCompColMatrix + Clone + FromPrimitive> CompColMatrix<P> {
 
 }
 
-impl<P: CCompColMatrix + Clone + FromPrimitive> SuperMatrix for CompColMatrix<P> {
+impl<P: CCreateCompColMatrix<P> + Clone + FromPrimitive> SuperMatrix for CompColMatrix<P> {
     fn super_matrix<'a>(&'a mut self) -> &'a mut c_SuperMatrix {
         &mut self.c_super_matrix
     }
@@ -132,7 +132,7 @@ impl<P: CCompColMatrix + Clone + FromPrimitive> SuperMatrix for CompColMatrix<P>
     }
 }
 
-impl<P: CCompColMatrix + Clone + FromPrimitive> Drop for CompColMatrix<P> {
+impl<P: CCreateCompColMatrix<P> + Clone + FromPrimitive> Drop for CompColMatrix<P> {
     fn drop(&mut self) {
         // Note that the input vectors are also freed by this line
         c_Destroy_CompCol_Matrix(&mut self.c_super_matrix);

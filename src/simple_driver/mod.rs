@@ -21,7 +21,7 @@ use num::FromPrimitive;
 use crate::c::simple_driver::c_dgssv;
 
 #[allow(non_snake_case)]
-pub struct Solution<P: CCompColMatrix + CSuperNodeMatrix + CDenseMatrix + Clone + FromPrimitive> {
+pub struct Solution<P: CCompColMatrix + CSuperNodeMatrix + CDenseMatrix> {
     pub X: DenseMatrix<P>,
     pub lu: LUDecomp<P>,
     pub stat: SuperLUStat_t,
@@ -43,7 +43,7 @@ pub struct Solution<P: CCompColMatrix + CSuperNodeMatrix + CDenseMatrix + Clone 
 ///
 ///
 #[allow(non_snake_case)]
-pub fn simple_driver<P: CCompColMatrix + CSuperNodeMatrix + CDenseMatrix + Clone + FromPrimitive>(
+pub fn simple_driver<P: CCompColMatrix + CSuperNodeMatrix + CDenseMatrix>(
     mut options: superlu_options_t,
     A: &mut CompColMatrix<P>,
     perm_c: &mut Vec<i32>,

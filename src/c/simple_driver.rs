@@ -5,7 +5,40 @@ use libc;
 
 #[link(name = "superlu")]
 extern "C" {
+    fn sgssv(
+        options: *mut superlu_options_t,
+        A: *mut c_SuperMatrix,
+        perm_c: *mut libc::c_int,
+        perm_r: *mut libc::c_int,
+        L: *mut c_SuperMatrix,
+        U: *mut c_SuperMatrix,
+        B: *mut c_SuperMatrix,
+        stat: *mut SuperLUStat_t,
+        info: *mut libc::c_int,
+    );
     fn dgssv(
+        options: *mut superlu_options_t,
+        A: *mut c_SuperMatrix,
+        perm_c: *mut libc::c_int,
+        perm_r: *mut libc::c_int,
+        L: *mut c_SuperMatrix,
+        U: *mut c_SuperMatrix,
+        B: *mut c_SuperMatrix,
+        stat: *mut SuperLUStat_t,
+        info: *mut libc::c_int,
+    );
+    fn cgssv(
+        options: *mut superlu_options_t,
+        A: *mut c_SuperMatrix,
+        perm_c: *mut libc::c_int,
+        perm_r: *mut libc::c_int,
+        L: *mut c_SuperMatrix,
+        U: *mut c_SuperMatrix,
+        B: *mut c_SuperMatrix,
+        stat: *mut SuperLUStat_t,
+        info: *mut libc::c_int,
+    );
+    fn zgssv(
         options: *mut superlu_options_t,
         A: *mut c_SuperMatrix,
         perm_c: *mut libc::c_int,

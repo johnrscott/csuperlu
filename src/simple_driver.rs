@@ -39,7 +39,7 @@ pub struct SimpleSolution<P: CSuperNodeMatrix<P> + CCreateDenseMatrix<P> + CComp
 /// if you want to solve A.
 ///
 #[allow(non_snake_case)]
-pub fn simple_driver<P: CSuperNodeMatrix<P> + CCreateDenseMatrix<P> + CCompColMatrix<P>>(
+pub fn simple_driver<P: CSimpleDriver<P>>(
     mut options: superlu_options_t,
     A: &mut CompColMatrix<P>,
     perm_c: &mut Vec<i32>,
@@ -52,7 +52,7 @@ pub fn simple_driver<P: CSuperNodeMatrix<P> + CCreateDenseMatrix<P> + CCompColMa
         let mut L = MaybeUninit::<c_SuperMatrix>::uninit();
         let mut U = MaybeUninit::<c_SuperMatrix>::uninit();
 
-        c_dgssv(
+        P::c_simple_driver(
             &mut options,
             A.super_matrix(),
             perm_c.as_mut_ptr(),

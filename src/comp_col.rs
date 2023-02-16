@@ -18,8 +18,6 @@ use crate::c::comp_col::CCreateCompColMatrix;
 use crate::c::super_matrix::{c_NCformat, c_SuperMatrix, Mtype_t};
 use crate::super_matrix::SuperMatrix;
 use std::mem::MaybeUninit;
-use std::clone::Clone;
-use num::FromPrimitive;
 
 /// Compressed-column matrix
 ///

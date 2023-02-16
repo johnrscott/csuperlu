@@ -3,13 +3,24 @@ use libc;
 
 #[link(name = "superlu")]
 extern "C" {
-    fn Destroy_SuperNode_Matrix(A: *mut c_SuperMatrix);
-    fn dPrint_SuperNode_Matrix(what: *mut libc::c_char, A: *mut c_SuperMatrix);
     fn sPrint_SuperNode_Matrix(what: *mut libc::c_char, A: *mut c_SuperMatrix);
+    fn dPrint_SuperNode_Matrix(what: *mut libc::c_char, A: *mut c_SuperMatrix);
+    fn cPrint_SuperNode_Matrix(what: *mut libc::c_char, A: *mut c_SuperMatrix);
+    fn zPrint_SuperNode_Matrix(what: *mut libc::c_char, A: *mut c_SuperMatrix);
+    fn Destroy_SuperNode_Matrix(A: *mut c_SuperMatrix);
 }
+
 
 pub trait CSuperNodeMatrix<P> {
     fn c_print_super_node_matrix(what: *mut libc::c_char, a: *mut c_SuperMatrix);
+}
+
+impl CSuperNodeMatrix<f32> for f32 {
+    fn c_print_super_node_matrix(what: *mut libc::c_char, a: *mut c_SuperMatrix) {
+        unsafe {
+            sPrint_SuperNode_Matrix(what, a);
+        }
+    }
 }
 
 impl CSuperNodeMatrix<f64> for f64 {
@@ -20,10 +31,18 @@ impl CSuperNodeMatrix<f64> for f64 {
     }
 }
 
-impl CSuperNodeMatrix<f32> for f32 {
+impl CSuperNodeMatrix<num::Complex<f32>> for num::Complex<f32> {
     fn c_print_super_node_matrix(what: *mut libc::c_char, a: *mut c_SuperMatrix) {
         unsafe {
-            sPrint_SuperNode_Matrix(what, a);
+            cPrint_SuperNode_Matrix(what, a);
+        }
+    }
+}
+
+impl CSuperNodeMatrix<num::Complex<f64>> for num::Complex<f64> {
+    fn c_print_super_node_matrix(what: *mut libc::c_char, a: *mut c_SuperMatrix) {
+        unsafe {
+            zPrint_SuperNode_Matrix(what, a);
         }
     }
 }

@@ -8,25 +8,22 @@ extern "C" {
     fn sPrint_SuperNode_Matrix(what: *mut libc::c_char, A: *mut c_SuperMatrix);
 }
 
-pub trait CSuperNodeMatrix<P> {
-    type Value;
+pub trait CSuperNodeMatrixUtils<P> {
     fn c_print_super_node_matrix(what: *mut libc::c_char, a: *mut c_SuperMatrix);
 }
 
-impl CSuperNodeMatrix<f32> for f32 {
-    type Value = f32;
+impl CSuperNodeMatrixUtils<f64> for f64 {
     fn c_print_super_node_matrix(what: *mut libc::c_char, a: *mut c_SuperMatrix) {
         unsafe {
-            sPrint_SuperNode_Matrix(what, a);
+            dPrint_SuperNode_Matrix(what, a);
         }
     }
 }
 
-impl CSuperNodeMatrix<f64> for f64 {
-    type Value = f64;
+impl CSuperNodeMatrixUtils<f32> for f32 {
     fn c_print_super_node_matrix(what: *mut libc::c_char, a: *mut c_SuperMatrix) {
         unsafe {
-            dPrint_SuperNode_Matrix(what, a);
+            sPrint_SuperNode_Matrix(what, a);
         }
     }
 }

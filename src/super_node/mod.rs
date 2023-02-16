@@ -2,17 +2,17 @@
 //!
 
 use crate::c::super_matrix::{c_SCformat, c_SuperMatrix};
-use crate::c::super_node::{c_Destroy_SuperNode_Matrix, CSuperNodeMatrix};
+use crate::c::super_node::{c_Destroy_SuperNode_Matrix, CSuperNodeMatrixUtils};
 use crate::super_matrix::SuperMatrix;
 
 /// Super-node matrix
 ///
-pub struct SuperNodeMatrix<P: CSuperNodeMatrix> {
+pub struct SuperNodeMatrix<P: CSuperNodeMatrixUtils<P>> {
     c_super_matrix: c_SuperMatrix,
     marker: std::marker::PhantomData<P>,
 }
 
-impl<P: CSuperNodeMatrix> SuperNodeMatrix<P> {
+impl<P: CSuperNodeMatrixUtils<P>> SuperNodeMatrix<P> {
     /// Create a super-node matrix from a c_SuperMatrix structure
     ///
     pub fn from_super_matrix(c_super_matrix: c_SuperMatrix) -> Self {
@@ -29,7 +29,7 @@ impl<P: CSuperNodeMatrix> SuperNodeMatrix<P> {
     }
 }
 
-impl<P: CSuperNodeMatrix> SuperMatrix for SuperNodeMatrix<P> {
+impl<P: CSuperNodeMatrixUtils<P>> SuperMatrix for SuperNodeMatrix<P> {
     fn super_matrix<'a>(&'a mut self) -> &'a mut c_SuperMatrix {
         &mut self.c_super_matrix
     }
@@ -39,7 +39,7 @@ impl<P: CSuperNodeMatrix> SuperMatrix for SuperNodeMatrix<P> {
     }
 }
 
-impl<P: CSuperNodeMatrix> Drop for SuperNodeMatrix<P> {
+impl<P: CSuperNodeMatrixUtils<P>> Drop for SuperNodeMatrix<P> {
     fn drop(&mut self) {
         // Note that the input vectors are also freed by this line
         c_Destroy_SuperNode_Matrix(&mut self.c_super_matrix);

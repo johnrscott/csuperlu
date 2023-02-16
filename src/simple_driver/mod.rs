@@ -1,12 +1,12 @@
 //! Solve sparse linear systems using the simple driver
 //!
 
-use crate::c::comp_col::CCompColMatrix;
-use crate::c::dense::CDenseMatrix;
+use crate::c::comp_col::CCreateCompColMatrix;
+use crate::c::dense::CCreateDenseMatrix;
 use crate::c::options::superlu_options_t;
 use crate::c::stat::SuperLUStat_t;
 use crate::c::super_matrix::c_SuperMatrix;
-use crate::c::super_node::CSuperNodeMatrix;
+use crate::c::super_node::CSuperNodeMatrixUtils;
 use crate::comp_col::CompColMatrix;
 use crate::dense::DenseMatrix;
 
@@ -21,7 +21,10 @@ use num::FromPrimitive;
 use crate::c::simple_driver::c_dgssv;
 
 #[allow(non_snake_case)]
-pub struct Solution<P: CCompColMatrix + CSuperNodeMatrix + CDenseMatrix> {
+pub struct Solution<P>
+where
+    P: CSuperNodeMatrixUtils<P> + CCreateDenseMatrix<P> + CCreateCompColMatrix<P> + Clone + FromPrimitive,
+{
     pub X: DenseMatrix<P>,
     pub lu: LUDecomp<P>,
     pub stat: SuperLUStat_t,
@@ -43,14 +46,17 @@ pub struct Solution<P: CCompColMatrix + CSuperNodeMatrix + CDenseMatrix> {
 ///
 ///
 #[allow(non_snake_case)]
-pub fn simple_driver<P: CCompColMatrix + CSuperNodeMatrix + CDenseMatrix>(
+pub fn simple_driver<P>(
     mut options: superlu_options_t,
     A: &mut CompColMatrix<P>,
     perm_c: &mut Vec<i32>,
     perm_r: &mut Vec<i32>,
     mut B: DenseMatrix<P>,
     mut stat: SuperLUStat_t,
-) -> Solution<P> {
+) -> Solution<P>
+where
+    P: CSuperNodeMatrixUtils<P> + CCreateDenseMatrix<P> + CCreateCompColMatrix<P> + Clone + FromPrimitive,
+{
     let mut info = 0;
     unsafe {
         let mut L = MaybeUninit::<c_SuperMatrix>::uninit();

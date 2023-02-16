@@ -2,6 +2,7 @@ use std::mem::MaybeUninit;
 
 use crate::c::super_matrix::{c_SuperMatrix, Dtype_t, Mtype_t, Stype_t};
 use libc;
+use num::FromPrimitive;
 
 #[link(name = "superlu")]
 extern "C" {
@@ -38,7 +39,9 @@ extern "C" {
 ///
 /// Trait for access to low level C functions from SuperLU, which
 /// dispatches correctly based on the desired precision (and picks
-/// the right value for the Dtype argument).
+/// the right value for the Dtype argument). This trait is necessary
+/// because the function names for different precisions are
+/// different.
 ///
 /// The assumption of this trait is that it is necessary to pass the
 /// correct value of Dtype corresponding to the prefix in front of
@@ -53,7 +56,7 @@ extern "C" {
 /// is always SLU_NC for this function (as stated in the doxygen docs).
 ///
 /// Rename this to something like CompColUtils
-pub trait CCreateCompColMatrix<P> {
+pub trait CCreateCompColMatrix<P>: Clone + FromPrimitive {
     fn c_create_comp_col_matrix(
         a: &mut MaybeUninit<c_SuperMatrix>,
         m: i32,

@@ -19,8 +19,8 @@ use std::mem::MaybeUninit;
 use crate::c::simple_driver::c_dgssv;
 
 #[allow(non_snake_case)]
-pub struct Solution<P: CSuperNodeMatrixUtils<P> + CCreateDenseMatrix<P> + CCreateCompColMatrix<P>> {
-    pub X: DenseMatrix<P>,
+pub struct SimpleSolution<P: CSuperNodeMatrixUtils<P> + CCreateDenseMatrix<P> + CCreateCompColMatrix<P>> {
+    pub x: DenseMatrix<P>,
     pub lu: LUDecomp<P>,
     pub stat: SuperLUStat_t,
     pub info: i32,
@@ -48,7 +48,7 @@ pub fn simple_driver<P: CSuperNodeMatrixUtils<P> + CCreateDenseMatrix<P> + CCrea
     perm_r: &mut Vec<i32>,
     mut B: DenseMatrix<P>,
     mut stat: SuperLUStat_t,
-) -> Solution<P> {
+) -> SimpleSolution<P> {
     let mut info = 0;
     unsafe {
         let mut L = MaybeUninit::<c_SuperMatrix>::uninit();
@@ -68,8 +68,8 @@ pub fn simple_driver<P: CSuperNodeMatrixUtils<P> + CCreateDenseMatrix<P> + CCrea
 	let l = SuperNodeMatrix::from_super_matrix(L.assume_init());
 	let u = CompColMatrix::from_super_matrix(U.assume_init());
 	let lu = LUDecomp::from_matrices(l, u);
-        Solution {
-            X: B,
+        SimpleSolution {
+            x: B,
 	    lu,
             stat,
             info,

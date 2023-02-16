@@ -43,7 +43,7 @@ mod tests {
     use crate::c::super_matrix::Mtype_t;
     use crate::comp_col::CompColMatrix;
     use crate::dense::DenseMatrix;
-    use crate::simple_driver::{simple_driver, Solution};
+    use crate::simple_driver::{simple_driver, SimpleSolution};
     use crate::super_matrix::SuperMatrix;
 
     #[test]
@@ -146,14 +146,14 @@ mod tests {
 	let mut perm_c = Vec::<i32>::with_capacity(n as usize);
 
 	let stat = SuperLUStat_t::new();
-	let Solution {
-            mut X,
+	let SimpleSolution {
+            mut x,
             lu: _,
             stat: _,
             info: _,
 	} = simple_driver(options, &mut a, &mut perm_c, &mut perm_r, b, stat);
 
-	let x_vals = X.values();
+	let x_vals = x.values();
 
 	// True solution
 	let x_true =  vec![-0.031249999999999976, 0.06547619047619045,

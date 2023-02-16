@@ -17,7 +17,7 @@ use csuperlu::c::stat::{c_StatPrint, SuperLUStat_t};
 use csuperlu::c::super_matrix::Mtype_t;
 use csuperlu::comp_col::CompColMatrix;
 use csuperlu::dense::DenseMatrix;
-use csuperlu::simple_driver::{simple_driver, Solution};
+use csuperlu::simple_driver::{simple_driver, SimpleSolution};
 use csuperlu::super_matrix::SuperMatrix;
 
 fn main() {
@@ -61,8 +61,8 @@ fn main() {
 
     let stat = SuperLUStat_t::new();
 
-    let Solution {
-        mut X,
+    let SimpleSolution {
+        mut x,
 	mut lu,
         mut stat,
         mut info,
@@ -82,8 +82,8 @@ fn main() {
     println!("{}", a.value(0,0));
 
     
-    X.print("X");
-    let x_vals = X.values();
+    x.print("X");
+    let x_vals = x.values();
     println!("{:?}", x_vals);
     
 }

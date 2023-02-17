@@ -176,7 +176,7 @@ impl CCreateDenseMatrix<num::Complex<f64>> for num::Complex<f64> {
                 values.as_mut_ptr() as *mut libc::c_double,
                 ldx,
                 Stype_t::SLU_DN,
-                Dtype_t::SLU_D,
+                Dtype_t::SLU_Z,
                 mtype,
             );
         }

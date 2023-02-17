@@ -96,40 +96,6 @@ pub trait CCompColMatrix<P>: Clone + FromPrimitive {
     fn c_print_comp_col_matrix(what: *mut libc::c_char, a: *mut c_SuperMatrix);
 }
 
-impl CCompColMatrix<f64> for f64 {
-    fn c_create_comp_col_matrix(
-        a: &mut MaybeUninit<c_SuperMatrix>,
-        m: i32,
-        n: i32,
-        nnz: i32,
-        nzval: &mut Vec<f64>,
-        rowind: &mut Vec<i32>,
-        colptr: &mut Vec<i32>,
-        mtype: Mtype_t,
-    ) {
-        unsafe {
-            dCreate_CompCol_Matrix(
-                a.as_mut_ptr(),
-                m,
-                n,
-                nnz,
-                nzval.as_mut_ptr(),
-                rowind.as_mut_ptr(),
-                colptr.as_mut_ptr(),
-                Stype_t::SLU_NC,
-                Dtype_t::SLU_D,
-                mtype,
-            );
-        }
-    }
-
-    fn c_print_comp_col_matrix(what: *mut libc::c_char, a: *mut c_SuperMatrix) {
-        unsafe {
-            dPrint_CompCol_Matrix(what, a);
-        }
-    }
-}
-
 impl CCompColMatrix<f32> for f32 {
     fn c_create_comp_col_matrix(
         a: &mut MaybeUninit<c_SuperMatrix>,
@@ -160,6 +126,40 @@ impl CCompColMatrix<f32> for f32 {
     fn c_print_comp_col_matrix(what: *mut libc::c_char, a: *mut c_SuperMatrix) {
         unsafe {
             sPrint_CompCol_Matrix(what, a);
+        }
+    }
+}
+
+impl CCompColMatrix<f64> for f64 {
+    fn c_create_comp_col_matrix(
+        a: &mut MaybeUninit<c_SuperMatrix>,
+        m: i32,
+        n: i32,
+        nnz: i32,
+        nzval: &mut Vec<f64>,
+        rowind: &mut Vec<i32>,
+        colptr: &mut Vec<i32>,
+        mtype: Mtype_t,
+    ) {
+        unsafe {
+            dCreate_CompCol_Matrix(
+                a.as_mut_ptr(),
+                m,
+                n,
+                nnz,
+                nzval.as_mut_ptr(),
+                rowind.as_mut_ptr(),
+                colptr.as_mut_ptr(),
+                Stype_t::SLU_NC,
+                Dtype_t::SLU_D,
+                mtype,
+            );
+        }
+    }
+
+    fn c_print_comp_col_matrix(what: *mut libc::c_char, a: *mut c_SuperMatrix) {
+        unsafe {
+            dPrint_CompCol_Matrix(what, a);
         }
     }
 }

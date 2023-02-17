@@ -82,7 +82,8 @@ impl CSimpleDriver<f32> for f32 {
 	info: &mut i32,
     ) {
 	unsafe {
-            sgssv(options, A, perm_c.as_mut_ptr(), perm_r.as_mut_ptr(), L, U, B, stat, info);
+            sgssv(options, A, perm_c.as_mut_ptr(), perm_r.as_mut_ptr(),
+		  L, U, B, stat, info);
 	}	
     }
 }
@@ -100,7 +101,8 @@ impl CSimpleDriver<f64> for f64 {
 	info: &mut i32,
     ) {
 	unsafe {
-            dgssv(options, A, perm_c.as_mut_ptr(), perm_r.as_mut_ptr(), L, U, B, stat, info);
+            dgssv(options, A, perm_c.as_mut_ptr(), perm_r.as_mut_ptr(),
+		  L, U, B, stat, info);
 	}	
     }
 }
@@ -118,7 +120,8 @@ impl CSimpleDriver<num::Complex<f32>> for num::Complex<f32> {
 	info: &mut i32,
     ) {
 	unsafe {
-            cgssv(options, A, perm_c.as_mut_ptr(), perm_r.as_mut_ptr(), L, U, B, stat, info);
+            cgssv(options, A, perm_c.as_mut_ptr(), perm_r.as_mut_ptr(),
+		  L, U, B, stat, info);
 	}	
     }
 }
@@ -136,7 +139,8 @@ impl CSimpleDriver<num::Complex<f64>> for num::Complex<f64> {
 	info: &mut i32,
     ) {
 	unsafe {
-            zgssv(options, A, perm_c.as_mut_ptr(), perm_r.as_mut_ptr(), L, U, B, stat, info);
+            zgssv(options, A, perm_c.as_mut_ptr(), perm_r.as_mut_ptr(),
+		  L, U, B, stat, info);
 	}	
     }
 }

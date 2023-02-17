@@ -52,7 +52,7 @@ fn main() {
 
     // Make the RHS vector
     let nrhs = 1;
-    let rhs = vec![1.0; m as usize];
+    let rhs = vec![Complex::new(1.0, 0.0); m as usize];
     let b = DenseMatrix::from_vectors(m, nrhs, rhs, Mtype_t::SLU_GE);
 
     let mut options = superlu_options_t::new();

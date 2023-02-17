@@ -11,8 +11,6 @@ use crate::lu_decomp::LUDecomp;
 use crate::super_matrix::SuperMatrix;
 use crate::super_node::SuperNodeMatrix;
 
-use std::mem::MaybeUninit;
-
 use crate::c::simple_driver::CSimpleDriver;
 
 #[allow(non_snake_case)]
@@ -46,22 +44,22 @@ pub fn simple_driver<P: CSimpleDriver<P>>(
 ) -> SimpleSolution<P> {
     let mut info = 0;
     unsafe {
-        let mut L = MaybeUninit::<c_SuperMatrix>::uninit();
-        let mut U = MaybeUninit::<c_SuperMatrix>::uninit();
+        let mut L = c_SuperMatrix::alloc();
+        let mut U = c_SuperMatrix::alloc();
 
         P::c_simple_driver(
             &mut options,
             A.super_matrix(),
-            perm_c.as_mut_ptr(),
-            perm_r.as_mut_ptr(),
-            L,
-            U,
+            perm_c,
+            perm_r,
+            &mut L,
+            &mut U,
             B.super_matrix(),
             stat,
             &mut info,
         );
-        let l = SuperNodeMatrix::from_super_matrix(L.assume_init());
-        let u = CompColMatrix::from_super_matrix(U.assume_init());
+        let l = SuperNodeMatrix::from_super_matrix(L);
+        let u = CompColMatrix::from_super_matrix(U);
         let lu = LUDecomp::from_matrices(l, u);
         SimpleSolution {
             x: B,

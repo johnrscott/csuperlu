@@ -116,6 +116,24 @@ pub struct c_SuperMatrix {
     pub Store: *mut libc::c_void,
 }
 
+impl c_SuperMatrix {
+    /// Create a new struct with default values for the elements. These
+    /// values are well-defined, but meaningless, and this function only
+    /// exists to create SuperMatrix structures for passing to SuperLU
+    /// functions. Note in particular that the Store field is an invalid
+    /// (null) pointer.
+    pub unsafe fn alloc() -> Self {
+	c_SuperMatrix {
+	    Stype: Stype_t::SLU_DN,
+	    Dtype: Dtype_t::SLU_C,
+	    Mtype: Mtype_t::SLU_GE,
+	    nrow: 0,
+	    ncol: 0,
+	    Store: 0 as *mut libc::c_void,
+	}
+    }
+}
+
 /// The C structure for the compressed-column format.
 #[repr(C)]
 #[allow(non_snake_case)]

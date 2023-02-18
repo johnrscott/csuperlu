@@ -17,6 +17,13 @@
 //! Analysis and Applications 20.3 (1999): 720-755.*, available
 //! [here](https://portal.nersc.gov/project/sparse/xiaoye-web/simax-29176.pdf).
 //!
+//! **This version is A frontend package for SuperLU. Currently, it
+//! manually links to libsuperlu-dev on unix systems. This means you can use
+//! this crate now, if you are happy to manually install superlu yourself. A
+//! libsuperlu-sys package is planned that will expose the underlying
+//! library in a portable way. This will not affect the API of this crate.**
+//!
+//! 
 
 //#![warn(missing_docs)]
 pub mod c;

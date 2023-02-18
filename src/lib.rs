@@ -20,8 +20,7 @@
 //! # Development plans
 //!
 //! The library is currently under development, and the API is not stable
-//! yet. A stable version of the API (1.0.0) will be available by 1st April
-//! 2023. 
+//! yet. The API will be stable at version 1.0.0.
 //!
 //! **This version is A frontend package for SuperLU. Currently, it
 //! manually links to libsuperlu-dev on unix systems. This means you can use

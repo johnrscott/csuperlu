@@ -1,4 +1,87 @@
-use std::{io::{self, BufRead}, str::FromStr};
+use std::io::{self, BufRead};
+
+#[derive(Debug)]
+enum MatrixValueType {
+    Real,
+    Complex,
+    Pattern,
+}
+
+impl MatrixValueType {
+    pub fn from_char(ch: char) -> Self {
+	match ch {
+	    'R' => Self::Real,
+	    'C' => Self::Complex,
+	    'P' => Self::Pattern,
+	    _ => panic!("Unexpected matrix value type character '{ch}'"),
+	}
+    }
+}
+
+#[derive(Debug)]
+enum MatrixProperty {
+    Unsymmetric,
+    Symmetric,
+    Hermitian,
+    SkewSymmetric,
+    Rectangular,
+}
+
+impl MatrixProperty {
+    pub fn from_char(ch: char) -> Self {
+	match ch {
+	    'U' => Self::Unsymmetric,
+	    'S' => Self::Symmetric,
+	    'H' => Self::Hermitian,
+	    'Z' => Self::SkewSymmetric,
+	    'R' => Self::Rectangular,
+	    _ => panic!("Unexpected matrix property character '{ch}'"),
+	}
+    }
+}
+
+#[derive(Debug)]
+enum MatrixStructure {
+    Assembled,
+    FiniteElement,
+}
+
+impl MatrixStructure {
+    pub fn from_char(ch: char) -> Self {
+	match ch {
+	    'A' => Self::Assembled,
+	    'E' => Self::FiniteElement,
+	    _ => panic!("Unexpected matrix structure character '{ch}'"),
+	}
+    }
+}
+
+#[derive(Debug)]
+struct MatrixType {
+    value_type: MatrixValueType,
+    property: MatrixProperty,
+    structure: MatrixStructure,
+}
+
+impl MatrixType {
+    pub fn from_string(string: String) -> Self {
+	if string.len() != 3 {
+	    panic!("MatrixType string must have exactly three characters")
+	}
+	let value_type = MatrixValueType::from_char(string.chars().nth(0)
+						    .unwrap());
+	let property = MatrixProperty::from_char(string.chars().nth(1)
+						 .unwrap());
+	let structure = MatrixStructure::from_char(string.chars().nth(2)
+						   .unwrap());
+	MatrixType {
+	    value_type,
+	    property,
+	    structure,
+	}
+    }
+}
+
 
 /// Data contained in the header of a Harwell-Boeing
 /// matrix file.
@@ -24,7 +107,7 @@ pub struct HarwellBoeingHeader {
     /// starting guess, and solutions
     num_rhs_lines: i32,
     /// Matrix type, as a three-character code
-    matrix_type: String,
+    matrix_type: MatrixType,
     /// Number of rows in the matrix
     num_rows: i32,
     /// Number of columns in the matrix
@@ -96,7 +179,7 @@ impl<P> HarwellBoeingMatrix<P> {
 	let line = lines.next()
 	    .expect("Expected at least 3 line in Harwell-Boeing file")
 	    .expect("Failed to parse line");
-	let matrix_type = line[0..3].trim().to_string();
+	let matrix_type = MatrixType::from_string(line[0..3].trim().to_string());
 	let num_rows = parse_int(&line[1*14..],
 				 "num_rows");
 	let num_columns = parse_int(&line[2*14..],

@@ -50,6 +50,7 @@ impl<P: CCompColMatrix<P>> CompColMatrix<P> {
 	});	    
 
 	let matrix = HarwellBoeingMatrix::<P>::from_file(file);
+	println!("{:?}", matrix);
 	
 	// Matrix dimensions
 	let m: i32 = 5;

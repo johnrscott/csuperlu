@@ -6,6 +6,7 @@ use std::io::{self, BufRead};
 /// The Harwell-Boeing format is described
 /// [here](https://people.sc.fsu.edu/~jburkardt/data/hb/hb.html).
 ///
+#[derive(Debug)]
 struct HarwellBoeingHeader {
     /// Title of matrix 
     title: String,
@@ -63,20 +64,57 @@ pub struct HarwellBoeingMatrix<P> {
 impl<P> HarwellBoeingMatrix<P> {
     pub fn from_file(file: std::fs::File) {
 	let mut reader = io::BufReader::new(file);
-	let mut line = String::new();
-	reader.read_line(&mut line).expect("Error line 1");
+	let mut lines = reader.lines();
+	
+	let line = lines.next()
+	    .expect("Expected at least 1 line in Harwell-Boeing file")
+	    .expect("Failed to parse line");
 	let title = &line[0..72].trim();
-	
-	println!("{title}, {}", title.len());
-	
-	
-	// let lines = reader.lines();
-	// if lines.l < 4 {
-	//     println!{""}
-	//     process::exit(1)
-	// }
+	let key = &line[72..80].trim();
+	let line = lines.next()
+	    .expect("Expected at least 2 line in Harwell-Boeing file")
+	    .expect("Failed to parse line");	
+	let total_data_lines = &line[0..14].trim();
+	let num_column_offset_lines = &line[14..28]
+	    .trim()
+	    .parse::<i32>()
+	    .expect("Failed to parse num_column_offset_lines");
+	let num_row_offset_lines = &line[28..42]
+	    .trim()
+	    .parse::<i32>()
+	    .expect("Failed to parse num_row_offset_lines");
+	let num_values_lines = &line[42..56]
+	    .trim()
+	    .parse::<i32>()
+	    .expect("Failed to parse num_values_lines");
+	let num_rhs_lines = &line[56..70]
+	    .trim()
+	    .parse::<i32>()
+	    .expect("Failed to parse num_values_lines");
 
+	
+    // /// Number of lines for right-hand side,
+    // /// starting guess, and solutions
+    // num_rhs_lines: i32,
+    // /// Matrix type, as a three-character code
+    // matrix_type: String,
+    // /// Number of rows in the matrix
+    // nrow: i32,
+    // /// Number of columns in the matrix
+    // ncolumns: i32,
+    // /// Number of non-zero values in the matrix
+    // num_non_zeroes: i32,
+    // num_elemental_entries: i32,
+    // pointer_format: String,
+    // index_format: String,
+    // value_format: String,
+    // rhs_format: String,
+    // rhs_type: String,
+    // /// Number of right-hand sides
+    // num_rhs: i32,
+    // num_row_indices: i32,
 
+	    
 	// for line in lines {
 	//     println!("{}", line.unwrap());
 	// }

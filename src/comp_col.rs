@@ -16,6 +16,7 @@
 use crate::c::comp_col::c_Destroy_CompCol_Matrix;
 use crate::c::comp_col::CCompColMatrix;
 use crate::c::super_matrix::{c_NCformat, c_SuperMatrix, Mtype_t};
+use crate::harwell_boeing::HarwellBoeingMatrix;
 use crate::super_matrix::SuperMatrix;
 use std::mem::MaybeUninit;
 use std::fs;
@@ -48,6 +49,8 @@ impl<P: CCompColMatrix<P>> CompColMatrix<P> {
             process::exit(1);
 	});	    
 
+	let matrix = HarwellBoeingMatrix::<P>::from_file(file);
+	
 	// Matrix dimensions
 	let m: i32 = 5;
 	let n: i32 = 5;

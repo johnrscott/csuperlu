@@ -47,7 +47,7 @@ struct HarwellBoeingHeader {
 /// format). Sometimes, the non-zero values may be omitted, in
 /// which case the matrix is called a "pattern matrix".
 /// 
-struct HarwellBoeingMatrix<P> {
+pub struct HarwellBoeingMatrix<P> {
     /// The header describing the matrix format
     header: HarwellBoeingHeader,
     /// Offsets to the start of each column in the row_indices vector
@@ -61,8 +61,24 @@ struct HarwellBoeingMatrix<P> {
 }
 
 impl<P> HarwellBoeingMatrix<P> {
-    fn from_file(file: std::fs::File) {
-	let reader = io::BufReader::new(file);
-	let lines = reader.lines();
+    pub fn from_file(file: std::fs::File) {
+	let mut reader = io::BufReader::new(file);
+	let mut line = String::new();
+	reader.read_line(&mut line).expect("Error line 1");
+	let title = &line[0..72].trim();
+	
+	println!("{title}, {}", title.len());
+	
+	
+	// let lines = reader.lines();
+	// if lines.l < 4 {
+	//     println!{""}
+	//     process::exit(1)
+	// }
+
+
+	// for line in lines {
+	//     println!("{}", line.unwrap());
+	// }
     }
 }

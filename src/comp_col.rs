@@ -18,6 +18,7 @@ use crate::c::comp_col::CCompColMatrix;
 use crate::c::super_matrix::{c_NCformat, c_SuperMatrix, Mtype_t};
 use crate::super_matrix::SuperMatrix;
 use std::mem::MaybeUninit;
+use std::fs;
 
 /// Compressed-column matrix
 ///
@@ -39,7 +40,11 @@ impl<P: CCompColMatrix<P>> CompColMatrix<P> {
 
     /// Create a compressed-column matrix from a file
     /// stored in Harwell-Boeing format. 
-    pub fn from_file() -> Self {
+    pub fn from_harwell_boeing(file_path: String) -> Self {
+
+	let contents = fs::read_to_string(file_path);
+	
+
 	// Matrix dimensions
 	let m: i32 = 5;
 	let n: i32 = 5;

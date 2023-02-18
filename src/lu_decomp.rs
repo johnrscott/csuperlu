@@ -35,10 +35,10 @@ where P: CSuperNodeMatrix<P> + CCompColMatrix<P> {
 		"Row index out of range");
 	assert!(col < l_c_super_matrix.ncol as usize,
 		"Column index out of range");
-	let l_c_scformat = unsafe {
+	let _l_c_scformat = unsafe {
 	    &mut *(l_c_super_matrix.Store as *mut c_SCformat)
 	};
-	let u_c_ncformat = unsafe {
+	let _u_c_ncformat = unsafe {
 	    &mut *(u_c_super_matrix.Store as *mut c_NCformat)
 	};
 	todo!("Finish this off later");

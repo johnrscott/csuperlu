@@ -39,15 +39,26 @@ impl<P: CCompColMatrix<P>> CompColMatrix<P> {
 
     /// Create a compressed-column matrix from a file
     /// stored in Harwell-Boeing format. 
-    // pub fn from_file() -> Self {
-    // 	let m = 5;
-    // 	let n = 5;
-    // 	let nnz = 12;
-	
-    // 	Self::from_vectors {
-	    
-    // 	}
-    // }
+    pub fn from_file() -> Self {
+	// Matrix dimensions
+	let m: i32 = 5;
+	let n: i32 = 5;
+
+	// Number of non-zeros
+	let nnz: i32 = 12;
+
+	// Vector of doubles of length nnz
+	let a = vec![P::from_f32(1.0).unwrap(); nnz as usize];
+
+	// Vector of ints of length nnz
+	let asub = vec![0, 1, 4, 1, 2, 4, 0, 2, 0, 3, 3, 4];
+
+	// Vector of ints of length n+1
+	let xa = vec![0, 3, 6, 8, 10, 12];
+
+	// Make the left-hand side matrix
+	Self::from_vectors(m, n, nnz, a, asub, xa)
+    }
 
     /// Specify a compressed column matrix from input vectors.
     ///

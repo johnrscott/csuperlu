@@ -17,13 +17,13 @@ at the top-level directory.
  *
  */
 #include <unistd.h>
-#include "slu_cdefs.h"
+#include "slu_ddefs.h"
 
 int main(int argc, char *argv[])
 {
     SuperMatrix A;
     NCformat *Astore;
-    complex   *a;
+    double   *a;
     int      *asub, *xa;
     int      *perm_c; /* column permutation vector */
     int      *perm_r; /* row permutations from partial pivoting */
@@ -33,7 +33,7 @@ int main(int argc, char *argv[])
     NCformat *Ustore;
     SuperMatrix B;
     int      nrhs, ldx, info, m, n, nnz;
-    complex   *xact, *rhs;
+    double   *xact, *rhs;
     mem_usage_t   mem_usage;
     superlu_options_t options;
     SuperLUStat_t stat;
@@ -58,19 +58,19 @@ int main(int argc, char *argv[])
     set_default_options(&options);
 
     /* Read the matrix in Harwell-Boeing format. */
-    creadhb(fp, &m, &n, &nnz, &a, &asub, &xa);
+    dreadhb(fp, &m, &n, &nnz, &a, &asub, &xa);
 
-    cCreate_CompCol_Matrix(&A, m, n, nnz, a, asub, xa, SLU_NC, SLU_C, SLU_GE);
+    dCreate_CompCol_Matrix(&A, m, n, nnz, a, asub, xa, SLU_NC, SLU_D, SLU_GE);
     Astore = A.Store;
     printf("Dimension %dx%d; # nonzeros %d\n", A.nrow, A.ncol, Astore->nnz);
     
     nrhs   = 1;
-    if ( !(rhs = complexMalloc(m * nrhs)) ) ABORT("Malloc fails for rhs[].");
-    cCreate_Dense_Matrix(&B, m, nrhs, rhs, m, SLU_DN, SLU_C, SLU_GE);
-    xact = complexMalloc(n * nrhs);
+    if ( !(rhs = doubleMalloc(m * nrhs)) ) ABORT("Malloc fails for rhs[].");
+    dCreate_Dense_Matrix(&B, m, nrhs, rhs, m, SLU_DN, SLU_D, SLU_GE);
+    xact = doubleMalloc(n * nrhs);
     ldx = n;
-    cGenXtrue(n, nrhs, xact, ldx);
-    cFillRHS(options.Trans, nrhs, xact, ldx, &A, &B);
+    dGenXtrue(n, nrhs, xact, ldx);
+    dFillRHS(options.Trans, nrhs, xact, ldx, &A, &B);
 
     if ( !(perm_c = intMalloc(n)) ) ABORT("Malloc fails for perm_c[].");
     if ( !(perm_r = intMalloc(m)) ) ABORT("Malloc fails for perm_r[].");
@@ -78,15 +78,15 @@ int main(int argc, char *argv[])
     /* Initialize the statistics variables. */
     StatInit(&stat);
     
-    cgssv(&options, &A, perm_c, perm_r, &L, &U, &B, &stat, &info);
+    dgssv(&options, &A, perm_c, perm_r, &L, &U, &B, &stat, &info);
     
     if ( info == 0 ) {
 
 	/* This is how you could access the solution matrix. */
-        complex *sol = (complex*) ((DNformat*) B.Store)->nzval; 
+        double *sol = (double*) ((DNformat*) B.Store)->nzval; 
 
 	 /* Compute the infinity norm of the error. */
-	cinf_norm_error(nrhs, &B, xact);
+	dinf_norm_error(nrhs, &B, xact);
 
 	Lstore = (SCformat *) L.Store;
 	Ustore = (NCformat *) U.Store;
@@ -95,14 +95,14 @@ int main(int argc, char *argv[])
     	printf("No of nonzeros in L+U = %d\n", Lstore->nnz + Ustore->nnz - n);
     	printf("FILL ratio = %.1f\n", (float)(Lstore->nnz + Ustore->nnz - n)/nnz);
 	
-	cQuerySpace(&L, &U, &mem_usage);
+	dQuerySpace(&L, &U, &mem_usage);
 	printf("L\\U MB %.3f\ttotal MB needed %.3f\n",
 	       mem_usage.for_lu/1e6, mem_usage.total_needed/1e6);
 	
     } else {
-	printf("cgssv() error returns INFO= %d\n", info);
+	printf("dgssv() error returns INFO= %d\n", info);
 	if ( info <= n ) { /* factorization completes */
-	    cQuerySpace(&L, &U, &mem_usage);
+	    dQuerySpace(&L, &U, &mem_usage);
 	    printf("L\\U MB %.3f\ttotal MB needed %.3f\n",
 		   mem_usage.for_lu/1e6, mem_usage.total_needed/1e6);
 	}

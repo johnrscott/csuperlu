@@ -7,7 +7,7 @@ use std::{io::{self, BufRead}, str::FromStr};
 /// [here](https://people.sc.fsu.edu/~jburkardt/data/hb/hb.html).
 ///
 #[derive(Debug)]
-struct HarwellBoeingHeader {
+pub struct HarwellBoeingHeader {
     /// Title of matrix 
     title: String,
     /// Matrix key (another identifier?)
@@ -39,7 +39,7 @@ struct HarwellBoeingHeader {
     rhs_type: Option<String>,
     /// Number of right-hand sides
     num_rhs: Option<i32>,
-    num_rhs_indices: OPtion<i32>,
+    num_rhs_indices: Option<i32>,
 }
 
 /// Sparse matrix stored in Harwell-Boeing format. Often, the
@@ -86,8 +86,8 @@ impl<P> HarwellBoeingMatrix<P> {
 					 "total_data_lines");
 	let num_column_offset_lines = parse_int(&line[1*14..],
 						"num_column_offset_lines");
-	let num_row_offset_lines = parse_int(&line[1*14..],
-						"num_row_offset_lines");
+	let num_row_index_lines = parse_int(&line[1*14..],
+						"num_row_index_lines");
 	let num_values_lines = parse_int(&line[3*14..],
 					 "num_values_lines");
 	let num_rhs_lines = parse_int(&line[4*14..],
@@ -97,8 +97,8 @@ impl<P> HarwellBoeingMatrix<P> {
 	    .expect("Expected at least 3 line in Harwell-Boeing file")
 	    .expect("Failed to parse line");
 	let matrix_type = line[0..3].trim().to_string();
-	let nun_rows = parse_int(&line[1*14..],
-			     "num_rows");
+	let num_rows = parse_int(&line[1*14..],
+				 "num_rows");
 	let num_columns = parse_int(&line[2*14..],
 				    "num_columns");
 	let num_non_zeroes = parse_int(&line[3*14..],
@@ -118,7 +118,7 @@ impl<P> HarwellBoeingMatrix<P> {
 	    let line = lines.next()
 		.expect("Expected at least 4 line in Harwell-Boeing file")
 		.expect("Failed to parse line");
-	    let rhs_type = line[0..14].trim().as_string();
+	    let rhs_type = line[0..14].trim().to_string();
 	    let num_rhs = parse_int(&line[1*14..],
 				    "num_rhs");
 	    let num_rhs_indices = parse_int(&line[2*14..],

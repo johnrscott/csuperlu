@@ -82,15 +82,6 @@ impl MatrixType {
     }
 }
 
-/// I will not get into parsing fortran numerical formats here.
-/// 
-enum FortranFormat {
-    F_16I5,
-    F_5E158,
-}
-
-
-
 /// Data contained in the header of a Harwell-Boeing
 /// matrix file.
 ///

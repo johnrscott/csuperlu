@@ -1,27 +1,43 @@
-#include <superlu/slu_ddefs.h>
-#include <superlu/slu_sdefs.h>
-#include <superlu/slu_cdefs.h>
-#include <superlu/slu_zdefs.h>
+/*! \file
+Copyright (c) 2003, The Regents of the University of California, through
+Lawrence Berkeley National Laboratory (subject to receipt of any required 
+approvals from U.S. Dept. of Energy) 
+
+All rights reserved. 
+
+The source code is distributed under BSD license, see the file License.txt
+at the top-level directory.
+*/
+/*! @file superlu.c
+ * \brief a small 5x5 example
+ * 
+ * <pre>
+ * * -- SuperLU routine (version 2.0) --
+ * Univ. of California Berkeley, Xerox Palo Alto Research Center,
+ * and Lawrence Berkeley National Lab.
+ * November 15, 1997
+ * </pre>
+ */
+#include "slu_ddefs.h"
 
 int main(int argc, char *argv[])
 {
-    /*
-     * Purpose
-     * =======
-     *
-     * This is the small 5x5 example used in the Sections 2 and 3 of the
-     * Users’ Guide to illustrate how to call a SuperLU routine, and the
-     * matrix data structures used by SuperLU.
-     *
-     */
+/*
+ * Purpose
+ * =======
+ * 
+ * This is the small 5x5 example used in the Sections 2 and 3 of the 
+ * Users' Guide to illustrate how to call a SuperLU routine, and the
+ * matrix data structures used by SuperLU.
+ *
+ */
     SuperMatrix A, L, U, B;
-    double *a, *rhs;
-    double s, u, p, e, r, l;
-    int *asub, *xa;
-    int *perm_r; /* row permutations from partial pivoting */
-
-    int *perm_c; /* column permutation vector */
-    int nrhs, info, i, m, n, nnz, permc_spec;
+    double   *a, *rhs;
+    double   s, u, p, e, r, l;
+    int      *asub, *xa;
+    int      *perm_r; /* row permutations from partial pivoting */
+    int      *perm_c; /* column permutation vector */
+    int      nrhs, info, i, m, n, nnz, permc_spec;
     superlu_options_t options;
     SuperLUStat_t stat;
 
@@ -41,15 +57,12 @@ int main(int argc, char *argv[])
 
     /* Create matrix A in the format expected by SuperLU. */
     dCreate_CompCol_Matrix(&A, m, n, nnz, a, asub, xa, SLU_NC, SLU_D, SLU_GE);
-    dPrint_CompCol_Matrix("A", &A);
-
+    
     /* Create right-hand side matrix B. */
     nrhs = 1;
-
     if ( !(rhs = doubleMalloc(m * nrhs)) ) ABORT("Malloc fails for rhs[].");
     for (i = 0; i < m; ++i) rhs[i] = 1.0;
     dCreate_Dense_Matrix(&B, m, nrhs, rhs, m, SLU_DN, SLU_D, SLU_GE);
-    dPrint_Dense_Matrix("B", &B);
 
     if ( !(perm_r = intMalloc(m)) ) ABORT("Malloc fails for perm_r[].");
     if ( !(perm_c = intMalloc(n)) ) ABORT("Malloc fails for perm_c[].");
@@ -63,24 +76,12 @@ int main(int argc, char *argv[])
 
     /* Solve the linear system. */
     dgssv(&options, &A, perm_c, perm_r, &L, &U, &B, &stat, &info);
-
-    // Print the L and U factors. In this example, there is only one supernode
-    // in L (nsuper = 0). As per the paper (Fig. 2.3), the entirety of this super node
-    // block is stored in L, as a dense matrix expressed in compressed column format
-    // (have a look at nzval_colptr, rowind, rowind_colptr). Even though the arrays of
-    // U are empty, it still states nnz = 15. The giveaway that there is each entry
-    // in colptr is zero (the last entry is the size of nzval). In L, similarly, the
-    // rowind_colptr ends with 25 (the size nzval), which is not equal to nnz (=15).
-    // This all implies that the interpretation of U and L are tied together. The
-    // only discrepancy with the user guide is that there is only 1 super node, not
-    // 3 (nsuper = 2 in Fig 2.3 of the user guide (note: not the same Fig 2.3 as above)).
+    
+    dPrint_CompCol_Matrix("A", &A);
     dPrint_CompCol_Matrix("U", &U);
     dPrint_SuperNode_Matrix("L", &L);
-
-    // Print the solution 
-    dPrint_Dense_Matrix("X", &B);
     print_int_vec("\nperm_r", m, perm_r);
-    
+
     /* De-allocate storage */
     SUPERLU_FREE (rhs);
     SUPERLU_FREE (perm_r);
@@ -90,6 +91,4 @@ int main(int argc, char *argv[])
     Destroy_SuperNode_Matrix(&L);
     Destroy_CompCol_Matrix(&U);
     StatFree(&stat);
-
 }
-

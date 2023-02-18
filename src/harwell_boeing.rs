@@ -192,10 +192,10 @@ impl<P> HarwellBoeingMatrix<P> {
 	let line = lines.next()
 	    .expect("Expected at least 4 line in Harwell-Boeing file")
 	    .expect("Failed to parse line");
-	let pointer_format = line[0..14].trim().to_string();
-	let index_format = line[14..28].trim().to_string();
-	let value_format = line[28..42].trim().to_string();
-	let rhs_format = line[42..56].trim().to_string();
+	let pointer_format = line[0..16].trim().to_string();
+	let index_format = line[16..32].trim().to_string();
+	let value_format = line[32..52].trim().to_string();
+	let rhs_format = line[52..72].trim().to_string();
 
 	let (rhs_type, num_rhs, num_rhs_indices) = if num_rhs_lines > 0 {
 	    let line = lines.next()

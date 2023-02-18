@@ -82,6 +82,14 @@ impl MatrixType {
     }
 }
 
+/// I will not get into parsing fortran numerical formats here.
+/// 
+enum FortranFormat {
+    F_16I5,
+    F_5E158,
+}
+
+
 
 /// Data contained in the header of a Harwell-Boeing
 /// matrix file.
@@ -152,7 +160,7 @@ fn parse_int(buf: &str, field_name: &str) -> i32 {
 }
 
 impl<P> HarwellBoeingMatrix<P> {
-    pub fn from_file(file: std::fs::File) -> HarwellBoeingHeader {
+    pub fn from_file(file: std::fs::File) {
 	let mut reader = io::BufReader::new(file);
 	let mut lines = reader.lines();
 	
@@ -206,13 +214,12 @@ impl<P> HarwellBoeingMatrix<P> {
 				    "num_rhs");
 	    let num_rhs_indices = parse_int(&line[2*14..],
 				    "num_rhs");
-	    let index_format = &line[14..28].trim();
 	    (Some(rhs_type), Some(num_rhs), Some(num_rhs_indices))
 	} else {
 	    (None, None, None)
 	};
 
-	HarwellBoeingHeader {  
+	let header = HarwellBoeingHeader {  
 	    title,
 	    key,
 	    total_data_lines,
@@ -232,10 +239,9 @@ impl<P> HarwellBoeingMatrix<P> {
 	    rhs_type,
 	    num_rhs,
 	    num_rhs_indices,
-	}
+	};
+
+	println!("{:?}", header);
 	
-	// for line in lines {
-	//     println!("{}", line.unwrap());
-	// }
     }
 }

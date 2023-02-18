@@ -1,4 +1,4 @@
-use std::io::{self, BufRead};
+use std::{io::{self, BufRead}, str::FromStr};
 
 /// Data contained in the header of a Harwell-Boeing
 /// matrix file.
@@ -26,9 +26,9 @@ struct HarwellBoeingHeader {
     /// Matrix type, as a three-character code
     matrix_type: String,
     /// Number of rows in the matrix
-    nrow: i32,
+    num_rows: i32,
     /// Number of columns in the matrix
-    ncolumns: i32,
+    num_columns: i32,
     /// Number of non-zero values in the matrix
     num_non_zeroes: i32,
     num_elemental_entries: i32,
@@ -36,10 +36,10 @@ struct HarwellBoeingHeader {
     index_format: String,
     value_format: String,
     rhs_format: String,
-    rhs_type: String,
+    rhs_type: Option<String>,
     /// Number of right-hand sides
-    num_rhs: i32,
-    num_row_indices: i32,
+    num_rhs: Option<i32>,
+    num_rhs_indices: OPtion<i32>,
 }
 
 /// Sparse matrix stored in Harwell-Boeing format. Often, the
@@ -61,60 +61,96 @@ pub struct HarwellBoeingMatrix<P> {
     rhs_info: Option<Vec<P>>,
 }
 
+fn parse_int(buf: &str, field_name: &str) -> i32 {
+    buf[..14]
+	.trim()
+	.parse::<i32>()
+	.expect("Failed to parse {field_name}")
+}
+
 impl<P> HarwellBoeingMatrix<P> {
-    pub fn from_file(file: std::fs::File) {
+    pub fn from_file(file: std::fs::File) -> HarwellBoeingHeader {
 	let mut reader = io::BufReader::new(file);
 	let mut lines = reader.lines();
 	
 	let line = lines.next()
 	    .expect("Expected at least 1 line in Harwell-Boeing file")
 	    .expect("Failed to parse line");
-	let title = &line[0..72].trim();
-	let key = &line[72..80].trim();
+	let title = line[0..72].trim().to_string();
+	let key = line[72..80].trim().to_string();
+
 	let line = lines.next()
 	    .expect("Expected at least 2 line in Harwell-Boeing file")
 	    .expect("Failed to parse line");	
-	let total_data_lines = &line[0..14].trim();
-	let num_column_offset_lines = &line[14..28]
-	    .trim()
-	    .parse::<i32>()
-	    .expect("Failed to parse num_column_offset_lines");
-	let num_row_offset_lines = &line[28..42]
-	    .trim()
-	    .parse::<i32>()
-	    .expect("Failed to parse num_row_offset_lines");
-	let num_values_lines = &line[42..56]
-	    .trim()
-	    .parse::<i32>()
-	    .expect("Failed to parse num_values_lines");
-	let num_rhs_lines = &line[56..70]
-	    .trim()
-	    .parse::<i32>()
-	    .expect("Failed to parse num_values_lines");
-
+	let total_data_lines = parse_int(&line[1*14..],
+					 "total_data_lines");
+	let num_column_offset_lines = parse_int(&line[1*14..],
+						"num_column_offset_lines");
+	let num_row_offset_lines = parse_int(&line[1*14..],
+						"num_row_offset_lines");
+	let num_values_lines = parse_int(&line[3*14..],
+					 "num_values_lines");
+	let num_rhs_lines = parse_int(&line[4*14..],
+				      "num_rhs_lines");
 	
-    // /// Number of lines for right-hand side,
-    // /// starting guess, and solutions
-    // num_rhs_lines: i32,
-    // /// Matrix type, as a three-character code
-    // matrix_type: String,
-    // /// Number of rows in the matrix
-    // nrow: i32,
-    // /// Number of columns in the matrix
-    // ncolumns: i32,
-    // /// Number of non-zero values in the matrix
-    // num_non_zeroes: i32,
-    // num_elemental_entries: i32,
-    // pointer_format: String,
-    // index_format: String,
-    // value_format: String,
-    // rhs_format: String,
-    // rhs_type: String,
-    // /// Number of right-hand sides
-    // num_rhs: i32,
-    // num_row_indices: i32,
+	let line = lines.next()
+	    .expect("Expected at least 3 line in Harwell-Boeing file")
+	    .expect("Failed to parse line");
+	let matrix_type = line[0..3].trim().to_string();
+	let nun_rows = parse_int(&line[1*14..],
+			     "num_rows");
+	let num_columns = parse_int(&line[2*14..],
+				    "num_columns");
+	let num_non_zeroes = parse_int(&line[3*14..],
+				       "num_non_zeroes");
+	let num_elemental_entries = parse_int(&line[4*14..],
+				       "num_elemental_entries");
+	
+	let line = lines.next()
+	    .expect("Expected at least 4 line in Harwell-Boeing file")
+	    .expect("Failed to parse line");
+	let pointer_format = line[0..14].trim().to_string();
+	let index_format = line[14..28].trim().to_string();
+	let value_format = line[28..42].trim().to_string();
+	let rhs_format = line[42..56].trim().to_string();
 
-	    
+	let (rhs_type, num_rhs, num_rhs_indices) = if num_rhs_lines > 0 {
+	    let line = lines.next()
+		.expect("Expected at least 4 line in Harwell-Boeing file")
+		.expect("Failed to parse line");
+	    let rhs_type = line[0..14].trim().as_string();
+	    let num_rhs = parse_int(&line[1*14..],
+				    "num_rhs");
+	    let num_rhs_indices = parse_int(&line[2*14..],
+				    "num_rhs");
+	    let index_format = &line[14..28].trim();
+	    (Some(rhs_type), Some(num_rhs), Some(num_rhs_indices))
+	} else {
+	    (None, None, None)
+	};
+
+	HarwellBoeingHeader {  
+	    title,
+	    key,
+	    total_data_lines,
+	    num_column_offset_lines,
+	    num_row_index_lines,
+	    num_values_lines,
+	    num_rhs_lines,
+	    matrix_type,
+	    num_rows,
+	    num_columns,
+	    num_non_zeroes,
+	    num_elemental_entries,
+	    pointer_format,
+	    index_format,
+	    value_format,
+	    rhs_format,
+	    rhs_type,
+	    num_rhs,
+	    num_rhs_indices,
+	}
+	
 	// for line in lines {
 	//     println!("{}", line.unwrap());
 	// }

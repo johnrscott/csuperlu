@@ -45,6 +45,7 @@ pub mod simple_driver;
 pub mod super_matrix;
 pub mod super_node;
 pub mod lu_decomp;
+pub mod harwell_boeing;
 
 #[cfg(test)]
 mod tests {

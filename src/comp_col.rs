@@ -19,6 +19,7 @@ use crate::c::super_matrix::{c_NCformat, c_SuperMatrix, Mtype_t};
 use crate::super_matrix::SuperMatrix;
 use std::mem::MaybeUninit;
 use std::fs;
+use std::process;
 
 /// Compressed-column matrix
 ///
@@ -42,8 +43,12 @@ impl<P: CCompColMatrix<P>> CompColMatrix<P> {
     /// stored in Harwell-Boeing format. 
     pub fn from_harwell_boeing(file_path: String) -> Self {
 
-	let contents = fs::read_to_string(file_path);
-	
+	let contents = fs::read_to_string(&file_path).unwrap_or_else(|err| {
+            println!("Problem opening file '{file_path}': {err}");
+            process::exit(1);
+	});
+	println!("{contents}");
+	    
 
 	// Matrix dimensions
 	let m: i32 = 5;

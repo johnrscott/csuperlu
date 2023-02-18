@@ -37,6 +37,18 @@ impl<P: CCompColMatrix<P>> CompColMatrix<P> {
         }
     }
 
+    /// Create a compressed-column matrix from a file
+    /// stored in Harwell-Boeing format. 
+    // pub fn from_file() -> Self {
+    // 	let m = 5;
+    // 	let n = 5;
+    // 	let nnz = 12;
+	
+    // 	Self::from_vectors {
+	    
+    // 	}
+    // }
+
     /// Specify a compressed column matrix from input vectors.
     ///
     /// Use this function to make a c_SuperMatrix in compressed column
@@ -56,7 +68,6 @@ impl<P: CCompColMatrix<P>> CompColMatrix<P> {
         mut nzval: Vec<P>,
         mut rowind: Vec<i32>,
         mut colptr: Vec<i32>,
-        mtype: Mtype_t,
     ) -> Self {
         let c_super_matrix = unsafe {
             let mut c_super_matrix = MaybeUninit::<c_SuperMatrix>::uninit();
@@ -68,7 +79,7 @@ impl<P: CCompColMatrix<P>> CompColMatrix<P> {
                 &mut nzval,
                 &mut rowind,
                 &mut colptr,
-                mtype,
+                Mtype_t::SLU_GE,
             );
             // The freeing of the input vectors is handed over
             // to the C library functions (see drop)

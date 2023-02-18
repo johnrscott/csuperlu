@@ -17,6 +17,12 @@
 //! Analysis and Applications 20.3 (1999): 720-755.*, available
 //! [here](https://portal.nersc.gov/project/sparse/xiaoye-web/simax-29176.pdf).
 //!
+//! # Current status
+//!
+//! Substantial parts of the library and interface are currently incomplete,
+//! so you may have difficuly using it for anything right now. This notice
+//! will be removed when the library is in an initial usable state.
+//!
 //! # Development plans
 //!
 //! The library is currently under development, and the API is not stable

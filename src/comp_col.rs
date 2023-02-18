@@ -43,12 +43,10 @@ impl<P: CCompColMatrix<P>> CompColMatrix<P> {
     /// stored in Harwell-Boeing format. 
     pub fn from_harwell_boeing(file_path: String) -> Self {
 
-	let contents = fs::read_to_string(&file_path).unwrap_or_else(|err| {
+	let file = fs::File::open(&file_path).unwrap_or_else(|err| {
             println!("Problem opening file '{file_path}': {err}");
             process::exit(1);
-	});
-	println!("{contents}");
-	    
+	});	    
 
 	// Matrix dimensions
 	let m: i32 = 5;

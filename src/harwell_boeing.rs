@@ -1,3 +1,4 @@
+use std::io::{self, BufRead};
 
 /// Data contained in the header of a Harwell-Boeing
 /// matrix file.
@@ -59,3 +60,9 @@ struct HarwellBoeingMatrix<P> {
     rhs_info: Option<Vec<P>>,
 }
 
+impl<P> HarwellBoeingMatrix<P> {
+    fn from_file(file: std::fs::File) {
+	let reader = io::BufReader::new(file);
+	let lines = reader.lines();
+    }
+}

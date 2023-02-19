@@ -292,7 +292,6 @@ impl<P: FromStr> HarwellBoeingMatrix<P> {
 	    let line = lines.next()
 		.expect("Failed to read line while parsing row indices")
 		.unwrap();
-	    println!("{line}");
 	    assert!(line.len() % fp_len == 0,
 		    "Values line length not a multiple of {fp_len}");
 	    for k in 0..line.len()/fp_len {

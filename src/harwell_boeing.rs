@@ -1,4 +1,7 @@
-use std::io::{self, BufRead};
+use std::{
+    io::{self, BufRead},
+    str::FromStr
+};
 
 #[derive(Debug)]
 enum MatrixValueType {
@@ -129,8 +132,9 @@ pub struct HarwellBoeingHeader {
 /// case it stores a single sparse matrix in compressed-column
 /// format). Sometimes, the non-zero values may be omitted, in
 /// which case the matrix is called a "pattern matrix".
-/// 
-pub struct HarwellBoeingMatrix<P> {
+///
+#[derive(Debug)]
+pub struct HarwellBoeingMatrix<P: FromStr> {
     /// The header describing the matrix format
     header: HarwellBoeingHeader,
     /// Offsets to the start of each column in the row_indices vector
@@ -150,8 +154,8 @@ fn parse_int(buf: &str, field_name: &str) -> i32 {
 	.expect("Failed to parse {field_name}")
 }
 
-impl<P> HarwellBoeingMatrix<P> {
-    pub fn from_file(file: std::fs::File) {
+impl<P: FromStr> HarwellBoeingMatrix<P> {
+    pub fn from_file(file: std::fs::File) -> Self {
 	let mut reader = io::BufReader::new(file);
 	let mut lines = reader.lines();
 	
@@ -233,6 +237,64 @@ impl<P> HarwellBoeingMatrix<P> {
 	};
 
 	println!("{:?}", header);
+
+	let mut column_offsets = Vec::new();
+	for _ in 0..num_column_offset_lines {
+	    let int_len = 5;
+	    let line = lines.next()
+		.expect("Failed to read line while parsing column pointers")
+		.unwrap();
+	    assert!(line.len() % int_len == 0,
+		    "Integer (offset) line length not a multiple of {int_len}");
+	    for k in 0..line.len()/int_len {
+		column_offsets.push(line[int_len*k..][..int_len]
+				    .trim()
+				    .parse::<i32>()
+				    .expect("Failed to parse offset as integer"));
+	    }	    
+	}
 	
+	let mut row_indices = Vec::new();
+	for _ in 0..num_row_index_lines {
+	    let int_len = 5 ;
+	    let line = lines.next()
+		.expect("Failed to read line while parsing row indices")
+		.unwrap();
+	    assert!(line.len() % int_len == 0,
+		    "Integer (offset) line length not a multiple of {int_len}");
+	    for k in 0..line.len()/int_len {
+		row_indices.push(line[int_len*k..][..int_len]
+				 .trim()
+				 .parse::<i32>()
+				 .expect("Failed to parse index as integer"));
+	    }	    
+	}
+
+	let mut non_zero_values = Vec::new();
+	for _ in 0..num_values_lines {
+	    let fp_len = 5 ;
+	    let line = lines.next()
+		.expect("Failed to read line while parsing row indices")
+		.unwrap();
+	    assert!(line.len() % fp_len == 0,
+		    "Values line length not a multiple of {fp_len}");
+	    for k in 0..line.len()/fp_len {
+		let value = match line[fp_len*k..][..fp_len]
+		    .trim()
+		    .parse::<P>() {
+			Ok(value) => value,
+			Err(_) => panic!("Failed"),
+		    };
+		non_zero_values.push(value)
+	    }	    
+	}
+
+	Self {
+	    header,
+	    column_offsets,
+	    row_indices,
+	    non_zero_values: Some(non_zero_values),
+	    rhs_info: None,
+	}
     }
 }

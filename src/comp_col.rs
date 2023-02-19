@@ -182,12 +182,15 @@ impl<'a, P: CCompColMatrix<P>> Mul<&Vec<P>> for &'a mut CompColMatrix<P> {
 }     
 
 impl<P: CCompColMatrix<P>> SuperMatrix for CompColMatrix<P> {
-    fn super_matrix<'a>(&'a mut self) -> &'a mut c_SuperMatrix {
-        &mut self.c_super_matrix
+    fn super_matrix<'a>(&'a self) -> &'a c_SuperMatrix {
+        &self.c_super_matrix
     }
-    fn print(&mut self, what: &str) {
+    fn print(&self, what: &str) {
         let c_str = std::ffi::CString::new(what).unwrap();
-        P::c_print_comp_col_matrix(c_str.as_ptr() as *mut libc::c_char, self.super_matrix());
+        P::c_print_comp_col_matrix(
+	    c_str.as_ptr() as *mut libc::c_char,
+	    &self.c_super_matrix as *const c_SuperMatrix
+		as *mut c_SuperMatrix);
     }
 }
 

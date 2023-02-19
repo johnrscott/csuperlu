@@ -78,7 +78,7 @@ pub fn simple_driver<P: CSimpleDriver<P>>(
         let lu = LUDecomp::from_matrices(l, u);
 
 	if info != 0 {
-	    return Err(SolverError {
+	    Err(SolverError {
 		info
 	    })
 	} else {

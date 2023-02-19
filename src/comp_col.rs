@@ -115,7 +115,7 @@ impl<P: CCompColMatrix<P>> CompColMatrix<P> {
         }
     }
 
-    pub fn value(&self, row: usize, col: usize) -> P {
+    pub fn value(&mut self, row: usize, col: usize) -> P {
 	let c_super_matrix = self.super_matrix();
 	assert!(row < c_super_matrix.nrow as usize,
 		"Row index out of range");
@@ -182,13 +182,12 @@ impl<'a, P: CCompColMatrix<P>> Mul<&Vec<P>> for &'a mut CompColMatrix<P> {
 }     
 
 impl<P: CCompColMatrix<P>> SuperMatrix for CompColMatrix<P> {
-    fn super_matrix<'a>(&'a self) -> &'a c_SuperMatrix {
-        &self.c_super_matrix
+    fn super_matrix<'a>(&'a mut self) -> &'a mut c_SuperMatrix {
+        &mut self.c_super_matrix
     }
     fn print(&mut self, what: &str) {
         let c_str = std::ffi::CString::new(what).unwrap();
-        P::c_print_comp_col_matrix(c_str.as_ptr() as *mut libc::c_char,
-				   &mut self.c_super_matrix);
+        P::c_print_comp_col_matrix(c_str.as_ptr() as *mut libc::c_char, self.super_matrix());
     }
 }
 

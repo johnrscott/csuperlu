@@ -1,12 +1,12 @@
 use crate::{comp_col::CompColMatrix, c::comp_col::CCompColMatrix};
 
 /// Todo implement properly
-pub fn distance(v1: &[f64], v2: Vec<f64>) -> f64 {
-    let mut val = 0.0;
+pub fn distance<P: CCompColMatrix<P>>(v1: &[P], v2: Vec<P>) -> P {
+    let mut value = P::zero();
     for n in 0..v2.len() {
-	val += (v1[n] - v2[n]) * (v1[n] - v2[n]);
+	value = value + (v1[n] - v2[n]) * (v1[n] - v2[n]);
     }
-    val
+    value
 }
 
 /// Naive matrix multiplication which loops over all

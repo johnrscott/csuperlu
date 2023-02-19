@@ -41,7 +41,7 @@ fn main() {
     // Vector of ints of length nnz
     let asub = vec![0, 1, 4, 1, 2, 4, 0, 2, 0, 3, 3, 4];
 
-    // Vector of ints of length n+1
+    // Vector of ints of length num_columns + 1
     let xa = vec![0, 3, 6, 8, 10, 12];
 
     // Make the left-hand side matrix

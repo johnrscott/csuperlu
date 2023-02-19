@@ -186,7 +186,7 @@ impl<P: FromStr> HarwellBoeingMatrix<P> {
 	let line = lines.next()
 	    .expect("Expected at least 2 line in Harwell-Boeing file")
 	    .expect("Failed to parse line");	
-	let total_data_lines = parse_int(&line[1*14..])
+	let total_data_lines = parse_int(&line[0*14..])
 	    .expect("Failed to parse total_data_lines");
 	let num_column_offset_lines = parse_int(&line[1*14..])
 	    .expect("Failed to parse num_column_offset_lines");
@@ -305,6 +305,11 @@ impl<P: FromStr> HarwellBoeingMatrix<P> {
 	    }	    
 	}
 
+	println!("{:?}", header);
+	println!("non zero values = {}", non_zero_values.len());
+	println!("row indices = {}", row_indices.len());
+	println!("col pointers = {}", column_offsets.len());
+	
 	Self {
 	    header,
 	    column_offsets,

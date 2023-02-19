@@ -181,7 +181,7 @@ impl<P: FromStr> HarwellBoeingMatrix<P> {
 					 "total_data_lines");
 	let num_column_offset_lines = parse_int(&line[1*14..],
 						"num_column_offset_lines");
-	let num_row_index_lines = parse_int(&line[1*14..],
+	let num_row_index_lines = parse_int(&line[2*14..],
 						"num_row_index_lines");
 	let num_values_lines = parse_int(&line[3*14..],
 					 "num_values_lines");
@@ -245,7 +245,7 @@ impl<P: FromStr> HarwellBoeingMatrix<P> {
 	    num_rhs_indices,
 	};
 
-	println!("{:?}", header);
+	println!{"{:?}", header};
 
 	let mut column_offsets = Vec::new();
 	for _ in 0..num_column_offset_lines {
@@ -281,10 +281,11 @@ impl<P: FromStr> HarwellBoeingMatrix<P> {
 
 	let mut non_zero_values = Vec::new();
 	for _ in 0..num_values_lines {
-	    let fp_len = 5 ;
+	    let fp_len = 15;
 	    let line = lines.next()
 		.expect("Failed to read line while parsing row indices")
 		.unwrap();
+	    println!("{line}");
 	    assert!(line.len() % fp_len == 0,
 		    "Values line length not a multiple of {fp_len}");
 	    for k in 0..line.len()/fp_len {

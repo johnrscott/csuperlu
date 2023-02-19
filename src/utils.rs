@@ -1,5 +1,3 @@
-use num::Float;
-
 use crate::{comp_col::CompColMatrix, c::comp_col::CCompColMatrix};
 
 /// Todo implement properly

@@ -61,11 +61,11 @@ mod tests {
     #[test]
     fn comp_col_matrix_values() {
 	// Matrix dimensions
-	let m: i32 = 5;
-	let n: i32 = 5;
+	let num_rows = 5usize;
+	let num_columns = 5usize;
 
 	// Number of non-zeros
-	let nnz: i32 = 12;
+	let num_non_zeros = 12usize;
 
 	// Matrix elements
 	let s: f64 = 19.0;
@@ -85,7 +85,8 @@ mod tests {
 	let xa = vec![0, 3, 6, 8, 10, 12];
 
 	// Make the left-hand side matrix
-	let mut a = CompColMatrix::from_vectors(m, n, nnz, a, asub, xa);
+	let mut a = CompColMatrix::from_vectors(num_rows, num_columns,
+						num_non_zeros, a, asub, xa);
 
 	// Check non-zero matrix values
 	assert_eq!((a.value(0,0) - s).abs() < 1e-8, true);
@@ -120,11 +121,11 @@ mod tests {
     #[test]
     fn user_guide_example() {
 	// Matrix dimensions
-	let m: i32 = 5;
-	let n: i32 = 5;
+	let num_rows = 5usize;
+	let num_columns = 5usize;
 
 	// Number of non-zeros
-	let nnz: i32 = 12;
+	let num_non_zeros = 12usize;
 
 	// Matrix elements
 	let s: f64 = 19.0;
@@ -144,25 +145,26 @@ mod tests {
 	let xa = vec![0, 3, 6, 8, 10, 12];
 
 	// Make the left-hand side matrix
-	let mut a = CompColMatrix::from_vectors(m, n, nnz, a, asub, xa);
+	let mut a = CompColMatrix::from_vectors(num_rows, num_columns,
+						num_non_zeros, a, asub, xa);
 
 	// Make the RHS vector
 	let nrhs = 1;
-	let rhs = vec![1.0; m as usize];
-	let b = DenseMatrix::from_vectors(m, nrhs, rhs);
+	let rhs = vec![1.0; num_rows];
+	let b = DenseMatrix::from_vectors(num_rows, nrhs, rhs);
 
 	let mut options = superlu_options_t::new();
 	options.ColPerm = colperm_t::NATURAL;
 
-	let mut perm_r = Vec::<i32>::with_capacity(m as usize);
-	let mut perm_c = Vec::<i32>::with_capacity(n as usize);
+	let mut perm_r = Vec::<i32>::with_capacity(num_rows);
+	let mut perm_c = Vec::<i32>::with_capacity(num_columns);
 
 	let mut stat = SuperLUStat_t::new();
 	let SimpleSolution {
             mut x,
             lu: _,
-            info: _,
-	} = simple_driver(options, &mut a, &mut perm_c, &mut perm_r, b, &mut stat);
+	} = simple_driver(options, &mut a, &mut perm_c, &mut perm_r, b, &mut stat)
+	    .expect("Failed to solve linear system");
 
 	let x_vals = x.values();
 

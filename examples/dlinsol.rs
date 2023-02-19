@@ -31,7 +31,7 @@ fn main() {
     let b = DenseMatrix::from_vectors(num_rows, nrhs, rhs);
 
     let mut options = superlu_options_t::new();
-    options.ColPerm = colperm_t::NATURAL;
+    //options.ColPerm = colperm_t::NATURAL;
 
     let mut perm_r = Vec::<i32>::with_capacity(num_rows);
     let mut perm_c = Vec::<i32>::with_capacity(num_columns);

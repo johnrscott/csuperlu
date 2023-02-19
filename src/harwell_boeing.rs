@@ -111,11 +111,11 @@ pub struct HarwellBoeingHeader {
     /// Matrix type, as a three-character code
     matrix_type: MatrixType,
     /// Number of rows in the matrix
-    num_rows: i32,
+    pub num_rows: i32,
     /// Number of columns in the matrix
-    num_columns: i32,
+    pub num_columns: i32,
     /// Number of non-zero values in the matrix
-    num_non_zeroes: i32,
+    pub num_non_zeros: i32,
     num_elemental_entries: i32,
     pointer_format: String,
     index_format: String,
@@ -136,15 +136,15 @@ pub struct HarwellBoeingHeader {
 #[derive(Debug)]
 pub struct HarwellBoeingMatrix<P: FromStr> {
     /// The header describing the matrix format
-    header: HarwellBoeingHeader,
+    pub header: HarwellBoeingHeader,
     /// Offsets to the start of each column in the row_indices vector
-    column_offsets: Vec<i32>,
+    pub column_offsets: Vec<i32>,
     /// Row indices for non-zero values in each column
-    row_indices: Vec<i32>,
+    pub row_indices: Vec<i32>,
     /// Non-zero values corresponding to entries in row_indices
-    non_zero_values: Option<Vec<P>>,
+    pub non_zero_values: Option<Vec<P>>,
     /// Right-hand side, starting guess, initial solutions
-    rhs_info: Option<Vec<P>>,
+    pub rhs_info: Option<Vec<P>>,
 }
 
 fn parse_int(buf: &str, field_name: &str) -> i32 {
@@ -155,6 +155,15 @@ fn parse_int(buf: &str, field_name: &str) -> i32 {
 }
 
 impl<P: FromStr> HarwellBoeingMatrix<P> {
+
+    pub fn to_vectors(self) -> (Vec<i32>, Vec<i32>, Vec<P>) {
+	let non_zero_values = match self.non_zero_values {
+	    Some(non_zero_values) => non_zero_values,
+	    None => panic!("Missing non-zero values vector in matrix"),
+	};
+	(self.column_offsets, self.row_indices, non_zero_values)
+    }
+
     pub fn from_file(file: std::fs::File) -> Self {
 	let mut reader = io::BufReader::new(file);
 	let mut lines = reader.lines();
@@ -187,8 +196,8 @@ impl<P: FromStr> HarwellBoeingMatrix<P> {
 				 "num_rows");
 	let num_columns = parse_int(&line[2*14..],
 				    "num_columns");
-	let num_non_zeroes = parse_int(&line[3*14..],
-				       "num_non_zeroes");
+	let num_non_zeros = parse_int(&line[3*14..],
+				       "num_non_zeros");
 	let num_elemental_entries = parse_int(&line[4*14..],
 				       "num_elemental_entries");
 	
@@ -225,7 +234,7 @@ impl<P: FromStr> HarwellBoeingMatrix<P> {
 	    matrix_type,
 	    num_rows,
 	    num_columns,
-	    num_non_zeroes,
+	    num_non_zeros,
 	    num_elemental_entries,
 	    pointer_format,
 	    index_format,

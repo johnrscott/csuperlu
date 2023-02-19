@@ -50,26 +50,22 @@ impl<P: CCompColMatrix<P>> CompColMatrix<P> {
 	});	    
 
 	let matrix = HarwellBoeingMatrix::<P>::from_file(file);
-	println!("{:?}", matrix);
 	
 	// Matrix dimensions
-	let m: i32 = 5;
-	let n: i32 = 5;
+	let num_rows = matrix.header.num_rows;
+	let num_columns = matrix.header.num_columns;
 
 	// Number of non-zeros
-	let nnz: i32 = 12;
+	let num_non_zeros = matrix.header.num_non_zeros;
 
 	// Vector of doubles of length nnz
-	let a = vec![P::from_f32(1.0).unwrap(); nnz as usize];
-
-	// Vector of ints of length nnz
-	let asub = vec![0, 1, 4, 1, 2, 4, 0, 2, 0, 3, 3, 4];
-
-	// Vector of ints of length n+1
-	let xa = vec![0, 3, 6, 8, 10, 12];
-
+	let (column_offsets,
+	     row_indices,
+	     non_zero_values) = matrix.to_vectors();
+	
 	// Make the left-hand side matrix
-	Self::from_vectors(m, n, nnz, a, asub, xa)
+	Self::from_vectors(num_rows, num_columns, num_non_zeros,
+			   non_zero_values, row_indices, column_offsets)
     }
 
     /// Specify a compressed column matrix from input vectors.

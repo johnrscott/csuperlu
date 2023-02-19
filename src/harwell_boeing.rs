@@ -1,6 +1,8 @@
+#![allow(dead_code)]
+
 use std::{
     io::{self, BufRead},
-    str::FromStr
+    str::FromStr, num::ParseIntError
 };
 
 #[derive(Debug)]
@@ -92,7 +94,7 @@ impl MatrixType {
 /// [here](https://people.sc.fsu.edu/~jburkardt/data/hb/hb.html).
 ///
 #[derive(Debug)]
-pub struct HarwellBoeingHeader {
+struct HarwellBoeingHeader {
     /// Title of matrix 
     title: String,
     /// Matrix key (another identifier?)
@@ -111,11 +113,11 @@ pub struct HarwellBoeingHeader {
     /// Matrix type, as a three-character code
     matrix_type: MatrixType,
     /// Number of rows in the matrix
-    pub num_rows: i32,
+    num_rows: i32,
     /// Number of columns in the matrix
-    pub num_columns: i32,
+    num_columns: i32,
     /// Number of non-zero values in the matrix
-    pub num_non_zeros: i32,
+    num_non_zeros: i32,
     num_elemental_entries: i32,
     pointer_format: String,
     index_format: String,
@@ -136,26 +138,33 @@ pub struct HarwellBoeingHeader {
 #[derive(Debug)]
 pub struct HarwellBoeingMatrix<P: FromStr> {
     /// The header describing the matrix format
-    pub header: HarwellBoeingHeader,
+    header: HarwellBoeingHeader,
     /// Offsets to the start of each column in the row_indices vector
-    pub column_offsets: Vec<i32>,
+    column_offsets: Vec<i32>,
     /// Row indices for non-zero values in each column
-    pub row_indices: Vec<i32>,
+    row_indices: Vec<i32>,
     /// Non-zero values corresponding to entries in row_indices
-    pub non_zero_values: Option<Vec<P>>,
+    non_zero_values: Option<Vec<P>>,
     /// Right-hand side, starting guess, initial solutions
-    pub rhs_info: Option<Vec<P>>,
+    rhs_info: Option<Vec<P>>,
 }
 
-fn parse_int(buf: &str, field_name: &str) -> i32 {
+fn parse_int(buf: &str) -> Result<i32, ParseIntError> {
     buf[..14]
 	.trim()
 	.parse::<i32>()
-	.expect("Failed to parse {field_name}")
 }
 
 impl<P: FromStr> HarwellBoeingMatrix<P> {
 
+    pub fn num_columns(&self) -> i32 {
+	self.header.num_columns
+    }
+
+    pub fn num_rows(&self) -> i32 {
+	self.header.num_rows
+    }
+    
     pub fn to_vectors(self) -> (Vec<i32>, Vec<i32>, Vec<P>) {
 	let non_zero_values = match self.non_zero_values {
 	    Some(non_zero_values) => non_zero_values,
@@ -177,29 +186,29 @@ impl<P: FromStr> HarwellBoeingMatrix<P> {
 	let line = lines.next()
 	    .expect("Expected at least 2 line in Harwell-Boeing file")
 	    .expect("Failed to parse line");	
-	let total_data_lines = parse_int(&line[1*14..],
-					 "total_data_lines");
-	let num_column_offset_lines = parse_int(&line[1*14..],
-						"num_column_offset_lines");
-	let num_row_index_lines = parse_int(&line[2*14..],
-						"num_row_index_lines");
-	let num_values_lines = parse_int(&line[3*14..],
-					 "num_values_lines");
-	let num_rhs_lines = parse_int(&line[4*14..],
-				      "num_rhs_lines");
+	let total_data_lines = parse_int(&line[1*14..])
+	    .expect("Failed to parse total_data_lines");
+	let num_column_offset_lines = parse_int(&line[1*14..])
+	    .expect("Failed to parse num_column_offset_lines");
+	let num_row_index_lines = parse_int(&line[2*14..])
+	    .expect("Failed to parse num_row_index_lines");
+	let num_values_lines = parse_int(&line[3*14..])
+	    .expect("Failed to parse num_values_lines");
+	let num_rhs_lines = parse_int(&line[4*14..])
+	    .expect("Failed to parse num_rhs_lines");
 	
 	let line = lines.next()
 	    .expect("Expected at least 3 line in Harwell-Boeing file")
 	    .expect("Failed to parse line");
 	let matrix_type = MatrixType::from_string(line[0..3].trim().to_string());
-	let num_rows = parse_int(&line[1*14..],
-				 "num_rows");
-	let num_columns = parse_int(&line[2*14..],
-				    "num_columns");
-	let num_non_zeros = parse_int(&line[3*14..],
-				       "num_non_zeros");
-	let num_elemental_entries = parse_int(&line[4*14..],
-				       "num_elemental_entries");
+	let num_rows = parse_int(&line[1*14..])
+	    .expect("Failed to parse num_rows");
+	let num_columns = parse_int(&line[2*14..])
+	    .expect("Failed to parse num_columns");
+	let num_non_zeros = parse_int(&line[3*14..])
+	    .expect("Failed to parse num_non_zeros");
+	let num_elemental_entries = parse_int(&line[4*14..])
+	    .expect("Failed to parse num_elemental_entries");
 	
 	let line = lines.next()
 	    .expect("Expected at least 4 line in Harwell-Boeing file")
@@ -214,10 +223,10 @@ impl<P: FromStr> HarwellBoeingMatrix<P> {
 		.expect("Expected at least 4 line in Harwell-Boeing file")
 		.expect("Failed to parse line");
 	    let rhs_type = line[0..14].trim().to_string();
-	    let num_rhs = parse_int(&line[1*14..],
-				    "num_rhs");
-	    let num_rhs_indices = parse_int(&line[2*14..],
-				    "num_rhs");
+	    let num_rhs = parse_int(&line[1*14..])
+		.expect("Failed to parse num_rhs");
+	    let num_rhs_indices = parse_int(&line[2*14..])
+		.expect("Failed to parse num_rhs");
 	    (Some(rhs_type), Some(num_rhs), Some(num_rhs_indices))
 	} else {
 	    (None, None, None)

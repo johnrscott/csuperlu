@@ -54,11 +54,8 @@ impl<P: CCompColMatrix<P>> CompColMatrix<P> {
 	let matrix = HarwellBoeingMatrix::<P>::from_file(file);
 	
 	// Matrix dimensions
-	let num_rows = matrix.header.num_rows;
-	let num_columns = matrix.header.num_columns;
-
-	// Number of non-zeros
-	let num_non_zeros = matrix.header.num_non_zeros;
+	let num_rows = matrix.num_rows();
+	let num_columns = matrix.num_columns();
 
 	// Vector of doubles of length nnz
 	let (column_offsets,
@@ -66,7 +63,7 @@ impl<P: CCompColMatrix<P>> CompColMatrix<P> {
 	     non_zero_values) = matrix.to_vectors();
 	
 	// Make the left-hand side matrix
-	Self::from_vectors(num_rows, num_columns, num_non_zeros,
+	Self::from_vectors(num_rows, num_columns, non_zero_values.len() as i32,
 			   non_zero_values, row_indices, column_offsets)
     }
 

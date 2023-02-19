@@ -59,11 +59,10 @@ mod tests {
     }
     
     use crate::c::options::{colperm_t, superlu_options_t};
-    use crate::c::stat::{c_StatPrint, SuperLUStat_t};
+    use crate::c::stat::SuperLUStat_t;
     use crate::comp_col::CompColMatrix;
     use crate::dense::DenseMatrix;
     use crate::simple_driver::{simple_driver, SimpleSolution};
-    use crate::super_matrix::SuperMatrix;
 
     #[test]
     fn comp_col_matrix_values() {

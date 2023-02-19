@@ -14,7 +14,6 @@
 
 use csuperlu::c::options::{colperm_t, superlu_options_t};
 use csuperlu::c::stat::{c_StatPrint, SuperLUStat_t};
-use csuperlu::c::super_matrix::Mtype_t;
 use csuperlu::comp_col::CompColMatrix;
 use csuperlu::dense::DenseMatrix;
 use csuperlu::simple_driver::{simple_driver, SimpleSolution};

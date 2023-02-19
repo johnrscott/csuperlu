@@ -63,7 +63,7 @@ fn main() {
     let SimpleSolution {
         mut x,
 	mut lu,
-        mut info,
+        info: _,
     } = simple_driver(options, &mut a, &mut perm_c, &mut perm_r, b, &mut stat);
 
     // Print the performance statistics

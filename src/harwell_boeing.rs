@@ -165,7 +165,7 @@ impl<P: FromStr> HarwellBoeingMatrix<P> {
     }
 
     pub fn from_file(file: std::fs::File) -> Self {
-	let mut reader = io::BufReader::new(file);
+	let reader = io::BufReader::new(file);
 	let mut lines = reader.lines();
 	
 	let line = lines.next()
@@ -244,8 +244,6 @@ impl<P: FromStr> HarwellBoeingMatrix<P> {
 	    num_rhs,
 	    num_rhs_indices,
 	};
-
-	println!{"{:?}", header};
 
 	let mut column_offsets = Vec::new();
 	for _ in 0..num_column_offset_lines {

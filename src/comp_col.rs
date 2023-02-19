@@ -41,7 +41,9 @@ impl<P: CCompColMatrix<P>> CompColMatrix<P> {
     }
 
     /// Create a compressed-column matrix from a file
-    /// stored in Harwell-Boeing format. 
+    /// stored in Harwell-Boeing format. The function will
+    /// attempt to parse the non-zero values in the precision
+    /// P
     pub fn from_harwell_boeing(file_path: String) -> Self {
 
 	let file = fs::File::open(&file_path).unwrap_or_else(|err| {

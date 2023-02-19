@@ -51,7 +51,7 @@ fn main() {
     // Make the RHS vector
     let nrhs = 1;
     let rhs = vec![1.0; m as usize];
-    let b = DenseMatrix::from_vectors(m, nrhs, rhs, Mtype_t::SLU_GE);
+    let b = DenseMatrix::from_vectors(m, nrhs, rhs);
 
     let mut options = superlu_options_t::new();
     options.ColPerm = colperm_t::NATURAL;

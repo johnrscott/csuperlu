@@ -60,7 +60,6 @@ mod tests {
     
     use crate::c::options::{colperm_t, superlu_options_t};
     use crate::c::stat::{c_StatPrint, SuperLUStat_t};
-    use crate::c::super_matrix::Mtype_t;
     use crate::comp_col::CompColMatrix;
     use crate::dense::DenseMatrix;
     use crate::simple_driver::{simple_driver, SimpleSolution};
@@ -93,7 +92,7 @@ mod tests {
 	let xa = vec![0, 3, 6, 8, 10, 12];
 
 	// Make the left-hand side matrix
-	let mut a = CompColMatrix::from_vectors(m, n, nnz, a, asub, xa, Mtype_t::SLU_GE);
+	let mut a = CompColMatrix::from_vectors(m, n, nnz, a, asub, xa);
 
 	// Check non-zero matrix values
 	assert_eq!((a.value(0,0) - s).abs() < 1e-8, true);
@@ -152,12 +151,12 @@ mod tests {
 	let xa = vec![0, 3, 6, 8, 10, 12];
 
 	// Make the left-hand side matrix
-	let mut a = CompColMatrix::from_vectors(m, n, nnz, a, asub, xa, Mtype_t::SLU_GE);
+	let mut a = CompColMatrix::from_vectors(m, n, nnz, a, asub, xa);
 
 	// Make the RHS vector
 	let nrhs = 1;
 	let rhs = vec![1.0; m as usize];
-	let b = DenseMatrix::from_vectors(m, nrhs, rhs, Mtype_t::SLU_GE);
+	let b = DenseMatrix::from_vectors(m, nrhs, rhs);
 
 	let mut options = superlu_options_t::new();
 	options.ColPerm = colperm_t::NATURAL;

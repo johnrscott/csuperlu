@@ -12,7 +12,7 @@ pub struct LUDecomp<P: CSuperNodeMatrix<P> + CCompColMatrix<P>> {
 
 impl<P> LUDecomp<P>
 where P: CSuperNodeMatrix<P> + CCompColMatrix<P> {
-    pub fn from_matrices(mut l: SuperNodeMatrix<P>, mut u: CompColMatrix<P>) -> Self {
+    pub fn from_matrices(l: SuperNodeMatrix<P>, u: CompColMatrix<P>) -> Self {
 	let l_c_super_matrix = l.super_matrix();
 	let u_c_super_matrix = u.super_matrix();
 	assert!(l_c_super_matrix.nrow == u_c_super_matrix.nrow,

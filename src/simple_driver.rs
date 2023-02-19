@@ -54,7 +54,7 @@ pub fn simple_driver<P: CSimpleDriver<P>>(
     A: &CompColMatrix<P>,
     perm_c: &mut Vec<i32>,
     perm_r: &mut Vec<i32>,
-    mut B: DenseMatrix<P>,
+    B: DenseMatrix<P>,
     stat: &mut SuperLUStat_t,
 ) -> Result<SimpleSolution<P>, SolverError> {
     let mut info = 0;

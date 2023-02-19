@@ -58,12 +58,12 @@ extern "C" {
 pub trait CSimpleDriver<P>: CCompColMatrix<P> + CCreateDenseMatrix<P> + CSuperNodeMatrix<P> {
     fn c_simple_driver(
 	options: &mut superlu_options_t,
-	a: &mut c_SuperMatrix,
+	a: *mut c_SuperMatrix,
 	perm_c: &mut Vec<i32>,
 	perm_r: &mut Vec<i32>,
 	l: &mut c_SuperMatrix,
 	u: &mut c_SuperMatrix,
-	b: &mut c_SuperMatrix,
+	b: *mut c_SuperMatrix,
 	stat: &mut SuperLUStat_t,
 	info: &mut i32,
     );
@@ -72,12 +72,12 @@ pub trait CSimpleDriver<P>: CCompColMatrix<P> + CCreateDenseMatrix<P> + CSuperNo
 impl CSimpleDriver<f32> for f32 {
     fn c_simple_driver(
 	options: &mut superlu_options_t,
-	a: &mut c_SuperMatrix,
+	a: *mut c_SuperMatrix,
 	perm_c: &mut Vec<i32>,
 	perm_r: &mut Vec<i32>,
 	l: &mut c_SuperMatrix,
 	u: &mut c_SuperMatrix,
-	b: &mut c_SuperMatrix,
+	b: *mut c_SuperMatrix,
 	stat: &mut SuperLUStat_t,
 	info: &mut i32,
     ) {
@@ -91,12 +91,12 @@ impl CSimpleDriver<f32> for f32 {
 impl CSimpleDriver<f64> for f64 {
     fn c_simple_driver(
 	options: &mut superlu_options_t,
-	a: &mut c_SuperMatrix,
+	a: *mut c_SuperMatrix,
 	perm_c: &mut Vec<i32>,
 	perm_r: &mut Vec<i32>,
 	l: &mut c_SuperMatrix,
 	u: &mut c_SuperMatrix,
-	b: &mut c_SuperMatrix,
+	b: *mut c_SuperMatrix,
 	stat: &mut SuperLUStat_t,
 	info: &mut i32,
     ) {
@@ -110,12 +110,12 @@ impl CSimpleDriver<f64> for f64 {
 impl CSimpleDriver<num::Complex<f32>> for num::Complex<f32> {
     fn c_simple_driver(
 	options: &mut superlu_options_t,
-	a: &mut c_SuperMatrix,
+	a: *mut c_SuperMatrix,
 	perm_c: &mut Vec<i32>,
 	perm_r: &mut Vec<i32>,
 	l: &mut c_SuperMatrix,
 	u: &mut c_SuperMatrix,
-	b: &mut c_SuperMatrix,
+	b: *mut c_SuperMatrix,
 	stat: &mut SuperLUStat_t,
 	info: &mut i32,
     ) {
@@ -129,12 +129,12 @@ impl CSimpleDriver<num::Complex<f32>> for num::Complex<f32> {
 impl CSimpleDriver<num::Complex<f64>> for num::Complex<f64> {
     fn c_simple_driver(
 	options: &mut superlu_options_t,
-	a: &mut c_SuperMatrix,
+	a: *mut c_SuperMatrix,
 	perm_c: &mut Vec<i32>,
 	perm_r: &mut Vec<i32>,
 	l: &mut c_SuperMatrix,
 	u: &mut c_SuperMatrix,
-	b: &mut c_SuperMatrix,
+	b: *mut c_SuperMatrix,
 	stat: &mut SuperLUStat_t,
 	info: &mut i32,
     ) {

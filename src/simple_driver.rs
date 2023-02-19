@@ -49,7 +49,7 @@ pub struct SimpleSolution<P: CSimpleDriver<P>> {
 /// if you want to solve A.
 ///
 #[allow(non_snake_case)]
-pub fn simple_driver<P: CSimpleDriver<P>>(
+unsafe pub fn simple_driver<P: CSimpleDriver<P>>(
     mut options: superlu_options_t,
     A: &mut CompColMatrix<P>,
     perm_c: &mut Vec<i32>,
@@ -64,12 +64,12 @@ pub fn simple_driver<P: CSimpleDriver<P>>(
 
         P::c_simple_driver(
             &mut options,
-            A.super_matrix(),
+            A.super_matrix() as *const c_SuperMatrix as *mut c_SuperMatrix,
             perm_c,
             perm_r,
             &mut L,
             &mut U,
-            B.super_matrix(),
+            B.super_matrix() as *const c_SuperMatrix as *mut c_SuperMatrix,
             stat,
             &mut info,
         );

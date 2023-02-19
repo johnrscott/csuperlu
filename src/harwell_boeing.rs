@@ -154,15 +154,14 @@ fn parse_int(buf: &str) -> i32 {
 	.trim()
 	.parse::<i32>()
 	.expect("Failed to parse an integer in Harwell-Boeing file")
-	+ 1
 }
 
 fn parse_vector<P: FromStr>(lines: &mut Lines<io::BufReader<File>>,
-		   num_lines: i32, type_len: usize) -> Vec<P> {
+			    num_lines: i32, type_len: usize) -> Vec<P> {
     let mut vector = Vec::new();
     for _ in 0..num_lines {
 	let line = lines.next()
-	    .expect("Failed to read line while parsing row indices")
+	    .expect("Failed to read line while parsing Harwell-Boeing vector")
 	    .unwrap();
 	assert!(line.len() % type_len == 0,
 		"Values line length not a multiple of {type_len}");
@@ -171,7 +170,7 @@ fn parse_vector<P: FromStr>(lines: &mut Lines<io::BufReader<File>>,
 		.trim()
 		.parse::<P>() {
 		    Ok(value) => value,
-		    Err(_) => panic!("Failed parsing Harwell-Boeing vector"),
+		    Err(_) => panic!("Failed parsing Harwell-Boeing vector value"),
 		};
 	    vector.push(value)
 	}	    

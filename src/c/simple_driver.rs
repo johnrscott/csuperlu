@@ -57,32 +57,33 @@ extern "C" {
 
 pub trait CSimpleDriver<P>: CCompColMatrix<P> + CCreateDenseMatrix<P> + CSuperNodeMatrix<P> {
     fn c_simple_driver(
-	options: &mut superlu_options_t,
-	a: &mut c_SuperMatrix,
-	perm_c: &mut Vec<i32>,
-	perm_r: &mut Vec<i32>,
-	l: &mut c_SuperMatrix,
-	u: &mut c_SuperMatrix,
-	b: &mut c_SuperMatrix,
-	stat: &mut SuperLUStat_t,
-	info: &mut i32,
+	options: &superlu_options_t,
+	a: &c_SuperMatrix,
+	perm_c: &Vec<i32>,
+	perm_r: &Vec<i32>,
+	l: &c_SuperMatrix,
+	u: &c_SuperMatrix,
+	b: &c_SuperMatrix,
+	stat: &SuperLUStat_t,
+	info: &i32,
     );
 }
 
 impl CSimpleDriver<f32> for f32 {
     fn c_simple_driver(
-	options: &mut superlu_options_t,
-	a: &mut c_SuperMatrix,
-	perm_c: &mut Vec<i32>,
-	perm_r: &mut Vec<i32>,
-	l: &mut c_SuperMatrix,
-	u: &mut c_SuperMatrix,
-	b: &mut c_SuperMatrix,
-	stat: &mut SuperLUStat_t,
-	info: &mut i32,
+	options: &superlu_options_t,
+	a: &c_SuperMatrix,
+	perm_c: &Vec<i32>,
+	perm_r: &Vec<i32>,
+	l: &c_SuperMatrix,
+	u: &c_SuperMatrix,
+	b: &c_SuperMatrix,
+	stat: &SuperLUStat_t,
+	info: &i32,
     ) {
 	unsafe {
-            sgssv(options, a, perm_c.as_mut_ptr(), perm_r.as_mut_ptr(),
+            sgssv(options as *const superlu_options_t as *mut superlu_options_t,
+		  a,perm_c.as_mut_ptr(), perm_r.as_mut_ptr(),
 		  l, u, b, stat, info);
 	}	
     }

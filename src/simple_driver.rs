@@ -64,7 +64,7 @@ pub fn simple_driver<P: CSimpleDriver<P>>(
 
         P::c_simple_driver(
             &mut options,
-            A.super_matrix(),
+            A.super_matrix() as *mut c_SuperMatrix,
             perm_c,
             perm_r,
             &mut L,

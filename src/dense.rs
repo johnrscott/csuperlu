@@ -57,12 +57,13 @@ impl<P: CCreateDenseMatrix<P>> DenseMatrix<P> {
 }
 
 impl<P: CCreateDenseMatrix<P>> SuperMatrix for DenseMatrix<P> {
-    fn super_matrix<'a>(&'a mut self) -> &'a mut c_SuperMatrix {
-        &mut self.c_super_matrix
+    fn super_matrix<'a>(&'a self) -> &'a c_SuperMatrix {
+        &self.c_super_matrix
     }
     fn print(&mut self, what: &str) {
         let c_str = std::ffi::CString::new(what).unwrap();
-        P::c_print_dense_matrix(c_str.as_ptr() as *mut libc::c_char, self.super_matrix());
+        P::c_print_dense_matrix(c_str.as_ptr() as *mut libc::c_char,
+				&mut self.c_super_matrix);
     }
 }
 

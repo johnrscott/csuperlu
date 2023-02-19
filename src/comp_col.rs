@@ -20,6 +20,7 @@ use crate::harwell_boeing::HarwellBoeingMatrix;
 use crate::super_matrix::SuperMatrix;
 use std::mem::MaybeUninit;
 use std::fs;
+use std::ops::Mul;
 use std::process;
 
 /// Compressed-column matrix
@@ -157,6 +158,28 @@ impl<P: CCompColMatrix<P>> CompColMatrix<P> {
     }
 
 }
+
+impl<'a, P: CCompColMatrix<P>> Mul<&Vec<P>> for &'a mut CompColMatrix<P> {
+    
+    type Output = Vec<P>;
+    
+    /// Naive matrix multiplication which loops over all
+    /// each full row of the sparse matrix and adds up the
+    /// results.
+    fn mul(self, x: &Vec<P>) -> Vec<P> {
+	assert!(self.num_columns() == x.len(),
+		"Cannot multiply; incompatible dimensions");
+	let mut b = Vec::<P>::new();
+	for row in 0..self.num_rows() {
+	    let mut value = P::zero();
+	    for column in 0..self.num_columns() {
+		value = value + (self.value(row, column) * x[row]);
+	    }
+	    b.push(value);
+	}
+	b
+    }
+}     
 
 impl<P: CCompColMatrix<P>> SuperMatrix for CompColMatrix<P> {
     fn super_matrix<'a>(&'a mut self) -> &'a mut c_SuperMatrix {

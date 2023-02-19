@@ -135,6 +135,9 @@ struct HarwellBoeingHeader {
 /// format). Sometimes, the non-zero values may be omitted, in
 /// which case the matrix is called a "pattern matrix".
 ///
+/// The Harwell-Boeing format uses arrays that are indexed from
+/// one. These are converted to zero-indexed arrays in this struct.
+///
 #[derive(Debug)]
 pub struct HarwellBoeingMatrix<P: FromStr> {
     /// The header describing the matrix format
@@ -156,24 +159,37 @@ fn parse_int(buf: &str) -> i32 {
 	.expect("Failed to parse an integer in Harwell-Boeing file")
 }
 
+/// Fortran indexes arrays from 1, so subtract 1 here to
+/// get indices suitable for using in SuperLU
+fn parse_offset(buf: &str) -> i32 {
+    buf.trim()
+	.parse::<i32>()
+	.expect("Failed to parse offset")
+	- 1
+}
+
+fn parse_float<P: FromStr>(buf: &str) -> P {
+    match buf.trim()
+	.parse::<P>() {
+	    Ok(value) => value,
+	    Err(_) => panic!("Failed parsing floating-point value"),
+	}
+}
+
 fn parse_vector<P: FromStr>(lines: &mut Lines<io::BufReader<File>>,
-			    num_lines: i32, type_len: usize) -> Vec<P> {
+			    num_lines: i32, value_len: usize,
+			    value_parser: fn(&str) -> P) -> Vec<P> {
     let mut vector = Vec::new();
     for _ in 0..num_lines {
 	let line = lines.next()
 	    .expect("Failed to read line while parsing Harwell-Boeing vector")
 	    .unwrap();
-	assert!(line.len() % type_len == 0,
-		"Values line length not a multiple of {type_len}");
-	for k in 0..line.len()/type_len {
-	    let value = match line[type_len*k..][..type_len]
-		.trim()
-		.parse::<P>() {
-		    Ok(value) => value,
-		    Err(_) => panic!("Failed parsing Harwell-Boeing vector value"),
-		};
-	    vector.push(value)
-	}	    
+	assert!(line.len() % value_len == 0,
+		"Values line length not a multiple of {value_len}");
+	for k in 0..line.len()/value_len {
+	    let value = value_parser(&line[value_len*k..][..value_len]);
+	    vector.push(value);
+	}
     }
     vector
 }    
@@ -266,13 +282,21 @@ impl<P: FromStr> HarwellBoeingMatrix<P> {
 	    num_rhs_indices,
 	};
 
-	let column_offsets = parse_vector::<i32>(&mut lines,
-						 num_column_offset_lines, 5);
-	let row_indices = parse_vector::<i32>(&mut lines,
-					      num_row_index_lines, 5);
-	
-	let non_zero_values = parse_vector::<P>(&mut lines,
-						num_values_lines, 15);
+	let column_offsets = parse_vector(
+	    &mut lines,
+	    num_column_offset_lines,
+	    5,
+	    parse_offset);
+	let row_indices = parse_vector(
+	    &mut lines,
+	    num_row_index_lines,
+	    5,
+	    parse_offset);
+	let non_zero_values = parse_vector(
+	    &mut lines,
+	    num_values_lines,
+	    15,
+	    parse_float);
 	
 	println!("{:?}", header);
 	println!("non zero values = {}", non_zero_values.len());

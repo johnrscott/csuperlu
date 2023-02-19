@@ -50,10 +50,13 @@ fn main() {
     } = simple_driver(options, &mut a, &mut perm_c, &mut perm_r, b, &mut stat)
         .expect("Failed to solve linear system");
 
+
+    x.print("X");
+
     
     // Access the solution matrix
-    // let solution = x.values();
+    let solution = x.values();
 
-    // println!("{:?}", solution);
-    // println!("{}", distance(solution, known_true));
+    println!("{:?}", solution);
+    println!("{}", distance(solution, x_true));
 }

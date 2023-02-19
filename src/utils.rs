@@ -20,7 +20,7 @@ pub fn multiply<P: CCompColMatrix<P>>(a: &mut CompColMatrix<P>, x: &Vec<P>) -> V
     for row in 0..a.num_rows() {
 	let mut value = P::from_f32(0.0).unwrap();
 	for column in 0..a.num_columns() {
-	    value = value * (a.value(row, column) * x[row].clone());
+	    value = value + (a.value(row, column) * x[row].clone());
 	}
 	b.push(value);
     }

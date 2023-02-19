@@ -5,6 +5,8 @@ use std::{
     str::FromStr, fs::File,
 };
 
+use num::Num;
+
 #[derive(Debug)]
 enum MatrixValueType {
     Real,
@@ -101,22 +103,22 @@ struct HarwellBoeingHeader {
     key: String,
     /// Total number of data lines
     total_data_lines: i32,
-    /// Number of data lines for column offset
+    /// Num + FromStrber of data lines for column offset
     num_column_offset_lines: i32,
-    /// Number of lines for row indices
+    /// Num + FromStrber of lines for row indices
     num_row_index_lines: i32,
-    /// Number of lines for non-zero values
+    /// Num + FromStrber of lines for non-zero values
     num_values_lines: i32,
-    /// Number of lines for right-hand side,
+    /// Num + FromStrber of lines for right-hand side,
     /// starting guess, and solutions
     num_rhs_lines: i32,
     /// Matrix type, as a three-character code
     matrix_type: MatrixType,
-    /// Number of rows in the matrix
+    /// Num + FromStrber of rows in the matrix
     num_rows: i32,
-    /// Number of columns in the matrix
+    /// Num + FromStrber of columns in the matrix
     num_columns: i32,
-    /// Number of non-zero values in the matrix
+    /// Num + FromStrber of non-zero values in the matrix
     num_non_zeros: i32,
     num_elemental_entries: i32,
     pointer_format: String,
@@ -124,7 +126,7 @@ struct HarwellBoeingHeader {
     value_format: String,
     rhs_format: String,
     rhs_type: Option<String>,
-    /// Number of right-hand sides
+    /// Num + FromStrber of right-hand sides
     num_rhs: Option<i32>,
     num_rhs_indices: Option<i32>,
 }
@@ -139,7 +141,7 @@ struct HarwellBoeingHeader {
 /// one. These are converted to zero-indexed arrays in this struct.
 ///
 #[derive(Debug)]
-pub struct HarwellBoeingMatrix<P: FromStr> {
+pub struct HarwellBoeingMatrix<P: Num + FromStr> {
     /// The header describing the matrix format
     header: HarwellBoeingHeader,
     /// Offsets to the start of each column in the row_indices vector
@@ -168,7 +170,7 @@ fn parse_offset(buf: &str) -> i32 {
 	- 1
 }
 
-fn parse_float<P: FromStr>(buf: &str) -> P {
+fn parse_float<P: Num + FromStr>(buf: &str) -> P {
     match buf.trim()
 	.parse::<P>() {
 	    Ok(value) => value,
@@ -176,7 +178,7 @@ fn parse_float<P: FromStr>(buf: &str) -> P {
 	}
 }
 
-fn parse_vector<P: FromStr>(lines: &mut Lines<io::BufReader<File>>,
+fn parse_vector<P: Num + FromStr>(lines: &mut Lines<io::BufReader<File>>,
 			    num_lines: i32, value_len: usize,
 			    value_parser: fn(&str) -> P) -> Vec<P> {
     let mut vector = Vec::new();
@@ -194,7 +196,7 @@ fn parse_vector<P: FromStr>(lines: &mut Lines<io::BufReader<File>>,
     vector
 }    
 
-impl<P: FromStr> HarwellBoeingMatrix<P> {
+impl<P: Num + FromStr> HarwellBoeingMatrix<P> {
 
     pub fn num_columns(&self) -> usize {
 	self.header.num_columns as usize

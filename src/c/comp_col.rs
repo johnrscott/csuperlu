@@ -2,7 +2,7 @@ use std::{mem::MaybeUninit, str::FromStr};
 
 use crate::c::super_matrix::{c_SuperMatrix, Dtype_t, Mtype_t, Stype_t};
 use libc;
-use num::{FromPrimitive, Num};
+use num::Num;
 
 #[link(name = "superlu")]
 extern "C" {
@@ -82,8 +82,7 @@ extern "C" {
 /// is always SLU_NC for this function (as stated in the doxygen docs).
 ///
 /// Rename this to something like CompColUtils
-pub trait CCompColMatrix<P>: Clone + FromPrimitive
-    + FromStr + Num + std::fmt::Debug {
+pub trait CCompColMatrix<P>: Num + Copy + FromStr + std::fmt::Debug {
     fn c_create_comp_col_matrix(
         a: &mut MaybeUninit<c_SuperMatrix>,
         m: i32,

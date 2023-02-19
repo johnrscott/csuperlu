@@ -124,9 +124,8 @@ impl<P: CCompColMatrix<P>> CompColMatrix<P> {
 	let col_end = self.column_offsets()[col+1] as usize;
 	let row_indices = &self.row_indices()[col_start..col_end];
 	match row_indices.binary_search(&(row as i32)) {
-	    Ok(row_index) =>
-		self.non_zero_values()[col_start + row_index].clone(),
-	    Err(_) => P::from_f32(0.0).unwrap()
+	    Ok(row_index) => self.non_zero_values()[col_start + row_index],
+	    Err(_) => P::zero(),
 	}
     }
 

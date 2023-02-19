@@ -1,9 +1,11 @@
 #![allow(dead_code)]
 
 use std::{
-    io::{self, BufRead},
-    str::FromStr, num::ParseIntError
+    io::{self, BufRead, Lines},
+    str::FromStr, fs::File,
 };
+
+use num::Num;
 
 #[derive(Debug)]
 enum MatrixValueType {
@@ -101,22 +103,22 @@ struct HarwellBoeingHeader {
     key: String,
     /// Total number of data lines
     total_data_lines: i32,
-    /// Number of data lines for column offset
+    /// Num + FromStrber of data lines for column offset
     num_column_offset_lines: i32,
-    /// Number of lines for row indices
+    /// Num + FromStrber of lines for row indices
     num_row_index_lines: i32,
-    /// Number of lines for non-zero values
+    /// Num + FromStrber of lines for non-zero values
     num_values_lines: i32,
-    /// Number of lines for right-hand side,
+    /// Num + FromStrber of lines for right-hand side,
     /// starting guess, and solutions
     num_rhs_lines: i32,
     /// Matrix type, as a three-character code
     matrix_type: MatrixType,
-    /// Number of rows in the matrix
+    /// Num + FromStrber of rows in the matrix
     num_rows: i32,
-    /// Number of columns in the matrix
+    /// Num + FromStrber of columns in the matrix
     num_columns: i32,
-    /// Number of non-zero values in the matrix
+    /// Num + FromStrber of non-zero values in the matrix
     num_non_zeros: i32,
     num_elemental_entries: i32,
     pointer_format: String,
@@ -124,7 +126,7 @@ struct HarwellBoeingHeader {
     value_format: String,
     rhs_format: String,
     rhs_type: Option<String>,
-    /// Number of right-hand sides
+    /// Num + FromStrber of right-hand sides
     num_rhs: Option<i32>,
     num_rhs_indices: Option<i32>,
 }
@@ -135,8 +137,11 @@ struct HarwellBoeingHeader {
 /// format). Sometimes, the non-zero values may be omitted, in
 /// which case the matrix is called a "pattern matrix".
 ///
+/// The Harwell-Boeing format uses arrays that are indexed from
+/// one. These are converted to zero-indexed arrays in this struct.
+///
 #[derive(Debug)]
-pub struct HarwellBoeingMatrix<P: FromStr> {
+pub struct HarwellBoeingMatrix<P: Num + FromStr> {
     /// The header describing the matrix format
     header: HarwellBoeingHeader,
     /// Offsets to the start of each column in the row_indices vector
@@ -149,20 +154,56 @@ pub struct HarwellBoeingMatrix<P: FromStr> {
     rhs_info: Option<Vec<P>>,
 }
 
-fn parse_int(buf: &str) -> Result<i32, ParseIntError> {
+fn parse_int(buf: &str) -> i32 {
     buf[..14]
 	.trim()
 	.parse::<i32>()
+	.expect("Failed to parse an integer in Harwell-Boeing file")
 }
 
-impl<P: FromStr> HarwellBoeingMatrix<P> {
+/// Fortran indexes arrays from 1, so subtract 1 here to
+/// get indices suitable for using in SuperLU
+fn parse_offset(buf: &str) -> i32 {
+    buf.trim()
+	.parse::<i32>()
+	.expect("Failed to parse offset")
+	- 1
+}
 
-    pub fn num_columns(&self) -> i32 {
-	self.header.num_columns
+fn parse_float<P: Num + FromStr>(buf: &str) -> P {
+    match buf.trim()
+	.parse::<P>() {
+	    Ok(value) => value,
+	    Err(_) => panic!("Failed parsing floating-point value"),
+	}
+}
+
+fn parse_vector<P: Num + FromStr>(lines: &mut Lines<io::BufReader<File>>,
+			    num_lines: i32, value_len: usize,
+			    value_parser: fn(&str) -> P) -> Vec<P> {
+    let mut vector = Vec::new();
+    for _ in 0..num_lines {
+	let line = lines.next()
+	    .expect("Failed to read line while parsing Harwell-Boeing vector")
+	    .unwrap();
+	assert!(line.len() % value_len == 0,
+		"Values line length not a multiple of {value_len}");
+	for k in 0..line.len()/value_len {
+	    let value = value_parser(&line[value_len*k..][..value_len]);
+	    vector.push(value);
+	}
+    }
+    vector
+}    
+
+impl<P: Num + FromStr> HarwellBoeingMatrix<P> {
+
+    pub fn num_columns(&self) -> usize {
+	self.header.num_columns as usize
     }
 
-    pub fn num_rows(&self) -> i32 {
-	self.header.num_rows
+    pub fn num_rows(&self) -> usize {
+	self.header.num_rows as usize
     }
     
     pub fn to_vectors(self) -> (Vec<i32>, Vec<i32>, Vec<P>) {
@@ -186,29 +227,20 @@ impl<P: FromStr> HarwellBoeingMatrix<P> {
 	let line = lines.next()
 	    .expect("Expected at least 2 line in Harwell-Boeing file")
 	    .expect("Failed to parse line");	
-	let total_data_lines = parse_int(&line[1*14..])
-	    .expect("Failed to parse total_data_lines");
-	let num_column_offset_lines = parse_int(&line[1*14..])
-	    .expect("Failed to parse num_column_offset_lines");
-	let num_row_index_lines = parse_int(&line[2*14..])
-	    .expect("Failed to parse num_row_index_lines");
-	let num_values_lines = parse_int(&line[3*14..])
-	    .expect("Failed to parse num_values_lines");
-	let num_rhs_lines = parse_int(&line[4*14..])
-	    .expect("Failed to parse num_rhs_lines");
+	let total_data_lines = parse_int(&line[0*14..]);
+	let num_column_offset_lines = parse_int(&line[1*14..]);
+	let num_row_index_lines = parse_int(&line[2*14..]);
+	let num_values_lines = parse_int(&line[3*14..]);
+	let num_rhs_lines = parse_int(&line[4*14..]);
 	
 	let line = lines.next()
 	    .expect("Expected at least 3 line in Harwell-Boeing file")
 	    .expect("Failed to parse line");
 	let matrix_type = MatrixType::from_string(line[0..3].trim().to_string());
-	let num_rows = parse_int(&line[1*14..])
-	    .expect("Failed to parse num_rows");
-	let num_columns = parse_int(&line[2*14..])
-	    .expect("Failed to parse num_columns");
-	let num_non_zeros = parse_int(&line[3*14..])
-	    .expect("Failed to parse num_non_zeros");
-	let num_elemental_entries = parse_int(&line[4*14..])
-	    .expect("Failed to parse num_elemental_entries");
+	let num_rows = parse_int(&line[1*14..]);
+	let num_columns = parse_int(&line[2*14..]);
+	let num_non_zeros = parse_int(&line[3*14..]);
+	let num_elemental_entries = parse_int(&line[4*14..]);
 	
 	let line = lines.next()
 	    .expect("Expected at least 4 line in Harwell-Boeing file")
@@ -223,10 +255,8 @@ impl<P: FromStr> HarwellBoeingMatrix<P> {
 		.expect("Expected at least 4 line in Harwell-Boeing file")
 		.expect("Failed to parse line");
 	    let rhs_type = line[0..14].trim().to_string();
-	    let num_rhs = parse_int(&line[1*14..])
-		.expect("Failed to parse num_rhs");
-	    let num_rhs_indices = parse_int(&line[2*14..])
-		.expect("Failed to parse num_rhs");
+	    let num_rhs = parse_int(&line[1*14..]);
+	    let num_rhs_indices = parse_int(&line[2*14..]);
 	    (Some(rhs_type), Some(num_rhs), Some(num_rhs_indices))
 	} else {
 	    (None, None, None)
@@ -254,58 +284,27 @@ impl<P: FromStr> HarwellBoeingMatrix<P> {
 	    num_rhs_indices,
 	};
 
-	let mut column_offsets = Vec::new();
-	for _ in 0..num_column_offset_lines {
-	    let int_len = 5;
-	    let line = lines.next()
-		.expect("Failed to read line while parsing column pointers")
-		.unwrap();
-	    assert!(line.len() % int_len == 0,
-		    "Integer (offset) line length not a multiple of {int_len}");
-	    for k in 0..line.len()/int_len {
-		column_offsets.push(line[int_len*k..][..int_len]
-				    .trim()
-				    .parse::<i32>()
-				    .expect("Failed to parse offset as integer"));
-	    }	    
-	}
+	let column_offsets = parse_vector(
+	    &mut lines,
+	    num_column_offset_lines,
+	    5,
+	    parse_offset);
+	let row_indices = parse_vector(
+	    &mut lines,
+	    num_row_index_lines,
+	    5,
+	    parse_offset);
+	let non_zero_values = parse_vector(
+	    &mut lines,
+	    num_values_lines,
+	    15,
+	    parse_float);
 	
-	let mut row_indices = Vec::new();
-	for _ in 0..num_row_index_lines {
-	    let int_len = 5 ;
-	    let line = lines.next()
-		.expect("Failed to read line while parsing row indices")
-		.unwrap();
-	    assert!(line.len() % int_len == 0,
-		    "Integer (offset) line length not a multiple of {int_len}");
-	    for k in 0..line.len()/int_len {
-		row_indices.push(line[int_len*k..][..int_len]
-				 .trim()
-				 .parse::<i32>()
-				 .expect("Failed to parse index as integer"));
-	    }	    
-	}
-
-	let mut non_zero_values = Vec::new();
-	for _ in 0..num_values_lines {
-	    let fp_len = 15;
-	    let line = lines.next()
-		.expect("Failed to read line while parsing row indices")
-		.unwrap();
-	    println!("{line}");
-	    assert!(line.len() % fp_len == 0,
-		    "Values line length not a multiple of {fp_len}");
-	    for k in 0..line.len()/fp_len {
-		let value = match line[fp_len*k..][..fp_len]
-		    .trim()
-		    .parse::<P>() {
-			Ok(value) => value,
-			Err(_) => panic!("Failed"),
-		    };
-		non_zero_values.push(value)
-	    }	    
-	}
-
+	println!("{:?}", header);
+	println!("non zero values = {}", non_zero_values.len());
+	println!("row indices = {}", row_indices.len());
+	println!("col pointers = {}", column_offsets.len());
+	
 	Self {
 	    header,
 	    column_offsets,

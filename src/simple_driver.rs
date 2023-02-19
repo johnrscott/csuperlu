@@ -12,12 +12,27 @@ use crate::super_matrix::SuperMatrix;
 use crate::super_node::SuperNodeMatrix;
 
 use crate::c::simple_driver::CSimpleDriver;
+use std::{error::Error, fmt};
+
+#[derive(Debug)]
+pub struct SolverError {
+    /// info != 0 indicates solver error. See e.g. dgssv documentation
+    /// for the meaning of info. 
+    info: i32,
+}
+
+impl Error for SolverError {}
+
+impl fmt::Display for SolverError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "Failed to solve the linear system; info = {}", self.info)
+    }
+}
 
 #[allow(non_snake_case)]
 pub struct SimpleSolution<P: CSimpleDriver<P>> {
     pub x: DenseMatrix<P>,
     pub lu: LUDecomp<P>,
-    pub info: i32,
 }
 
 /// Solve a sparse linear system AX = B.
@@ -41,7 +56,7 @@ pub fn simple_driver<P: CSimpleDriver<P>>(
     perm_r: &mut Vec<i32>,
     mut B: DenseMatrix<P>,
     stat: &mut SuperLUStat_t,
-) -> SimpleSolution<P> {
+) -> Result<SimpleSolution<P>, SolverError> {
     let mut info = 0;
     unsafe {
         let mut L = c_SuperMatrix::alloc();
@@ -61,10 +76,16 @@ pub fn simple_driver<P: CSimpleDriver<P>>(
         let l = SuperNodeMatrix::from_super_matrix(L);
         let u = CompColMatrix::from_super_matrix(U);
         let lu = LUDecomp::from_matrices(l, u);
-        SimpleSolution {
-            x: B,
-            lu,
-	    info,
-        }
+
+	if info != 0 {
+	    Err(SolverError {
+		info
+	    })
+	} else {
+	    Ok(SimpleSolution {
+		x: B,
+		lu,
+            })
+	}
     }
 }

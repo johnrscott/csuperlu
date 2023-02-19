@@ -77,6 +77,8 @@ int main(int argc, char *argv[])
 
     /* Initialize the statistics variables. */
     StatInit(&stat);
+
+    dPrint_Dense_Matrix("B", &B);
     
     dgssv(&options, &A, perm_c, perm_r, &L, &U, &B, &stat, &info);
     

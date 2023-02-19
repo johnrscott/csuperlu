@@ -22,10 +22,12 @@ impl<P: CCreateDenseMatrix<P>> DenseMatrix<P> {
     /// the solver when the dense matrix is used as the right-hand
     /// side matrix.
     ///
-    pub fn from_vectors(m: i32, n: i32, mut x: Vec<P>) -> Self {
+    pub fn from_vectors(num_rows: usize, num_columns: usize,
+			mut x: Vec<P>) -> Self {
         let c_super_matrix = unsafe {
             let mut c_super_matrix = MaybeUninit::<c_SuperMatrix>::uninit();
-            P::c_create_dense_matrix(&mut c_super_matrix, m, n, &mut x, m,
+            P::c_create_dense_matrix(&mut c_super_matrix, num_rows as i32,
+				     num_columns as i32, &mut x, num_rows as i32,
 				     Mtype_t::SLU_GE);
             c_super_matrix.assume_init()
         };
@@ -35,12 +37,15 @@ impl<P: CCreateDenseMatrix<P>> DenseMatrix<P> {
             marker: std::marker::PhantomData,
         }
     }
-    // pub fn values(&mut self) -> &mut Vec<P> {
-    //     unsafe {
-    //         let c_dnformat = &mut *(self.c_super_matrix.Store as *mut c_DNformat);
-    //         &mut *(c_dnformat.nzval as *mut Vec<P>)
-    //     }
-    // }
+
+    pub fn num_rows(&self) -> usize {
+        self.c_super_matrix.nrow as usize
+    }
+
+    pub fn num_columns(&self) -> usize {
+        self.c_super_matrix.ncol as usize
+    }
+
     pub fn values(&mut self) -> &[P] {
         unsafe {
             let c_dnformat = &mut *(self.c_super_matrix.Store as *mut c_DNformat);

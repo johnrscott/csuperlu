@@ -157,12 +157,12 @@ fn parse_int(buf: &str) -> Result<i32, ParseIntError> {
 
 impl<P: FromStr> HarwellBoeingMatrix<P> {
 
-    pub fn num_columns(&self) -> i32 {
-	self.header.num_columns
+    pub fn num_columns(&self) -> usize {
+	self.header.num_columns as usize
     }
 
-    pub fn num_rows(&self) -> i32 {
-	self.header.num_rows
+    pub fn num_rows(&self) -> usize {
+	self.header.num_rows as usize
     }
     
     pub fn to_vectors(self) -> (Vec<i32>, Vec<i32>, Vec<P>) {

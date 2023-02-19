@@ -63,7 +63,9 @@ impl<P: CCompColMatrix<P>> CompColMatrix<P> {
 	     non_zero_values) = matrix.to_vectors();
 	
 	// Make the left-hand side matrix
-	Self::from_vectors(num_rows, num_columns, non_zero_values.len() as i32,
+	Self::from_vectors(num_rows,
+			   num_columns,
+			   non_zero_values.len(),
 			   non_zero_values, row_indices, column_offsets)
     }
 
@@ -80,30 +82,30 @@ impl<P: CCompColMatrix<P>> CompColMatrix<P> {
     /// the argument can be removed.
     ///
     pub fn from_vectors(
-        m: i32,
-        n: i32,
-        nnz: i32,
-        mut nzval: Vec<P>,
-        mut rowind: Vec<i32>,
-        mut colptr: Vec<i32>,
+        num_rows: usize,
+        num_columns: usize,
+        num_non_zeros: usize,
+        mut non_zero_values: Vec<P>,
+        mut row_indices: Vec<i32>,
+        mut column_offsets: Vec<i32>,
     ) -> Self {
         let c_super_matrix = unsafe {
             let mut c_super_matrix = MaybeUninit::<c_SuperMatrix>::uninit();
             P::c_create_comp_col_matrix(
                 &mut c_super_matrix,
-                m,
-                n,
-                nnz,
-                &mut nzval,
-                &mut rowind,
-                &mut colptr,
+                num_rows as i32,
+                num_columns as i32,
+                num_non_zeros as i32,
+                &mut non_zero_values,
+                &mut row_indices,
+                &mut column_offsets,
                 Mtype_t::SLU_GE,
             );
             // The freeing of the input vectors is handed over
             // to the C library functions (see drop)
-            std::mem::forget(nzval);
-            std::mem::forget(rowind);
-            std::mem::forget(colptr);
+            std::mem::forget(non_zero_values);
+            std::mem::forget(row_indices);
+            std::mem::forget(column_offsets);
             c_super_matrix.assume_init()
         };
         Self {
@@ -118,24 +120,31 @@ impl<P: CCompColMatrix<P>> CompColMatrix<P> {
 		"Row index out of range");
 	assert!(col < c_super_matrix.ncol as usize,
 		"Column index out of range");
-	let col_start = self.column_pointers()[col] as usize;
-	let col_end = self.column_pointers()[col+1] as usize;
+	let col_start = self.column_offsets()[col] as usize;
+	let col_end = self.column_offsets()[col+1] as usize;
 	let row_indices = &self.row_indices()[col_start..col_end];
 	match row_indices.binary_search(&(row as i32)) {
 	    Ok(row_index) =>
-		self.nonzero_values()[col_start + row_index].clone(),
+		self.non_zero_values()[col_start + row_index].clone(),
 	    Err(_) => P::from_f32(0.0).unwrap()
 	}
     }
 
-    
-    pub fn nonzero_values(&mut self) -> &[P] {
+    pub fn num_rows(&self) -> usize {
+        self.c_super_matrix.nrow as usize
+    }
+
+    pub fn num_columns(&self) -> usize {
+        self.c_super_matrix.ncol as usize
+    }
+
+    pub fn non_zero_values(&mut self) -> &[P] {
         unsafe {
             let c_ncformat = &mut *(self.c_super_matrix.Store as *mut c_NCformat);
             std::slice::from_raw_parts(c_ncformat.nzval as *mut P, c_ncformat.nnz as usize) 
         }
     }
-    pub fn column_pointers(&mut self) -> &[i32] {
+    pub fn column_offsets(&mut self) -> &[i32] {
         unsafe {
             let c_ncformat = &mut *(self.c_super_matrix.Store as *mut c_NCformat);
             std::slice::from_raw_parts(c_ncformat.colptr as *mut i32, self.c_super_matrix.ncol as usize + 1) 

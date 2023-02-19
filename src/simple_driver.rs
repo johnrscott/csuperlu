@@ -51,10 +51,10 @@ pub struct SimpleSolution<P: CSimpleDriver<P>> {
 #[allow(non_snake_case)]
 pub fn simple_driver<P: CSimpleDriver<P>>(
     mut options: superlu_options_t,
-    A: &mut CompColMatrix<P>,
+    A: &CompColMatrix<P>,
     perm_c: &mut Vec<i32>,
     perm_r: &mut Vec<i32>,
-    mut B: DenseMatrix<P>,
+    B: DenseMatrix<P>,
     stat: &mut SuperLUStat_t,
 ) -> Result<SimpleSolution<P>, SolverError> {
     let mut info = 0;
@@ -64,12 +64,12 @@ pub fn simple_driver<P: CSimpleDriver<P>>(
 
         P::c_simple_driver(
             &mut options,
-            A.super_matrix(),
+            A.super_matrix() as *const c_SuperMatrix as *mut c_SuperMatrix,
             perm_c,
             perm_r,
             &mut L,
             &mut U,
-            B.super_matrix(),
+            B.super_matrix() as *const c_SuperMatrix as *mut c_SuperMatrix,
             stat,
             &mut info,
         );

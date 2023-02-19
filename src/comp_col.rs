@@ -20,6 +20,7 @@ use crate::harwell_boeing::HarwellBoeingMatrix;
 use crate::super_matrix::SuperMatrix;
 use std::mem::MaybeUninit;
 use std::fs;
+use std::ops::Mul;
 use std::process;
 
 /// Compressed-column matrix
@@ -137,19 +138,19 @@ impl<P: CCompColMatrix<P>> CompColMatrix<P> {
         self.c_super_matrix.ncol as usize
     }
 
-    pub fn non_zero_values(&mut self) -> &[P] {
+    pub fn non_zero_values(&self) -> &[P] {
         unsafe {
             let c_ncformat = &mut *(self.c_super_matrix.Store as *mut c_NCformat);
             std::slice::from_raw_parts(c_ncformat.nzval as *mut P, c_ncformat.nnz as usize) 
         }
     }
-    pub fn column_offsets(&mut self) -> &[i32] {
+    pub fn column_offsets(&self) -> &[i32] {
         unsafe {
             let c_ncformat = &mut *(self.c_super_matrix.Store as *mut c_NCformat);
             std::slice::from_raw_parts(c_ncformat.colptr as *mut i32, self.c_super_matrix.ncol as usize + 1) 
         }
     }
-    pub fn row_indices(&mut self) -> &[i32] {
+    pub fn row_indices(&self) -> &[i32] {
         unsafe {
             let c_ncformat = &mut *(self.c_super_matrix.Store as *mut c_NCformat);
             std::slice::from_raw_parts(c_ncformat.rowind as *mut i32, c_ncformat.nnz as usize) 
@@ -158,13 +159,38 @@ impl<P: CCompColMatrix<P>> CompColMatrix<P> {
 
 }
 
-impl<P: CCompColMatrix<P>> SuperMatrix for CompColMatrix<P> {
-    fn super_matrix<'a>(&'a mut self) -> &'a mut c_SuperMatrix {
-        &mut self.c_super_matrix
+impl<'a, P: CCompColMatrix<P>> Mul<&Vec<P>> for &'a mut CompColMatrix<P> {
+    
+    type Output = Vec<P>;
+    
+    /// Naive matrix multiplication which loops over all
+    /// each full row of the sparse matrix and adds up the
+    /// results.
+    fn mul(self, x: &Vec<P>) -> Vec<P> {
+	assert!(self.num_columns() == x.len(),
+		"Cannot multiply; incompatible dimensions");
+	let mut b = Vec::<P>::new();
+	for row in 0..self.num_rows() {
+	    let mut value = P::zero();
+	    for column in 0..self.num_columns() {
+		value = value + (self.value(row, column) * x[row]);
+	    }
+	    b.push(value);
+	}
+	b
     }
-    fn print(&mut self, what: &str) {
+}     
+
+impl<P: CCompColMatrix<P>> SuperMatrix for CompColMatrix<P> {
+    fn super_matrix<'a>(&'a self) -> &'a c_SuperMatrix {
+        &self.c_super_matrix
+    }
+    fn print(&self, what: &str) {
         let c_str = std::ffi::CString::new(what).unwrap();
-        P::c_print_comp_col_matrix(c_str.as_ptr() as *mut libc::c_char, self.super_matrix());
+        P::c_print_comp_col_matrix(
+	    c_str.as_ptr() as *mut libc::c_char,
+	    &self.c_super_matrix as *const c_SuperMatrix
+		as *mut c_SuperMatrix);
     }
 }
 

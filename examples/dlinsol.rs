@@ -10,7 +10,6 @@ use csuperlu::simple_driver::simple_driver;
 use csuperlu::super_matrix::SuperMatrix;
 use csuperlu::c::options::superlu_options_t;
 use csuperlu::utils::distance;
-use csuperlu::utils::multiply;
 
 fn main() {
     let args: Vec<String> = env::args().collect();
@@ -31,7 +30,7 @@ fn main() {
     
     // Make the RHS vector
     let nrhs = 1;
-    let rhs = multiply(&mut a, &x_true);
+    let rhs = &mut a * &x_true;
     let mut b = DenseMatrix::from_vectors(num_rows, nrhs, rhs);
 
     b.print("b");

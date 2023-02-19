@@ -22,10 +22,11 @@ impl<P: CCreateDenseMatrix<P>> DenseMatrix<P> {
     /// the solver when the dense matrix is used as the right-hand
     /// side matrix.
     ///
-    pub fn from_vectors(m: i32, n: i32, mut x: Vec<P>, mtype: Mtype_t) -> Self {
+    pub fn from_vectors(m: i32, n: i32, mut x: Vec<P>) -> Self {
         let c_super_matrix = unsafe {
             let mut c_super_matrix = MaybeUninit::<c_SuperMatrix>::uninit();
-            P::c_create_dense_matrix(&mut c_super_matrix, m, n, &mut x, m, mtype);
+            P::c_create_dense_matrix(&mut c_super_matrix, m, n, &mut x, m,
+				     Mtype_t::SLU_GE);
             c_super_matrix.assume_init()
         };
         std::mem::forget(x);

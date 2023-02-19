@@ -1,4 +1,4 @@
-use std::mem::MaybeUninit;
+use std::{mem::MaybeUninit, str::FromStr};
 
 use crate::c::super_matrix::{c_SuperMatrix, Dtype_t, Mtype_t, Stype_t};
 use libc;
@@ -82,7 +82,8 @@ extern "C" {
 /// is always SLU_NC for this function (as stated in the doxygen docs).
 ///
 /// Rename this to something like CompColUtils
-pub trait CCompColMatrix<P>: Clone + FromPrimitive {
+pub trait CCompColMatrix<P>: Clone + FromPrimitive
+    + FromStr + std::fmt::Debug {
     fn c_create_comp_col_matrix(
         a: &mut MaybeUninit<c_SuperMatrix>,
         m: i32,

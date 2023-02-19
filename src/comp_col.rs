@@ -16,8 +16,11 @@
 use crate::c::comp_col::c_Destroy_CompCol_Matrix;
 use crate::c::comp_col::CCompColMatrix;
 use crate::c::super_matrix::{c_NCformat, c_SuperMatrix, Mtype_t};
+use crate::harwell_boeing::HarwellBoeingMatrix;
 use crate::super_matrix::SuperMatrix;
 use std::mem::MaybeUninit;
+use std::fs;
+use std::process;
 
 /// Compressed-column matrix
 ///
@@ -35,6 +38,33 @@ impl<P: CCompColMatrix<P>> CompColMatrix<P> {
             c_super_matrix,
             marker: std::marker::PhantomData,
         }
+    }
+
+    /// Create a compressed-column matrix from a file
+    /// stored in Harwell-Boeing format. The function will
+    /// attempt to parse the non-zero values in the precision
+    /// P
+    pub fn from_harwell_boeing(file_path: String) -> Self {
+
+	let file = fs::File::open(&file_path).unwrap_or_else(|err| {
+            println!("Problem opening file '{file_path}': {err}");
+            process::exit(1);
+	});	    
+
+	let matrix = HarwellBoeingMatrix::<P>::from_file(file);
+	
+	// Matrix dimensions
+	let num_rows = matrix.num_rows();
+	let num_columns = matrix.num_columns();
+
+	// Vector of doubles of length nnz
+	let (column_offsets,
+	     row_indices,
+	     non_zero_values) = matrix.to_vectors();
+	
+	// Make the left-hand side matrix
+	Self::from_vectors(num_rows, num_columns, non_zero_values.len() as i32,
+			   non_zero_values, row_indices, column_offsets)
     }
 
     /// Specify a compressed column matrix from input vectors.
@@ -56,7 +86,6 @@ impl<P: CCompColMatrix<P>> CompColMatrix<P> {
         mut nzval: Vec<P>,
         mut rowind: Vec<i32>,
         mut colptr: Vec<i32>,
-        mtype: Mtype_t,
     ) -> Self {
         let c_super_matrix = unsafe {
             let mut c_super_matrix = MaybeUninit::<c_SuperMatrix>::uninit();
@@ -68,7 +97,7 @@ impl<P: CCompColMatrix<P>> CompColMatrix<P> {
                 &mut nzval,
                 &mut rowind,
                 &mut colptr,
-                mtype,
+                Mtype_t::SLU_GE,
             );
             // The freeing of the input vectors is handed over
             // to the C library functions (see drop)

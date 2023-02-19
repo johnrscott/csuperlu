@@ -14,13 +14,11 @@
 
 use csuperlu::c::options::{colperm_t, superlu_options_t};
 use csuperlu::c::stat::{c_StatPrint, SuperLUStat_t};
-use csuperlu::c::super_matrix::Mtype_t;
 use csuperlu::comp_col::CompColMatrix;
 use csuperlu::dense::DenseMatrix;
 use csuperlu::simple_driver::{simple_driver, SimpleSolution};
 use csuperlu::super_matrix::SuperMatrix;
 use num::Complex;
-
 
 fn main() {
     // Matrix dimensions
@@ -48,12 +46,12 @@ fn main() {
     let xa = vec![0, 3, 6, 8, 10, 12];
 
     // Make the left-hand side matrix
-    let mut a = CompColMatrix::from_vectors(m, n, nnz, a, asub, xa, Mtype_t::SLU_GE);
+    let mut a = CompColMatrix::from_vectors(m, n, nnz, a, asub, xa);
 
     // Make the RHS vector
     let nrhs = 1;
     let rhs = vec![Complex::<f32>::new(1.0, 0.0); m as usize];
-    let b = DenseMatrix::from_vectors(m, nrhs, rhs, Mtype_t::SLU_GE);
+    let b = DenseMatrix::from_vectors(m, nrhs, rhs);
 
     let mut options = superlu_options_t::new();
     options.ColPerm = colperm_t::NATURAL;
@@ -66,7 +64,7 @@ fn main() {
     let SimpleSolution {
         mut x,
 	mut lu,
-        mut info,
+        info: _,
     } = simple_driver(options, &mut a, &mut perm_c, &mut perm_r, b, &mut stat);
 
     // Print the performance statistics

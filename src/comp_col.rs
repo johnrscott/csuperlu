@@ -138,19 +138,19 @@ impl<P: CCompColMatrix<P>> CompColMatrix<P> {
         self.c_super_matrix.ncol as usize
     }
 
-    pub fn non_zero_values(&mut self) -> &[P] {
+    pub fn non_zero_values(&self) -> &[P] {
         unsafe {
             let c_ncformat = &mut *(self.c_super_matrix.Store as *mut c_NCformat);
             std::slice::from_raw_parts(c_ncformat.nzval as *mut P, c_ncformat.nnz as usize) 
         }
     }
-    pub fn column_offsets(&mut self) -> &[i32] {
+    pub fn column_offsets(&self) -> &[i32] {
         unsafe {
             let c_ncformat = &mut *(self.c_super_matrix.Store as *mut c_NCformat);
             std::slice::from_raw_parts(c_ncformat.colptr as *mut i32, self.c_super_matrix.ncol as usize + 1) 
         }
     }
-    pub fn row_indices(&mut self) -> &[i32] {
+    pub fn row_indices(&self) -> &[i32] {
         unsafe {
             let c_ncformat = &mut *(self.c_super_matrix.Store as *mut c_NCformat);
             std::slice::from_raw_parts(c_ncformat.rowind as *mut i32, c_ncformat.nnz as usize) 

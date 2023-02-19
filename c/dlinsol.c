@@ -82,6 +82,8 @@ int main(int argc, char *argv[])
     
     if ( info == 0 ) {
 
+	dPrint_Dense_Matrix("X", &B);
+	
 	/* This is how you could access the solution matrix. */
         double *sol = (double*) ((DNformat*) B.Store)->nzval; 
 

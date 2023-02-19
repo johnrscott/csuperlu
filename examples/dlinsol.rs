@@ -10,6 +10,7 @@ use csuperlu::simple_driver::simple_driver;
 use csuperlu::super_matrix::SuperMatrix;
 use csuperlu::c::options::superlu_options_t;
 use csuperlu::utils::distance;
+use csuperlu::utils::multiply;
 
 fn main() {
     let args: Vec<String> = env::args().collect();
@@ -24,11 +25,16 @@ fn main() {
     let num_rows = a.num_rows();
     let num_columns = a.num_columns();
     a.print("a");
+
+    // Make the true solution vector
+    let x_true = vec![1.0; num_rows];
     
     // Make the RHS vector
     let nrhs = 1;
-    let rhs = vec![1.0; num_rows];
-    let b = DenseMatrix::from_vectors(num_rows, nrhs, rhs);
+    let rhs = multiply(&mut a, &x_true);
+    let mut b = DenseMatrix::from_vectors(num_rows, nrhs, rhs);
+
+    b.print("b");
 
     let mut options = superlu_options_t::new();
     //options.ColPerm = colperm_t::NATURAL;
@@ -44,11 +50,9 @@ fn main() {
     } = simple_driver(options, &mut a, &mut perm_c, &mut perm_r, b, &mut stat)
         .expect("Failed to solve linear system");
 
-    x.print("X");
     
     // Access the solution matrix
     // let solution = x.values();
-    // let known_true = vec![1.0; num_rows];
 
     // println!("{:?}", solution);
     // println!("{}", distance(solution, known_true));

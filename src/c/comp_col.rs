@@ -2,7 +2,7 @@ use std::{mem::MaybeUninit, str::FromStr};
 
 use crate::c::super_matrix::{c_SuperMatrix, Dtype_t, Mtype_t, Stype_t};
 use libc;
-use num::FromPrimitive;
+use num::{FromPrimitive, Num};
 
 #[link(name = "superlu")]
 extern "C" {
@@ -83,7 +83,7 @@ extern "C" {
 ///
 /// Rename this to something like CompColUtils
 pub trait CCompColMatrix<P>: Clone + FromPrimitive
-    + FromStr + std::fmt::Debug {
+    + FromStr + Num + std::fmt::Debug {
     fn c_create_comp_col_matrix(
         a: &mut MaybeUninit<c_SuperMatrix>,
         m: i32,

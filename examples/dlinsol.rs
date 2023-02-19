@@ -9,6 +9,7 @@ use csuperlu::simple_driver::SimpleSolution;
 use csuperlu::simple_driver::simple_driver;
 use csuperlu::super_matrix::SuperMatrix;
 use csuperlu::c::options::superlu_options_t;
+use csuperlu::utils::distance;
 
 fn main() {
     let args: Vec<String> = env::args().collect();
@@ -45,6 +46,8 @@ fn main() {
 
     // Access the solution matrix
     let solution = x.values();
+    let known_true = vec![1.0; num_rows];
 
     println!("{:?}", solution);
+    println!("{}", distance(solution, known_true));
 }

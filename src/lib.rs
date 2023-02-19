@@ -46,24 +46,18 @@ pub mod super_matrix;
 pub mod super_node;
 pub mod lu_decomp;
 pub mod harwell_boeing;
+pub mod utils;
 
 #[cfg(test)]
 mod tests {
-
-    fn distance(v1: &[f64], v2: Vec<f64>) -> f64 {
-	let mut val = 0.0;
-	for n in 0..v2.len() {
-	    val += (v1[n] - v2[n]) * (v1[n] - v2[n]);
-	}
-	val
-    }
     
     use crate::c::options::{colperm_t, superlu_options_t};
     use crate::c::stat::SuperLUStat_t;
     use crate::comp_col::CompColMatrix;
     use crate::dense::DenseMatrix;
     use crate::simple_driver::{simple_driver, SimpleSolution};
-
+    use crate::utils::distance;
+    
     #[test]
     fn comp_col_matrix_values() {
 	// Matrix dimensions

@@ -46,11 +46,11 @@ impl CSuperNodeMatrix<num::Complex<f64>> for num::Complex<f64> {
         }
     }
 }
-
-// #[allow(non_snake_case)]
-// pub fn c_Destroy_SuperNode_Matrix(A: *mut c_SuperMatrix) {
-//     unsafe {
-//         Destroy_SuperNode_Matrix(A);
-//     }
-// }
 */
+
+#[allow(non_snake_case)]
+pub fn c_Destroy_SuperNode_Matrix(A: *mut c_SuperMatrix) {
+    unsafe {
+        Destroy_SuperNode_Matrix(A);
+    }
+}

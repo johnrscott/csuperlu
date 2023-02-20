@@ -159,8 +159,7 @@ impl<P: ValueType<P>> CompColMatrix<P> {
 
 }
 
-impl<'a, P: ValueType<P>> Mul<&Vec<P>> for &'a mut CompColMatrix<P> {
-    
+impl<'a, P: ValueType<P>> Mul<&Vec<P>> for &'a mut CompColMatrix<P> {    
     type Output = Vec<P>;
     
     /// Naive matrix multiplication which loops over all

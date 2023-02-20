@@ -1,12 +1,12 @@
 use std::{mem::MaybeUninit, str::FromStr};
 
-use crate::c::super_matrix::{c_SuperMatrix, Dtype_t, Mtype_t, Stype_t};
+use crate::csuperlu_sys::super_matrix::{c_SuperMatrix, Dtype_t, Mtype_t, Stype_t};
 use libc;
 use num::Num;
 
 #[link(name = "superlu")]
 extern "C" {
-    fn sCreate_CompCol_Matrix(
+    pub fn sCreate_CompCol_Matrix(
         A: *mut c_SuperMatrix,
         m: libc::c_int,
         n: libc::c_int,
@@ -18,7 +18,7 @@ extern "C" {
         dtype: Dtype_t,
         mtype: Mtype_t,
     );
-    fn dCreate_CompCol_Matrix(
+    pub fn dCreate_CompCol_Matrix(
         A: *mut c_SuperMatrix,
         m: libc::c_int,
         n: libc::c_int,
@@ -30,7 +30,7 @@ extern "C" {
         dtype: Dtype_t,
         mtype: Mtype_t,
     );
-    fn cCreate_CompCol_Matrix(
+    pub fn cCreate_CompCol_Matrix(
         A: *mut c_SuperMatrix,
         m: libc::c_int,
         n: libc::c_int,
@@ -42,7 +42,7 @@ extern "C" {
         dtype: Dtype_t,
         mtype: Mtype_t,
     );
-    fn zCreate_CompCol_Matrix(
+    pub fn zCreate_CompCol_Matrix(
         A: *mut c_SuperMatrix,
         m: libc::c_int,
         n: libc::c_int,
@@ -54,11 +54,11 @@ extern "C" {
         dtype: Dtype_t,
         mtype: Mtype_t,
     );
-    fn sPrint_CompCol_Matrix(what: *mut libc::c_char, A: *mut c_SuperMatrix);
-    fn dPrint_CompCol_Matrix(what: *mut libc::c_char, A: *mut c_SuperMatrix);
-    fn cPrint_CompCol_Matrix(what: *mut libc::c_char, A: *mut c_SuperMatrix);
-    fn zPrint_CompCol_Matrix(what: *mut libc::c_char, A: *mut c_SuperMatrix);
-    fn Destroy_CompCol_Matrix(A: *mut c_SuperMatrix);
+    pub fn sPrint_CompCol_Matrix(what: *mut libc::c_char, A: *mut c_SuperMatrix);
+    pub fn dPrint_CompCol_Matrix(what: *mut libc::c_char, A: *mut c_SuperMatrix);
+    pub fn cPrint_CompCol_Matrix(what: *mut libc::c_char, A: *mut c_SuperMatrix);
+    pub fn zPrint_CompCol_Matrix(what: *mut libc::c_char, A: *mut c_SuperMatrix);
+    pub fn Destroy_CompCol_Matrix(A: *mut c_SuperMatrix);
 }
 
 /*
@@ -232,13 +232,14 @@ impl CCompColMatrix<num::Complex<f64>> for num::Complex<f64> {
         }
     }
 }
+*/
 
 
-//// This will attempt to deallocate the three input vectors used to
-//// create the comp_col matrix.
-// #[allow(non_snake_case)]
-// pub fn c_Destroy_CompCol_Matrix(A: *mut c_SuperMatrix) {
-//     unsafe {
-//         Destroy_CompCol_Matrix(A);
-//     }
-// }
+/// This will attempt to deallocate the three input vectors used to
+/// create the comp_col matrix.
+#[allow(non_snake_case)]
+pub fn c_Destroy_CompCol_Matrix(A: *mut c_SuperMatrix) {
+    unsafe {
+        Destroy_CompCol_Matrix(A);
+    }
+}

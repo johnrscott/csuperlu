@@ -14,7 +14,7 @@
 //! integers is maintained showing where each new column starts.
 
 use crate::csuperlu_sys::comp_col::c_Destroy_CompCol_Matrix;
-use crate::csuperlu_sys::comp_col::CCompColMatrix;
+use crate::value_type::ValueType;
 use crate::csuperlu_sys::super_matrix::{c_NCformat, c_SuperMatrix, Mtype_t};
 use crate::harwell_boeing::HarwellBoeingMatrix;
 use crate::super_matrix::SuperMatrix;
@@ -26,12 +26,12 @@ use std::process;
 /// Compressed-column matrix
 ///
 ///
-pub struct CompColMatrix<P: CCompColMatrix<P>> {
+pub struct CompColMatrix<P: ValueType<P>> {
     c_super_matrix: c_SuperMatrix,
     marker: std::marker::PhantomData<P>,
 }
 
-impl<P: CCompColMatrix<P>> CompColMatrix<P> {
+impl<P: ValueType<P>> CompColMatrix<P> {
     /// Create a compressed-column matrix from a c_SuperMatrix structure
     ///
     pub fn from_super_matrix(c_super_matrix: c_SuperMatrix) -> Self {
@@ -159,7 +159,7 @@ impl<P: CCompColMatrix<P>> CompColMatrix<P> {
 
 }
 
-impl<'a, P: CCompColMatrix<P>> Mul<&Vec<P>> for &'a mut CompColMatrix<P> {
+impl<'a, P: ValueType<P>> Mul<&Vec<P>> for &'a mut CompColMatrix<P> {
     
     type Output = Vec<P>;
     
@@ -181,7 +181,7 @@ impl<'a, P: CCompColMatrix<P>> Mul<&Vec<P>> for &'a mut CompColMatrix<P> {
     }
 }     
 
-impl<P: CCompColMatrix<P>> SuperMatrix for CompColMatrix<P> {
+impl<P: ValueType<P>> SuperMatrix for CompColMatrix<P> {
     fn super_matrix<'a>(&'a self) -> &'a c_SuperMatrix {
         &self.c_super_matrix
     }
@@ -194,7 +194,7 @@ impl<P: CCompColMatrix<P>> SuperMatrix for CompColMatrix<P> {
     }
 }
 
-impl<P: CCompColMatrix<P>> Drop for CompColMatrix<P> {
+impl<P: ValueType<P>> Drop for CompColMatrix<P> {
     fn drop(&mut self) {
         // Note that the input vectors are also freed by this line
         c_Destroy_CompCol_Matrix(&mut self.c_super_matrix);

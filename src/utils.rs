@@ -1,4 +1,4 @@
-use crate::c::comp_col::CCompColMatrix;
+use crate::csuperlu_sys::comp_col::CCompColMatrix;
 
 /// Todo implement properly
 pub fn distance<P: CCompColMatrix<P>>(v1: &[P], v2: Vec<P>) -> P {

@@ -61,6 +61,7 @@ extern "C" {
     fn Destroy_CompCol_Matrix(A: *mut c_SuperMatrix);
 }
 
+/*
 /// Create compressed column matrix of particular precision
 ///
 /// Trait for access to low level C functions from SuperLU, which
@@ -233,11 +234,11 @@ impl CCompColMatrix<num::Complex<f64>> for num::Complex<f64> {
 }
 
 
-/// This will attempt to deallocate the three input vectors used to
-/// create the comp_col matrix.
-#[allow(non_snake_case)]
-pub fn c_Destroy_CompCol_Matrix(A: *mut c_SuperMatrix) {
-    unsafe {
-        Destroy_CompCol_Matrix(A);
-    }
-}
+//// This will attempt to deallocate the three input vectors used to
+//// create the comp_col matrix.
+// #[allow(non_snake_case)]
+// pub fn c_Destroy_CompCol_Matrix(A: *mut c_SuperMatrix) {
+//     unsafe {
+//         Destroy_CompCol_Matrix(A);
+//     }
+// }

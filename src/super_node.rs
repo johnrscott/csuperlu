@@ -1,8 +1,8 @@
 //! Functions to create matrices in super-node format
 //!
 
-use crate::c::super_matrix::{c_SCformat, c_SuperMatrix};
-use crate::c::super_node::{c_Destroy_SuperNode_Matrix, CSuperNodeMatrix};
+use crate::csuperlu_sys::super_matrix::{c_SCformat, c_SuperMatrix};
+use crate::csuperlu_sys::super_node::{c_Destroy_SuperNode_Matrix, CSuperNodeMatrix};
 use crate::super_matrix::SuperMatrix;
 
 /// Super-node matrix

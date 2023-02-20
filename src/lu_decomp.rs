@@ -1,6 +1,6 @@
-use crate::c::comp_col::CCompColMatrix;
-use crate::c::super_matrix::{c_SCformat, c_NCformat};
-use crate::c::super_node::CSuperNodeMatrix;
+use crate::csuperlu_sys::comp_col::CCompColMatrix;
+use crate::csuperlu_sys::super_matrix::{c_SCformat, c_NCformat};
+use crate::csuperlu_sys::super_node::CSuperNodeMatrix;
 use crate::comp_col::CompColMatrix;
 use crate::super_node::SuperNodeMatrix;
 use crate::super_matrix::SuperMatrix;

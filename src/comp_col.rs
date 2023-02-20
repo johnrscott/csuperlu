@@ -13,9 +13,9 @@
 //! Since each column may be a different length, a third vector of
 //! integers is maintained showing where each new column starts.
 
-use crate::c::comp_col::c_Destroy_CompCol_Matrix;
-use crate::c::comp_col::CCompColMatrix;
-use crate::c::super_matrix::{c_NCformat, c_SuperMatrix, Mtype_t};
+use crate::csuperlu_sys::comp_col::c_Destroy_CompCol_Matrix;
+use crate::csuperlu_sys::comp_col::CCompColMatrix;
+use crate::csuperlu_sys::super_matrix::{c_NCformat, c_SuperMatrix, Mtype_t};
 use crate::harwell_boeing::HarwellBoeingMatrix;
 use crate::super_matrix::SuperMatrix;
 use std::mem::MaybeUninit;

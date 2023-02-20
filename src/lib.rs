@@ -38,7 +38,7 @@
 
 
 //#![warn(missing_docs)]
-pub mod c;
+pub mod csuperlu_sys;
 pub mod comp_col;
 pub mod dense;
 pub mod simple_driver;
@@ -47,12 +47,13 @@ pub mod super_node;
 pub mod lu_decomp;
 pub mod harwell_boeing;
 pub mod utils;
+pub mod value_type;
 
 #[cfg(test)]
 mod tests {
     
-    use crate::c::options::{colperm_t, superlu_options_t};
-    use crate::c::stat::SuperLUStat_t;
+    use crate::csuperlu_sys::options::{colperm_t, superlu_options_t};
+    use crate::csuperlu_sys::stat::SuperLUStat_t;
     use crate::comp_col::CompColMatrix;
     use crate::dense::DenseMatrix;
     use crate::simple_driver::{simple_driver, SimpleSolution};

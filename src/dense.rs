@@ -1,19 +1,19 @@
 //! Functions to create dense matrices.
 //!
 
-use crate::c::dense::c_Destroy_Dense_Matrix;
-use crate::c::dense::CCreateDenseMatrix;
-use crate::c::super_matrix::c_DNformat;
-use crate::c::super_matrix::{c_SuperMatrix, Mtype_t};
+use crate::csuperlu_sys::dense::c_Destroy_Dense_Matrix;
+use crate::csuperlu_sys::super_matrix::c_DNformat;
+use crate::csuperlu_sys::super_matrix::{c_SuperMatrix, Mtype_t};
 use crate::super_matrix::SuperMatrix;
+use crate::value_type::ValueType;
 use std::mem::MaybeUninit;
 
-pub struct DenseMatrix<P: CCreateDenseMatrix<P>> {
+pub struct DenseMatrix<P: ValueType<P>> {
     c_super_matrix: c_SuperMatrix,
     marker: std::marker::PhantomData<P>,
 }
 
-impl<P: CCreateDenseMatrix<P>> DenseMatrix<P> {
+impl<P: ValueType<P>> DenseMatrix<P> {
     /// Specify a dense matrix from an input vector.
     ///
     /// Use this function to make a dense c_SuperMatrix. The vector
@@ -56,7 +56,7 @@ impl<P: CCreateDenseMatrix<P>> DenseMatrix<P> {
 
 }
 
-impl<P: CCreateDenseMatrix<P>> SuperMatrix for DenseMatrix<P> {
+impl<P: ValueType<P>> SuperMatrix for DenseMatrix<P> {
     fn super_matrix<'a>(&'a self) -> &'a c_SuperMatrix {
         &self.c_super_matrix
     }
@@ -69,7 +69,7 @@ impl<P: CCreateDenseMatrix<P>> SuperMatrix for DenseMatrix<P> {
     }
 }
 
-impl<P: CCreateDenseMatrix<P>> Drop for DenseMatrix<P> {
+impl<P: ValueType<P>> Drop for DenseMatrix<P> {
     fn drop(&mut self) {
         // Note that the input vectors are not freed by this line
         c_Destroy_Dense_Matrix(&mut self.c_super_matrix);

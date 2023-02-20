@@ -1,9 +1,9 @@
 //! Solve sparse linear systems using the simple driver
 //!
 
-use crate::c::options::superlu_options_t;
-use crate::c::stat::SuperLUStat_t;
-use crate::c::super_matrix::c_SuperMatrix;
+use crate::{csuperlu_sys::options::superlu_options_t, value_type::ValueType};
+use crate::csuperlu_sys::stat::SuperLUStat_t;
+use crate::csuperlu_sys::super_matrix::c_SuperMatrix;
 use crate::comp_col::CompColMatrix;
 use crate::dense::DenseMatrix;
 
@@ -11,7 +11,6 @@ use crate::lu_decomp::LUDecomp;
 use crate::super_matrix::SuperMatrix;
 use crate::super_node::SuperNodeMatrix;
 
-use crate::c::simple_driver::CSimpleDriver;
 use std::{error::Error, fmt};
 
 #[derive(Debug)]
@@ -30,7 +29,7 @@ impl fmt::Display for SolverError {
 }
 
 #[allow(non_snake_case)]
-pub struct SimpleSolution<P: CSimpleDriver<P>> {
+pub struct SimpleSolution<P: ValueType<P>> {
     pub x: DenseMatrix<P>,
     pub lu: LUDecomp<P>,
 }
@@ -49,7 +48,7 @@ pub struct SimpleSolution<P: CSimpleDriver<P>> {
 /// if you want to solve A.
 ///
 #[allow(non_snake_case)]
-pub fn simple_driver<P: CSimpleDriver<P>>(
+pub fn simple_driver<P: ValueType<P>>(
     mut options: superlu_options_t,
     A: &CompColMatrix<P>,
     perm_c: &mut Vec<i32>,

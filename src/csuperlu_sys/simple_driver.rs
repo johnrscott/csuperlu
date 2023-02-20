@@ -1,15 +1,15 @@
-use crate::c::options::superlu_options_t;
-use crate::c::stat::SuperLUStat_t;
-use crate::c::super_matrix::c_SuperMatrix;
+use crate::csuperlu_sys::options::superlu_options_t;
+use crate::csuperlu_sys::stat::SuperLUStat_t;
+use crate::csuperlu_sys::super_matrix::c_SuperMatrix;
 use libc;
 
-use super::comp_col::CCompColMatrix;
-use super::dense::CCreateDenseMatrix;
-use super::super_node::CSuperNodeMatrix;
+// use super::comp_col::CCompColMatrix;
+// use super::dense::CCreateDenseMatrix;
+// use super::super_node::CSuperNodeMatrix;
 
 #[link(name = "superlu")]
 extern "C" {
-    fn sgssv(
+    pub fn sgssv(
         options: *mut superlu_options_t,
         A: *mut c_SuperMatrix,
         perm_c: *mut libc::c_int,
@@ -20,7 +20,7 @@ extern "C" {
         stat: *mut SuperLUStat_t,
         info: *mut libc::c_int,
     );
-    fn dgssv(
+    pub fn dgssv(
         options: *mut superlu_options_t,
         A: *mut c_SuperMatrix,
         perm_c: *mut libc::c_int,
@@ -31,7 +31,7 @@ extern "C" {
         stat: *mut SuperLUStat_t,
         info: *mut libc::c_int,
     );
-    fn cgssv(
+    pub fn cgssv(
         options: *mut superlu_options_t,
         A: *mut c_SuperMatrix,
         perm_c: *mut libc::c_int,
@@ -42,7 +42,7 @@ extern "C" {
         stat: *mut SuperLUStat_t,
         info: *mut libc::c_int,
     );
-    fn zgssv(
+    pub fn zgssv(
         options: *mut superlu_options_t,
         A: *mut c_SuperMatrix,
         perm_c: *mut libc::c_int,
@@ -55,6 +55,7 @@ extern "C" {
     );
 }
 
+/*
 pub trait CSimpleDriver<P>: CCompColMatrix<P> + CCreateDenseMatrix<P> + CSuperNodeMatrix<P> {
     fn c_simple_driver(
 	options: &mut superlu_options_t,
@@ -144,3 +145,4 @@ impl CSimpleDriver<num::Complex<f64>> for num::Complex<f64> {
 	}	
     }
 }
+*/

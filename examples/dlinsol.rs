@@ -1,14 +1,14 @@
 use std::env;
 use std::process;
 
-use csuperlu::c::options::colperm_t;
-use csuperlu::c::stat::SuperLUStat_t;
+use csuperlu::csuperlu_sys::options::colperm_t;
+use csuperlu::csuperlu_sys::stat::SuperLUStat_t;
 use csuperlu::comp_col::CompColMatrix;
 use csuperlu::dense::DenseMatrix;
 use csuperlu::simple_driver::SimpleSolution;
 use csuperlu::simple_driver::simple_driver;
 use csuperlu::super_matrix::SuperMatrix;
-use csuperlu::c::options::superlu_options_t;
+use csuperlu::csuperlu_sys::options::superlu_options_t;
 use csuperlu::utils::distance;
 
 fn main() {

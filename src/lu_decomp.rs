@@ -1,4 +1,4 @@
-use crate::csuperlu_sys::super_matrix::{c_SCformat, c_NCformat};
+use csuperlu_sys::super_matrix::{c_SCformat, c_NCformat};
 use crate::comp_col::CompColMatrix;
 use crate::super_node::SuperNodeMatrix;
 use crate::super_matrix::SuperMatrix;

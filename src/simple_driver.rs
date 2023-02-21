@@ -1,9 +1,10 @@
 //! Solve sparse linear systems using the simple driver
 //!
 
-use crate::{csuperlu_sys::options::superlu_options_t, value_type::ValueType};
-use crate::csuperlu_sys::stat::SuperLUStat_t;
-use crate::csuperlu_sys::super_matrix::c_SuperMatrix;
+use csuperlu_sys::options::superlu_options_t;
+use crate::value_type::ValueType;
+use csuperlu_sys::stat::SuperLUStat_t;
+use csuperlu_sys::super_matrix::c_SuperMatrix;
 use crate::comp_col::CompColMatrix;
 use crate::dense::DenseMatrix;
 

@@ -6,7 +6,8 @@ license = "MIT OR Apache-2.0"
 
 [dependencies]
 num = "0.4.0"
-#csuperlu_sys = {}
+libc = "0.2.0"
+csuperlu_sys = { git = "https://github.com/johnrscott/csuperlu_sys" }
 
 [package.metadata.docs.rs]
 rustdoc-args = [ "--html-in-header", "src/docs-header.html" ]

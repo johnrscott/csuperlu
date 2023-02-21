@@ -1,9 +1,9 @@
 //! Functions to create dense matrices.
 //!
 
-use crate::csuperlu_sys::dense::c_Destroy_Dense_Matrix;
-use crate::csuperlu_sys::super_matrix::c_DNformat;
-use crate::csuperlu_sys::super_matrix::{c_SuperMatrix, Mtype_t};
+use csuperlu_sys::dense::c_Destroy_Dense_Matrix;
+use csuperlu_sys::super_matrix::c_DNformat;
+use csuperlu_sys::super_matrix::{c_SuperMatrix, Mtype_t};
 use crate::super_matrix::SuperMatrix;
 use crate::value_type::ValueType;
 use std::mem::MaybeUninit;

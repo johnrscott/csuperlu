@@ -1,4 +1,4 @@
-use crate::csuperlu_sys::super_matrix::c_SuperMatrix;
+use csuperlu_sys::super_matrix::c_SuperMatrix;
 
 pub trait SuperMatrix {
     fn super_matrix<'a>(&'a self) -> &c_SuperMatrix;

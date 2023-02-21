@@ -12,8 +12,8 @@
 //! initialised by a function taking the uninitialised struct as an input/output
 //! parameter.
 
-use csuperlu::csuperlu_sys::options::{colperm_t, superlu_options_t};
-use csuperlu::csuperlu_sys::stat::{c_StatPrint, SuperLUStat_t};
+use csuperlu_sys::options::{colperm_t, superlu_options_t};
+use csuperlu_sys::stat::{c_StatPrint, SuperLUStat_t};
 use csuperlu::comp_col::CompColMatrix;
 use csuperlu::dense::DenseMatrix;
 use csuperlu::simple_driver::{simple_driver, SimpleSolution};

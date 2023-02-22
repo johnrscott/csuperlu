@@ -187,9 +187,8 @@ impl<P: ValueType<P>> SuperMatrix for CompColMatrix<P> {
     fn print(&self, what: &str) {
         let c_str = std::ffi::CString::new(what).unwrap();
         P::c_print_comp_col_matrix(
-	    c_str.as_ptr() as *mut libc::c_char,
-	    &self.c_super_matrix as *const c_SuperMatrix
-		as *mut c_SuperMatrix);
+	    c_str as &libc::c_char,
+	    &self.c_super_matrix as &c_SuperMatrix);
     }
 }
 

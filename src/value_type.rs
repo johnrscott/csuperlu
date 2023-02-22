@@ -62,10 +62,10 @@ impl ValueType<f32> for f32 {
         colptr: &mut Vec<i32>,
         mtype: Mtype_t,
     ) -> c_SuperMatrix {
-	let mut a = c_SuperMatrix::alloc();
         unsafe {
+	    let mut a = c_SuperMatrix::alloc();
             sCreate_CompCol_Matrix(
-                &a as *const c_SuperMatrix as *mut c_SuperMatrix,
+                &mut a as *mut c_SuperMatrix,
                 m,
                 n,
                 nnz,
@@ -330,8 +330,8 @@ impl ValueType<num::Complex<f64>> for num::Complex<f64> {
         colptr: &mut Vec<i32>,
         mtype: Mtype_t,
     ) -> c_SuperMatrix {
-	let mut a = c_SuperMatrix::alloc();
         unsafe {
+	    let mut a = c_SuperMatrix::alloc();
             zCreate_CompCol_Matrix(
                 &mut a as *mut c_SuperMatrix,
                 m,

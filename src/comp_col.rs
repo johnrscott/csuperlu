@@ -91,9 +91,7 @@ impl<P: ValueType<P>> CompColMatrix<P> {
         mut column_offsets: Vec<i32>,
     ) -> Self {
         let c_super_matrix = unsafe {
-            let mut c_super_matrix = MaybeUninit::<c_SuperMatrix>::uninit();
-            P::c_create_comp_col_matrix(
-                &mut c_super_matrix,
+            let mut c_super_matrix = P::c_create_comp_col_matrix(
                 num_rows as i32,
                 num_columns as i32,
                 num_non_zeros as i32,
@@ -107,7 +105,7 @@ impl<P: ValueType<P>> CompColMatrix<P> {
             std::mem::forget(non_zero_values);
             std::mem::forget(row_indices);
             std::mem::forget(column_offsets);
-            c_super_matrix.assume_init()
+            c_super_matrix
         };
         Self {
             c_super_matrix,
@@ -187,7 +185,7 @@ impl<P: ValueType<P>> SuperMatrix for CompColMatrix<P> {
     fn print(&self, what: &str) {
         let c_str = std::ffi::CString::new(what).unwrap();
         P::c_print_comp_col_matrix(
-	    c_str as &libc::c_char,
+	    c_str.as_ptr(),
 	    &self.c_super_matrix as &c_SuperMatrix);
     }
 }

@@ -29,7 +29,7 @@ pub trait ValueType<P>: Num + Copy + FromStr + std::fmt::Debug {
     ///
     /// The function makes the assumption that the C library does
     /// not modify the arguments.
-    fn c_print_comp_col_matrix(what: &libc::c_char, a: &c_SuperMatrix);
+    fn c_print_comp_col_matrix(what: *const libc::c_char, a: &c_SuperMatrix);
     fn c_create_dense_matrix(
         m: i32,
         n: i32,
@@ -37,8 +37,8 @@ pub trait ValueType<P>: Num + Copy + FromStr + std::fmt::Debug {
         ldx: i32,
         mtype: Mtype_t,
     ) -> c_SuperMatrix;
-    fn c_print_dense_matrix(what: &libc::c_char, a: &c_SuperMatrix);
-    fn c_print_super_node_matrix(what: &libc::c_char, a: &c_SuperMatrix);
+    fn c_print_dense_matrix(what: *const libc::c_char, a: &c_SuperMatrix);
+    fn c_print_super_node_matrix(what: *const libc::c_char, a: &c_SuperMatrix);
     fn c_simple_driver(
 	options: &mut superlu_options_t,
 	a: *mut c_SuperMatrix,
@@ -80,9 +80,9 @@ impl ValueType<f32> for f32 {
         }
     }
 
-    fn c_print_comp_col_matrix(what: &libc::c_char, a: &c_SuperMatrix) {
+    fn c_print_comp_col_matrix(what: *const libc::c_char, a: &c_SuperMatrix) {
         unsafe {
-            sPrint_CompCol_Matrix(what as *const libc::c_char as *mut libc::c_char,
+            sPrint_CompCol_Matrix(what as *mut libc::c_char,
 				  a as *const c_SuperMatrix as *mut c_SuperMatrix);
         }
     }
@@ -110,16 +110,16 @@ impl ValueType<f32> for f32 {
 	}
     }
 
-    fn c_print_dense_matrix(what: &libc::c_char, a: &c_SuperMatrix) {
+    fn c_print_dense_matrix(what: *const libc::c_char, a: &c_SuperMatrix) {
         unsafe {
-	    sPrint_Dense_Matrix(what as *const libc::c_char as *mut libc::c_char,
-				  a as *const c_SuperMatrix as *mut c_SuperMatrix);
+	    sPrint_Dense_Matrix(what as *mut libc::c_char,
+				a as *const c_SuperMatrix as *mut c_SuperMatrix);
         }
     }
     
-    fn c_print_super_node_matrix(what: &libc::c_char, a: &c_SuperMatrix) {
+    fn c_print_super_node_matrix(what: *const libc::c_char, a: &c_SuperMatrix) {
         unsafe {
-            sPrint_SuperNode_Matrix(what as *const libc::c_char as *mut libc::c_char,
+            sPrint_SuperNode_Matrix(what as *mut libc::c_char,
 				    a as *const c_SuperMatrix as *mut c_SuperMatrix);
 	    
 	}
@@ -172,9 +172,9 @@ impl ValueType<f64> for f64 {
 	}
     }
 
-    fn c_print_comp_col_matrix(what: &libc::c_char, a: &c_SuperMatrix) {
+    fn c_print_comp_col_matrix(what: *const libc::c_char, a: &c_SuperMatrix) {
         unsafe {
-            dPrint_CompCol_Matrix(what as *const libc::c_char as *mut libc::c_char,
+            dPrint_CompCol_Matrix(what as *mut libc::c_char,
 				  a as *const c_SuperMatrix as *mut c_SuperMatrix);
 
 	}
@@ -202,16 +202,16 @@ impl ValueType<f64> for f64 {
 	}
     }
 
-    fn c_print_dense_matrix(what: &libc::c_char, a: &c_SuperMatrix) {
+    fn c_print_dense_matrix(what: *const libc::c_char, a: &c_SuperMatrix) {
         unsafe {
-	    dPrint_Dense_Matrix(what as *const libc::c_char as *mut libc::c_char,
-				  a as *const c_SuperMatrix as *mut c_SuperMatrix);
+	    dPrint_Dense_Matrix(what as *mut libc::c_char,
+				a as *const c_SuperMatrix as *mut c_SuperMatrix);
         }
     }
-    fn c_print_super_node_matrix(what: &libc::c_char, a: &c_SuperMatrix) {
+    fn c_print_super_node_matrix(what: *const libc::c_char, a: &c_SuperMatrix) {
         unsafe {
-	    dPrint_SuperNode_Matrix(what as *const libc::c_char as *mut libc::c_char,
-				a as *const c_SuperMatrix as *mut c_SuperMatrix);
+	    dPrint_SuperNode_Matrix(what as *mut libc::c_char,
+				    a as *const c_SuperMatrix as *mut c_SuperMatrix);
         }
     }
     fn c_simple_driver(
@@ -261,9 +261,9 @@ impl ValueType<num::Complex<f32>> for num::Complex<f32> {
         }
     }
 
-    fn c_print_comp_col_matrix(what: &libc::c_char, a: &c_SuperMatrix) {
+    fn c_print_comp_col_matrix(what: *const libc::c_char, a: &c_SuperMatrix) {
         unsafe {
-	    cPrint_CompCol_Matrix(what as *const libc::c_char as *mut libc::c_char,
+	    cPrint_CompCol_Matrix(what as *mut libc::c_char,
 				  a as *const c_SuperMatrix as *mut c_SuperMatrix);
         }
     }
@@ -289,15 +289,15 @@ impl ValueType<num::Complex<f32>> for num::Complex<f32> {
         }
     }
 
-    fn c_print_dense_matrix(what: &libc::c_char, a: &c_SuperMatrix) {
+    fn c_print_dense_matrix(what: *const libc::c_char, a: &c_SuperMatrix) {
         unsafe {
-	    cPrint_Dense_Matrix(what as *const libc::c_char as *mut libc::c_char,
-				  a as *const c_SuperMatrix as *mut c_SuperMatrix);
+	    cPrint_Dense_Matrix(what as *mut libc::c_char,
+				a as *const c_SuperMatrix as *mut c_SuperMatrix);
         }
     }
-    fn c_print_super_node_matrix(what: &libc::c_char, a: &c_SuperMatrix) {
+    fn c_print_super_node_matrix(what: *const libc::c_char, a: &c_SuperMatrix) {
         unsafe {
-	    cPrint_SuperNode_Matrix(what as *const libc::c_char as *mut libc::c_char,
+	    cPrint_SuperNode_Matrix(what as *mut libc::c_char,
 				    a as *const c_SuperMatrix as *mut c_SuperMatrix);
         }
     }
@@ -347,9 +347,9 @@ impl ValueType<num::Complex<f64>> for num::Complex<f64> {
 	a
     }
 
-    fn c_print_comp_col_matrix(what: &libc::c_char, a: &c_SuperMatrix) {
+    fn c_print_comp_col_matrix(what: *const libc::c_char, a: &c_SuperMatrix) {
         unsafe {
-	    zPrint_CompCol_Matrix(what as *const libc::c_char as *mut libc::c_char,
+	    zPrint_CompCol_Matrix(what as *mut libc::c_char,
 				  a as *const c_SuperMatrix as *mut c_SuperMatrix);
 	}
     }
@@ -377,16 +377,16 @@ impl ValueType<num::Complex<f64>> for num::Complex<f64> {
         }
     }
 
-    fn c_print_dense_matrix(what: &libc::c_char, a: &c_SuperMatrix) {
+    fn c_print_dense_matrix(what: *const libc::c_char, a: &c_SuperMatrix) {
         unsafe {
-	    zPrint_Dense_Matrix(what as *const libc::c_char as *mut libc::c_char,
+	    zPrint_Dense_Matrix(what as *mut libc::c_char,
 				a as *const c_SuperMatrix as *mut c_SuperMatrix);
 	}
     }
 
-    fn c_print_super_node_matrix(what: &libc::c_char, a: &c_SuperMatrix) {
+    fn c_print_super_node_matrix(what: *const libc::c_char, a: &c_SuperMatrix) {
         unsafe {
-	    zPrint_SuperNode_Matrix(what as *const libc::c_char as *mut libc::c_char,
+	    zPrint_SuperNode_Matrix(what as *mut libc::c_char,
 				    a as *const c_SuperMatrix as *mut c_SuperMatrix);
 	    
         }

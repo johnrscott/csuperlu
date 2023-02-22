@@ -60,7 +60,9 @@ impl<P: ValueType<P>> SuperMatrix for DenseMatrix<P> {
     }
     fn print(&self, what: &str) {
         let c_str = std::ffi::CString::new(what).unwrap();
-        P::c_print_dense_matrix(c_str.as_ptr(), &self.c_super_matrix);
+	unsafe {
+            P::c_print_dense_matrix(c_str.as_ptr(), &self.c_super_matrix);
+	}
     }
 }
 

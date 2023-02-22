@@ -76,8 +76,8 @@ impl ValueType<f32> for f32 {
                 Dtype_t::SLU_S,
                 mtype,
             );
+	    a
         }
-	a
     }
 
     fn c_print_comp_col_matrix(what: &libc::c_char, a: &c_SuperMatrix) {
@@ -106,8 +106,8 @@ impl ValueType<f32> for f32 {
                 Dtype_t::SLU_S,
                 mtype,
             );
-        }
-	x
+	    x
+	}
     }
 
     fn c_print_dense_matrix(what: &libc::c_char, a: &c_SuperMatrix) {
@@ -146,7 +146,6 @@ impl ValueType<f32> for f32 {
 
 impl ValueType<f64> for f64 {
     fn c_create_comp_col_matrix(
-        a: &mut MaybeUninit<c_SuperMatrix>,
         m: i32,
         n: i32,
         nnz: i32,
@@ -154,10 +153,11 @@ impl ValueType<f64> for f64 {
         rowind: &mut Vec<i32>,
         colptr: &mut Vec<i32>,
         mtype: Mtype_t,
-    ) {
+    ) -> c_SuperMatrix {
+	let mut a = c_SuperMatrix::alloc();
         unsafe {
             dCreate_CompCol_Matrix(
-                a.as_mut_ptr(),
+                &a as *mut c_SuperMatrix,
                 m,
                 n,
                 nnz,
@@ -168,7 +168,8 @@ impl ValueType<f64> for f64 {
                 Dtype_t::SLU_D,
                 mtype,
             );
-        }
+	    a
+	}
     }
 
     fn c_print_comp_col_matrix(what: &libc::c_char, a: &c_SuperMatrix) {
@@ -179,16 +180,16 @@ impl ValueType<f64> for f64 {
 	}
     }
     fn c_create_dense_matrix(
-        x: &mut MaybeUninit<c_SuperMatrix>,
         m: i32,
         n: i32,
         values: &mut Vec<f64>,
         ldx: i32,
         mtype: Mtype_t,
-    ) {
+    ) -> c_SuperMatrix {
         unsafe {
+	    let mut x = c_SuperMatrix::alloc();
             dCreate_Dense_Matrix(
-                x.as_mut_ptr(),
+                &x as *mut c_SuperMatrix,
                 m,
                 n,
                 values.as_mut_ptr(),
@@ -197,7 +198,8 @@ impl ValueType<f64> for f64 {
                 Dtype_t::SLU_D,
                 mtype,
             );
-        }
+	    x
+	}
     }
 
     fn c_print_dense_matrix(what: &libc::c_char, a: &c_SuperMatrix) {
@@ -233,7 +235,6 @@ impl ValueType<f64> for f64 {
 
 impl ValueType<num::Complex<f32>> for num::Complex<f32> {
     fn c_create_comp_col_matrix(
-        a: &mut MaybeUninit<c_SuperMatrix>,
         m: i32,
         n: i32,
         nnz: i32,
@@ -241,10 +242,11 @@ impl ValueType<num::Complex<f32>> for num::Complex<f32> {
         rowind: &mut Vec<i32>,
         colptr: &mut Vec<i32>,
         mtype: Mtype_t,
-    ) {
+    ) -> c_SuperMatrix {
+	let mut a = c_SuperMatrix::alloc();
         unsafe {
             cCreate_CompCol_Matrix(
-                a.as_mut_ptr(),
+                &a as *mut c_SuperMatrix,
                 m,
                 n,
                 nnz,
@@ -255,6 +257,7 @@ impl ValueType<num::Complex<f32>> for num::Complex<f32> {
                 Dtype_t::SLU_C,
                 mtype,
             );
+	    a
         }
     }
 
@@ -265,16 +268,16 @@ impl ValueType<num::Complex<f32>> for num::Complex<f32> {
         }
     }
     fn c_create_dense_matrix(
-        x: &mut MaybeUninit<c_SuperMatrix>,
         m: i32,
         n: i32,
         values: &mut Vec<num::Complex<f32>>,
         ldx: i32,
         mtype: Mtype_t,
-    ) {
+    ) -> c_SuperMatrix {
+	let mut x = c_SuperMatrix::alloc();
         unsafe {
             cCreate_Dense_Matrix(
-                x.as_mut_ptr(),
+                &x as *mut c_SuperMatrix,
                 m,
                 n,
                 values.as_mut_ptr() as *mut libc::c_float,
@@ -318,7 +321,6 @@ impl ValueType<num::Complex<f32>> for num::Complex<f32> {
 
 impl ValueType<num::Complex<f64>> for num::Complex<f64> {
     fn c_create_comp_col_matrix(
-        a: &mut MaybeUninit<c_SuperMatrix>,
         m: i32,
         n: i32,
         nnz: i32,
@@ -326,7 +328,8 @@ impl ValueType<num::Complex<f64>> for num::Complex<f64> {
         rowind: &mut Vec<i32>,
         colptr: &mut Vec<i32>,
         mtype: Mtype_t,
-    ) {
+    ) -> c_SuperMatrix {
+	let mut a = c_SuperMatrix::alloc();
         unsafe {
             zCreate_CompCol_Matrix(
                 a.as_mut_ptr(),
@@ -341,6 +344,7 @@ impl ValueType<num::Complex<f64>> for num::Complex<f64> {
                 mtype,
             );
         }
+	a
     }
 
     fn c_print_comp_col_matrix(what: &libc::c_char, a: &c_SuperMatrix) {
@@ -351,16 +355,16 @@ impl ValueType<num::Complex<f64>> for num::Complex<f64> {
     }
 
     fn c_create_dense_matrix(
-        x: &mut MaybeUninit<c_SuperMatrix>,
         m: i32,
         n: i32,
         values: &mut Vec<num::Complex<f64>>,
         ldx: i32,
         mtype: Mtype_t,
-    ) {
+    ) -> c_SuperMatrix {
         unsafe {
+	    let mut x = c_SuperMatrix::alloc();
             zCreate_Dense_Matrix(
-                x.as_mut_ptr(),
+                &x as *mut c_SuperMatrix,
                 m,
                 n,
                 values.as_mut_ptr() as *mut libc::c_double,
@@ -369,6 +373,7 @@ impl ValueType<num::Complex<f64>> for num::Complex<f64> {
                 Dtype_t::SLU_Z,
                 mtype,
             );
+	    x
         }
     }
 

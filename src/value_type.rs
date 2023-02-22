@@ -32,7 +32,7 @@ fn check_comp_col_conditions<T>(
     if column_offsets.len() != num_columns + 1 {
 	return Err(Error{});
     }
-    if non_zero_values.len() == row_indices.len() {
+    if non_zero_values.len() != row_indices.len() {
 	return Err(Error{});
     }
     if non_zero_values.len() != num_non_zeros {
@@ -110,8 +110,6 @@ pub trait ValueType<P>: Num + Copy + FromStr + std::fmt::Debug {
     unsafe fn c_print_comp_col_matrix(what: *const libc::c_char, a: &c_SuperMatrix);
 
     /// Create a dense matrix from a raw vector
-    ///
-    /// 
     ///
     /// # Error
     ///

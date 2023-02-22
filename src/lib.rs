@@ -47,6 +47,7 @@ pub mod lu_decomp;
 pub mod harwell_boeing;
 pub mod utils;
 pub mod value_type;
+pub mod sparse_matrix;
 
 #[cfg(test)]
 mod tests {

@@ -46,7 +46,7 @@ impl<P: ValueType<P>> DenseMatrix<P> {
         self.c_super_matrix.ncol as usize
     }
 
-    pub fn values(&mut self) -> &[P] {
+    pub fn column_major_values(&mut self) -> &[P] {
         unsafe {
             let c_dnformat = &mut *(self.c_super_matrix.Store as *mut c_DNformat);
 	    let size = self.c_super_matrix.nrow * self.c_super_matrix.ncol;

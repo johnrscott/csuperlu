@@ -82,7 +82,7 @@ fn main() {
     println!("{}", a.value(0,0));
 
     x.print("X");
-    let x_vals = x.values();
+    let x_vals = x.column_major_values();
     println!("{:?}", x_vals);
     
 }

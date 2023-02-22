@@ -166,7 +166,7 @@ mod tests {
 	} = simple_driver(options, &mut a, &mut perm_c, &mut perm_r, b, &mut stat)
 	    .expect("Failed to solve linear system");
 
-	let x_vals = x.values();
+	let x_vals = x.column_major_values();
 
 	// True solution
 	let x_true =  vec![-0.031249999999999976, 0.06547619047619045,

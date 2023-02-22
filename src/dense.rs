@@ -25,11 +25,9 @@ impl<P: ValueType<P>> DenseMatrix<P> {
     pub fn from_vectors(num_rows: usize, num_columns: usize,
 			mut x: Vec<P>) -> Self {
         let c_super_matrix = unsafe {
-            let mut c_super_matrix = MaybeUninit::<c_SuperMatrix>::uninit();
-            P::c_create_dense_matrix(&mut c_super_matrix, num_rows as i32,
+            P::c_create_dense_matrix(num_rows as i32,
 				     num_columns as i32, &mut x, num_rows as i32,
-				     Mtype_t::SLU_GE);
-            c_super_matrix.assume_init()
+				     Mtype_t::SLU_GE)
         };
         std::mem::forget(x);
         Self {
@@ -62,10 +60,7 @@ impl<P: ValueType<P>> SuperMatrix for DenseMatrix<P> {
     }
     fn print(&self, what: &str) {
         let c_str = std::ffi::CString::new(what).unwrap();
-        P::c_print_dense_matrix(
-	    c_str.as_ptr() as *mut libc::c_char,
-	    &self.c_super_matrix as *const c_SuperMatrix
-		as *mut c_SuperMatrix);
+        P::c_print_dense_matrix(c_str.as_ptr(), &self.c_super_matrix);
     }
 }
 

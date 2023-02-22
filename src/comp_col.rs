@@ -92,14 +92,14 @@ impl<P: ValueType<P>> CompColMatrix<P> {
     ) -> Self {
         let c_super_matrix = unsafe {
             let mut c_super_matrix = P::c_create_comp_col_matrix(
-                num_rows as i32,
-                num_columns as i32,
-                num_non_zeros as i32,
+                num_rows,
+                num_columns,
+                num_non_zeros,
                 &mut non_zero_values,
                 &mut row_indices,
                 &mut column_offsets,
                 Mtype_t::SLU_GE,
-            );
+            ).expect("Error creating comp col -- replace with error handling");
             // The freeing of the input vectors is handed over
             // to the C library functions (see drop)
             std::mem::forget(non_zero_values);

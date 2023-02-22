@@ -38,6 +38,7 @@
 
 
 //#![warn(missing_docs)]
+pub mod error;
 pub mod comp_col;
 pub mod dense;
 pub mod simple_driver;
@@ -47,6 +48,8 @@ pub mod lu_decomp;
 pub mod harwell_boeing;
 pub mod utils;
 pub mod value_type;
+
+pub use error::Error;
 
 #[cfg(test)]
 mod tests {

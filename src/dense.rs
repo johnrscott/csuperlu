@@ -6,7 +6,6 @@ use csuperlu_sys::super_matrix::c_DNformat;
 use csuperlu_sys::super_matrix::{c_SuperMatrix, Mtype_t};
 use crate::super_matrix::SuperMatrix;
 use crate::value_type::ValueType;
-use std::mem::MaybeUninit;
 
 pub struct DenseMatrix<P: ValueType<P>> {
     c_super_matrix: c_SuperMatrix,
@@ -24,11 +23,11 @@ impl<P: ValueType<P>> DenseMatrix<P> {
     ///
     pub fn from_vectors(num_rows: usize, num_columns: usize,
 			mut x: Vec<P>) -> Self {
-        let c_super_matrix = unsafe {
-            P::c_create_dense_matrix(num_rows as i32,
-				     num_columns as i32, &mut x, num_rows as i32,
-				     Mtype_t::SLU_GE)
-        };
+        let c_super_matrix = P::c_create_dense_matrix(num_rows,
+						      num_columns,
+						      &mut x,
+						      Mtype_t::SLU_GE)
+            .expect("Failed to create dense matrix -- replace with error handling");
         std::mem::forget(x);
         Self {
             c_super_matrix,

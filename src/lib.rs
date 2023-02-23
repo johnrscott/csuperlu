@@ -46,10 +46,10 @@ pub mod simple_driver;
 pub mod super_matrix;
 pub mod super_node;
 pub mod utils;
-pub mod value_type;
-pub mod free;
+pub mod c;
     
 pub use error::Error;
+pub use c::*;
 
 #[cfg(test)]
 mod tests {

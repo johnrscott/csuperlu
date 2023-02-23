@@ -7,6 +7,11 @@
 //! in order to make the functions easier to call. Functions which
 //! depend on precision (most of them) are defined inside the ValueType
 //! trait. Most functions are unsafe.
+//!
+//! Functions here are in one-to-one correspondence with superlu library
+//! functions, but in a form that is easier to understand and call from
+//! rust. If you want to do something with superlu functions directly,
+//! you can do it from here.
 
 pub mod value_type;
 pub mod free;

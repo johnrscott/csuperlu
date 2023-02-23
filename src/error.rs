@@ -1,8 +1,7 @@
 use std::fmt;
 
 #[derive(Debug)]
-pub struct Error {
-}
+pub struct Error {}
 
 impl std::error::Error for Error {}
 
@@ -11,4 +10,3 @@ impl fmt::Display for Error {
         write!(f, "An error occured in csuperlu")
     }
 }
-

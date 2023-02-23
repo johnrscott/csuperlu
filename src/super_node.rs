@@ -1,10 +1,10 @@
 //! Functions to create matrices in super-node format
 //!
 
-use csuperlu_sys::super_matrix::{c_SCformat, c_SuperMatrix};
-use csuperlu_sys::super_node::c_Destroy_SuperNode_Matrix;
 use crate::super_matrix::SuperMatrix;
 use crate::value_type::ValueType;
+use csuperlu_sys::super_matrix::{c_SCformat, c_SuperMatrix};
+use csuperlu_sys::super_node::c_Destroy_SuperNode_Matrix;
 
 /// Super-node matrix
 ///
@@ -25,7 +25,7 @@ impl<P: ValueType<P>> SuperNodeMatrix<P> {
     pub fn values(&mut self) -> &[P] {
         unsafe {
             let c_scformat = &mut *(self.c_super_matrix.Store as *mut c_SCformat);
-	    std::slice::from_raw_parts(c_scformat.nzval as *mut P, c_scformat.nnz as usize)
+            std::slice::from_raw_parts(c_scformat.nzval as *mut P, c_scformat.nnz as usize)
         }
     }
 }
@@ -35,9 +35,9 @@ impl<P: ValueType<P>> SuperMatrix for SuperNodeMatrix<P> {
         &self.c_super_matrix
     }
     fn print(&self, what: &str) {
-	unsafe {
-	    P::c_print_super_node_matrix(what, &self.c_super_matrix);
-	}
+        unsafe {
+            P::c_print_super_node_matrix(what, &self.c_super_matrix);
+        }
     }
 }
 

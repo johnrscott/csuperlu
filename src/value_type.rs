@@ -227,7 +227,6 @@ impl ValueType<f32> for f32 {
 	      stat,
 	      info);
     }
-
 }
 
 impl ValueType<f64> for f64 {
@@ -311,9 +310,6 @@ impl ValueType<f64> for f64 {
 	stat: &mut SuperLUStat_t,
 	info: &mut i32,
     ) {
-	let what = "HERE";
-	dPrint_CompCol_Matrix(c_string(what).as_ptr() as *mut libc::c_char,
-			      a as *const c_SuperMatrix as *mut c_SuperMatrix);
         dgssv(options,
 	      a as *const c_SuperMatrix as *mut c_SuperMatrix,
 	      perm_c.as_mut_ptr(),

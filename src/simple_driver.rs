@@ -29,7 +29,6 @@ impl fmt::Display for SolverError {
     }
 }
 
-#[allow(non_snake_case)]
 pub struct SimpleSolution<P: ValueType<P>> {
     pub x: DenseMatrix<P>,
     pub lu: LUDecomp<P>,
@@ -47,6 +46,12 @@ pub struct SimpleSolution<P: ValueType<P>> {
 /// is passed for A (CompRowMatrix), then the routine will decompose
 /// A^T. Make sure to convert the CompRowMatrix to a CompColumnMatrix
 /// if you want to solve A.
+///
+/// # Safety?
+///
+/// If perm_c and perm_r are input arguments (depends on the options),
+/// then either a check is needed for validity (too costly), or this
+/// function must be marked as unsafe. 
 ///
 pub fn simple_driver<P: ValueType<P>>(
     mut options: superlu_options_t,

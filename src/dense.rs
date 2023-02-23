@@ -61,10 +61,10 @@ impl<P: ValueType<P>> DenseMatrix<P> {
     /// manually (c_destroy_dense_matrix).
     ///
     pub unsafe fn into_super_matrix(self) -> c_SuperMatrix {
-        /// TODO check this really carefully. The idea is to get
-        /// the super matrix all the way out of the function without
-        /// copying it at any time, or calling the drop for Dense
-        /// Matrix (which would deallocate it).
+        // TODO check this really carefully. The idea is to get
+        // the super matrix all the way out of the function without
+        // copying it at any time, or calling the drop for Dense
+        // Matrix (which would deallocate it).
         let c_super_matrix = std::ptr::read(&self.c_super_matrix);
         std::mem::forget(self);
         c_super_matrix

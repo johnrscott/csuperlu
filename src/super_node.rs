@@ -5,7 +5,6 @@ use crate::free::c_destroy_super_node_matrix;
 use crate::super_matrix::SuperMatrix;
 use crate::value_type::ValueType;
 use csuperlu_sys::super_matrix::{c_SCformat, c_SuperMatrix};
-use csuperlu_sys::super_node::c_Destroy_SuperNode_Matrix;
 
 /// Super-node matrix
 ///

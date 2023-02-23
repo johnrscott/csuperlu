@@ -54,7 +54,6 @@ impl<P: ValueType<P>> CompColMatrix<P> {
 
         // Matrix dimensions
         let num_rows = matrix.num_rows();
-        let num_columns = matrix.num_columns();
 
         // Vector of doubles of length nnz
         let (column_offsets, row_indices, non_zero_values) = matrix.to_vectors();
@@ -82,7 +81,7 @@ impl<P: ValueType<P>> CompColMatrix<P> {
         mut column_offsets: Vec<i32>,
     ) -> Self {
         let c_super_matrix = unsafe {
-            let mut c_super_matrix = P::c_create_comp_col_matrix(
+            let c_super_matrix = P::c_create_comp_col_matrix(
                 num_rows,
                 &mut non_zero_values,
                 &mut row_indices,

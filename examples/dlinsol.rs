@@ -7,7 +7,6 @@ use csuperlu::simple_driver::simple_driver;
 use csuperlu::simple_driver::SimpleSolution;
 use csuperlu::super_matrix::SuperMatrix;
 use csuperlu::utils::distance;
-use csuperlu_sys::options::colperm_t;
 use csuperlu_sys::options::superlu_options_t;
 use csuperlu_sys::stat::SuperLUStat_t;
 
@@ -31,12 +30,11 @@ fn main() {
     // Make the RHS vector
     let nrhs = 1;
     let rhs = &mut a * &x_true;
-    let mut b = DenseMatrix::from_vectors(num_rows, nrhs, rhs);
+    let b = DenseMatrix::from_vectors(num_rows, nrhs, rhs);
 
     b.print("b");
 
-    let mut options = superlu_options_t::new();
-    //options.ColPerm = colperm_t::NATURAL;
+    let options = superlu_options_t::new();
 
     let mut perm_r = Vec::<i32>::with_capacity(num_rows);
     let mut perm_c = Vec::<i32>::with_capacity(num_columns);

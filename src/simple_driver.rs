@@ -1,12 +1,12 @@
 //! Solve sparse linear systems using the simple driver
 //!
 
-use csuperlu_sys::options::superlu_options_t;
-use crate::value_type::ValueType;
-use csuperlu_sys::stat::SuperLUStat_t;
-use csuperlu_sys::super_matrix::c_SuperMatrix;
 use crate::comp_col::CompColMatrix;
 use crate::dense::DenseMatrix;
+use crate::value_type::ValueType;
+use csuperlu_sys::options::superlu_options_t;
+use csuperlu_sys::stat::SuperLUStat_t;
+use csuperlu_sys::super_matrix::c_SuperMatrix;
 
 use crate::lu_decomp::LUDecomp;
 use crate::super_matrix::SuperMatrix;
@@ -17,7 +17,7 @@ use std::{error::Error, fmt};
 #[derive(Debug)]
 pub struct SolverError {
     /// info != 0 indicates solver error. See e.g. dgssv documentation
-    /// for the meaning of info. 
+    /// for the meaning of info.
     info: i32,
 }
 
@@ -29,7 +29,6 @@ impl fmt::Display for SolverError {
     }
 }
 
-#[allow(non_snake_case)]
 pub struct SimpleSolution<P: ValueType<P>> {
     pub x: DenseMatrix<P>,
     pub lu: LUDecomp<P>,
@@ -48,6 +47,12 @@ pub struct SimpleSolution<P: ValueType<P>> {
 /// A^T. Make sure to convert the CompRowMatrix to a CompColumnMatrix
 /// if you want to solve A.
 ///
+/// # Safety?
+///
+/// If perm_c and perm_r are input arguments (depends on the options),
+/// then either a check is needed for validity (too costly), or this
+/// function must be marked as unsafe. 
+///
 pub fn simple_driver<P: ValueType<P>>(
     mut options: superlu_options_t,
     a: &CompColMatrix<P>,
@@ -61,8 +66,8 @@ pub fn simple_driver<P: ValueType<P>>(
         let mut l = c_SuperMatrix::alloc();
         let mut u = c_SuperMatrix::alloc();
 
-	let mut b_super_matrix = b.into_super_matrix();
-	
+        let mut b_super_matrix = b.into_super_matrix();
+
         P::c_simple_driver(
             &mut options,
             a.super_matrix(),
@@ -77,17 +82,12 @@ pub fn simple_driver<P: ValueType<P>>(
         let l = SuperNodeMatrix::from_super_matrix(l);
         let u = CompColMatrix::from_super_matrix(u);
         let lu = LUDecomp::from_matrices(l, u);
-	let x = DenseMatrix::<P>::from_super_matrix(b_super_matrix);
-	
-	if info != 0 {
-	    Err(SolverError {
-		info
-	    })
-	} else {
-	    Ok(SimpleSolution {
-		x,
-		lu,
-            })
-	}
+        let x = DenseMatrix::<P>::from_super_matrix(b_super_matrix);
+
+        if info != 0 {
+            Err(SolverError { info })
+        } else {
+            Ok(SimpleSolution { x, lu })
+        }
     }
 }

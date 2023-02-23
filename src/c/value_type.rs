@@ -100,7 +100,7 @@ pub trait ValueType<P>: Num + Copy + FromStr + std::fmt::Debug {
     /// of a sparse matrix in compressed-column format. For example,
     /// no numbers in the row_indices or column_offsets can be out of range
     /// (all values in column_offsets must be valid indexes into row_indices,
-    /// apart from column_offsets[last]; and all values in row_indices must
+    /// apart from column_offsets\[last\]; and all values in row_indices must
     /// be < num_rows).
     ///
     unsafe fn c_create_comp_col_matrix(

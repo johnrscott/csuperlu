@@ -1,9 +1,9 @@
 //! Functions to create dense matrices.
 //!
 
+use crate::free::c_destroy_dense_matrix;
 use crate::super_matrix::SuperMatrix;
 use crate::value_type::ValueType;
-use csuperlu_sys::dense::c_Destroy_Dense_Matrix;
 use csuperlu_sys::super_matrix::c_DNformat;
 use csuperlu_sys::super_matrix::{c_SuperMatrix, Mtype_t};
 
@@ -101,6 +101,8 @@ impl<P: ValueType<P>> SuperMatrix for DenseMatrix<P> {
 impl<P: ValueType<P>> Drop for DenseMatrix<P> {
     fn drop(&mut self) {
         // Note that the input vectors are also freed by this line
-        c_Destroy_Dense_Matrix(&mut self.c_super_matrix);
+	unsafe {
+            c_destroy_dense_matrix(&mut self.c_super_matrix);
+	}
     }
 }

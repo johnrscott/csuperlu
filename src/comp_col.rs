@@ -13,10 +13,10 @@
 //! Since each column may be a different length, a third vector of
 //! integers is maintained showing where each new column starts.
 
+use crate::free::c_destroy_comp_col_matrix;
 use crate::harwell_boeing::HarwellBoeingMatrix;
 use crate::super_matrix::SuperMatrix;
 use crate::value_type::ValueType;
-use csuperlu_sys::comp_col::c_Destroy_CompCol_Matrix;
 use csuperlu_sys::super_matrix::{c_NCformat, c_SuperMatrix, Mtype_t};
 use std::fs;
 use std::ops::Mul;
@@ -187,6 +187,8 @@ impl<P: ValueType<P>> SuperMatrix for CompColMatrix<P> {
 impl<P: ValueType<P>> Drop for CompColMatrix<P> {
     fn drop(&mut self) {
         // Note that the input vectors are also freed by this line
-        c_Destroy_CompCol_Matrix(&mut self.c_super_matrix);
+        unsafe {
+	    c_destroy_comp_col_matrix(&mut self.c_super_matrix);
+	}
     }
 }

@@ -47,7 +47,8 @@ pub mod super_matrix;
 pub mod super_node;
 pub mod utils;
 pub mod value_type;
-
+pub mod free;
+    
 pub use error::Error;
 
 #[cfg(test)]

@@ -252,7 +252,7 @@ impl ValueType<f64> for f64 {
             row_indices.as_mut_ptr(),
             column_offsets.as_mut_ptr(),
             Stype_t::SLU_NC,
-            Dtype_t::SLU_S,
+            Dtype_t::SLU_D,
             mtype,
         );
 	Ok(a)
@@ -283,7 +283,7 @@ impl ValueType<f64> for f64 {
 		column_major_values.as_mut_ptr(),
 		num_rows as i32,
 		Stype_t::SLU_DN,
-		Dtype_t::SLU_S,
+		Dtype_t::SLU_D,
 		mtype,
             );
 	    Ok(x)
@@ -311,6 +311,9 @@ impl ValueType<f64> for f64 {
 	stat: &mut SuperLUStat_t,
 	info: &mut i32,
     ) {
+	let what = "HERE";
+	dPrint_CompCol_Matrix(c_string(what).as_ptr() as *mut libc::c_char,
+			      a as *const c_SuperMatrix as *mut c_SuperMatrix);
         dgssv(options,
 	      a as *const c_SuperMatrix as *mut c_SuperMatrix,
 	      perm_c.as_mut_ptr(),
@@ -346,7 +349,7 @@ impl ValueType<num::Complex<f32>> for num::Complex<f32> {
             row_indices.as_mut_ptr(),
             column_offsets.as_mut_ptr(),
             Stype_t::SLU_NC,
-            Dtype_t::SLU_S,
+            Dtype_t::SLU_C,
             mtype,
         );
 	Ok(a)
@@ -376,7 +379,7 @@ impl ValueType<num::Complex<f32>> for num::Complex<f32> {
 		column_major_values.as_mut_ptr() as *mut libc::c_float,
 		num_rows as i32,
 		Stype_t::SLU_DN,
-		Dtype_t::SLU_S,
+		Dtype_t::SLU_C,
 		mtype,
             );
 	    Ok(x)
@@ -436,7 +439,7 @@ impl ValueType<num::Complex<f64>> for num::Complex<f64> {
             row_indices.as_mut_ptr(),
             column_offsets.as_mut_ptr(),
             Stype_t::SLU_NC,
-            Dtype_t::SLU_S,
+            Dtype_t::SLU_Z,
             mtype,
         );
 	Ok(a)
@@ -466,7 +469,7 @@ impl ValueType<num::Complex<f64>> for num::Complex<f64> {
 		column_major_values.as_mut_ptr() as *mut libc::c_double,
 		num_rows as i32,
 		Stype_t::SLU_DN,
-		Dtype_t::SLU_S,
+		Dtype_t::SLU_Z,
 		mtype,
             );
 	    Ok(x)

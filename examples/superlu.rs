@@ -46,6 +46,8 @@ fn main() {
 					    non_zero_values,
 					    row_indices,
 					    column_offsets);
+
+    a.print("A is");
     
     // Make the RHS vector
     let nrhs = 1;

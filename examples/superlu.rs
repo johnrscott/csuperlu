@@ -49,7 +49,7 @@ fn main() {
 
     // Make the RHS vector
     let nrhs = 1;
-    let rhs = vec![1.0; num_rows as usize];
+    let rhs = vec![1.0; num_rows];
     let b = DenseMatrix::from_vectors(num_rows, nrhs, rhs);
 
     let mut options = superlu_options_t::new();

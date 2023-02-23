@@ -25,9 +25,6 @@ fn main() {
     let num_rows = 5usize;
     let num_columns = 5usize;
 
-    // Number of non-zeros
-    let num_non_zeros = 12usize;
-
     // Matrix elements
     let s = Complex::<f32>::new(19.0, 0.0);
     let u = Complex::<f32>::new(21.0, 0.0);

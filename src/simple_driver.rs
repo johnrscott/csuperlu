@@ -48,35 +48,34 @@ pub struct SimpleSolution<P: ValueType<P>> {
 /// A^T. Make sure to convert the CompRowMatrix to a CompColumnMatrix
 /// if you want to solve A.
 ///
-#[allow(non_snake_case)]
 pub fn simple_driver<P: ValueType<P>>(
     mut options: superlu_options_t,
-    A: &CompColMatrix<P>,
+    a: &CompColMatrix<P>,
     perm_c: &mut Vec<i32>,
     perm_r: &mut Vec<i32>,
-    B: DenseMatrix<P>,
+    b: DenseMatrix<P>,
     stat: &mut SuperLUStat_t,
 ) -> Result<SimpleSolution<P>, SolverError> {
     let mut info = 0;
     unsafe {
-        let mut L = c_SuperMatrix::alloc();
-        let mut U = c_SuperMatrix::alloc();
+        let mut l = c_SuperMatrix::alloc();
+        let mut u = c_SuperMatrix::alloc();
 
-	let mut b_super_matrix = B.into_super_matrix();
+	let mut b_super_matrix = b.into_super_matrix();
 	
         P::c_simple_driver(
             &mut options,
-            A.super_matrix(),
+            a.super_matrix(),
             perm_c,
             perm_r,
-            &mut L,
-            &mut U,
+            &mut l,
+            &mut u,
             &mut b_super_matrix,
             stat,
             &mut info,
         );
-        let l = SuperNodeMatrix::from_super_matrix(L);
-        let u = CompColMatrix::from_super_matrix(U);
+        let l = SuperNodeMatrix::from_super_matrix(l);
+        let u = CompColMatrix::from_super_matrix(u);
         let lu = LUDecomp::from_matrices(l, u);
 	let x = DenseMatrix::<P>::from_super_matrix(b_super_matrix);
 	

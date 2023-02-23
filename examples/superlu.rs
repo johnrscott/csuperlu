@@ -46,7 +46,7 @@ fn main() {
 					    non_zero_values,
 					    row_indices,
 					    column_offsets);
-
+    
     // Make the RHS vector
     let nrhs = 1;
     let rhs = vec![1.0; num_rows as usize];

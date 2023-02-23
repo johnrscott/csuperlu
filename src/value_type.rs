@@ -16,9 +16,7 @@ use crate::Error;
 ///
 /// # Errors
 ///
-/// If the length of column_offsets is not at least 1,
-/// an error is returned. If the lengths of row_indices and
-/// non_zeros_indices do not match, an error is returned.
+/// As described in documentation for c_create_comp_col_matrix.
 ///
 fn check_comp_col_conditions<T>(
     non_zero_values: &mut Vec<T>,
@@ -29,6 +27,10 @@ fn check_comp_col_conditions<T>(
 	return Err(Error{});
     }
     if non_zero_values.len() != row_indices.len() {
+	return Err(Error{});
+    }
+    let num_non_zeros = *column_offsets.last().unwrap();
+    if row_indices.len() != num_non_zeros.try_into().unwrap() {
 	return Err(Error{});
     }
     Ok(())
@@ -66,20 +68,23 @@ pub trait ValueType<P>: Num + Copy + FromStr + std::fmt::Debug {
     ///
     /// # Errors
     ///
-    /// If the length of column_offsets is not equal to num_columns 
-    /// + 1, then an error variant is returned. If the lengths of
+    /// If the length of column_offsets is not equal to num_columns \+ 1 
+    /// then an error variant is returned. If the lengths of
     /// non_zero_values and row_indices are not the same, an error is
-    /// returned. Other ways to pass invalid arguments are described in
-    /// the safety section below.
+    /// returned. The last element of column_offsets must be equal to the
+    /// length of non_zero_values, else error is returned. Other ways to
+    /// pass invalid arguments are described in the safety section below.
     ///
     /// # Safety
     ///
-    /// This function is unsafe because it is important that the
+    /// This function is unsafe because the
     /// vectors passed to the function (the non-zero values,
-    /// row indices, and columns pointers) are a valid representation
+    /// row indices, and columns pointers) must be a valid representation
     /// of a sparse matrix in compressed-column format. For example,
-    /// no numbers in the row_indices or column_offsets can be outside
-    /// range.
+    /// no numbers in the row_indices or column_offsets can be out of range
+    /// (all values in column_offsets must be valid indexes into row_indices,
+    /// apart from column_offsets[last]; and all values in row_indices must
+    /// be < num_rows).
     ///
     /// TODO add the other conditions on the vectors.
     ///

@@ -186,7 +186,6 @@ impl<P: ValueType<P>> SuperMatrix for CompColMatrix<P> {
 
 impl<P: ValueType<P>> Drop for CompColMatrix<P> {
     fn drop(&mut self) {
-        // Note that the input vectors are also freed by this line
         unsafe {
 	    c_destroy_comp_col_matrix(&mut self.c_super_matrix);
 	}

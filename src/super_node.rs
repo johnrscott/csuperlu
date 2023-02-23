@@ -1,6 +1,7 @@
 //! Functions to create matrices in super-node format
 //!
 
+use crate::free::c_destroy_super_node_matrix;
 use crate::super_matrix::SuperMatrix;
 use crate::value_type::ValueType;
 use csuperlu_sys::super_matrix::{c_SCformat, c_SuperMatrix};
@@ -43,7 +44,8 @@ impl<P: ValueType<P>> SuperMatrix for SuperNodeMatrix<P> {
 
 impl<P: ValueType<P>> Drop for SuperNodeMatrix<P> {
     fn drop(&mut self) {
-        // Note that the input vectors are also freed by this line
-        c_Destroy_SuperNode_Matrix(&mut self.c_super_matrix);
+	unsafe {
+            c_destroy_super_node_matrix(&mut self.c_super_matrix);
+	}
     }
 }

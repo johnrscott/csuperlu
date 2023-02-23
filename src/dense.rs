@@ -100,7 +100,6 @@ impl<P: ValueType<P>> SuperMatrix for DenseMatrix<P> {
 
 impl<P: ValueType<P>> Drop for DenseMatrix<P> {
     fn drop(&mut self) {
-        // Note that the input vectors are also freed by this line
 	unsafe {
             c_destroy_dense_matrix(&mut self.c_super_matrix);
 	}

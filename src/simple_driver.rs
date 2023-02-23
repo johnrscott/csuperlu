@@ -62,28 +62,31 @@ pub fn simple_driver<P: ValueType<P>>(
         let mut L = c_SuperMatrix::alloc();
         let mut U = c_SuperMatrix::alloc();
 
+	let mut b_super_matrix = B.into_super_matrix();
+	
         P::c_simple_driver(
             &mut options,
-            A.super_matrix() as *const c_SuperMatrix as *mut c_SuperMatrix,
+            A.super_matrix(),
             perm_c,
             perm_r,
             &mut L,
             &mut U,
-            B.super_matrix() as *const c_SuperMatrix as *mut c_SuperMatrix,
+            &mut b_super_matrix,
             stat,
             &mut info,
         );
         let l = SuperNodeMatrix::from_super_matrix(L);
         let u = CompColMatrix::from_super_matrix(U);
         let lu = LUDecomp::from_matrices(l, u);
-
+	let x = DenseMatrix::<P>::from_super_matrix(b_super_matrix);
+	
 	if info != 0 {
 	    Err(SolverError {
 		info
 	    })
 	} else {
 	    Ok(SimpleSolution {
-		x: B,
+		x,
 		lu,
             })
 	}

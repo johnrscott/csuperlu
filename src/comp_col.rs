@@ -18,7 +18,6 @@ use crate::value_type::ValueType;
 use csuperlu_sys::super_matrix::{c_NCformat, c_SuperMatrix, Mtype_t};
 use crate::harwell_boeing::HarwellBoeingMatrix;
 use crate::super_matrix::SuperMatrix;
-use std::mem::MaybeUninit;
 use std::fs;
 use std::ops::Mul;
 use std::process;
@@ -64,10 +63,11 @@ impl<P: ValueType<P>> CompColMatrix<P> {
 	     non_zero_values) = matrix.to_vectors();
 	
 	// Make the left-hand side matrix
-	Self::from_vectors(num_rows,
-			   num_columns,
-			   non_zero_values.len(),
-			   non_zero_values, row_indices, column_offsets)
+	Self::from_vectors(
+	    num_rows,
+	    non_zero_values,
+	    row_indices,
+	    column_offsets)
     }
 
     /// Specify a compressed column matrix from input vectors.
@@ -84,8 +84,6 @@ impl<P: ValueType<P>> CompColMatrix<P> {
     ///
     pub fn from_vectors(
         num_rows: usize,
-        num_columns: usize,
-        num_non_zeros: usize,
         mut non_zero_values: Vec<P>,
         mut row_indices: Vec<i32>,
         mut column_offsets: Vec<i32>,
@@ -93,8 +91,6 @@ impl<P: ValueType<P>> CompColMatrix<P> {
         let c_super_matrix = unsafe {
             let mut c_super_matrix = P::c_create_comp_col_matrix(
                 num_rows,
-                num_columns,
-                num_non_zeros,
                 &mut non_zero_values,
                 &mut row_indices,
                 &mut column_offsets,
@@ -183,9 +179,8 @@ impl<P: ValueType<P>> SuperMatrix for CompColMatrix<P> {
         &self.c_super_matrix
     }
     fn print(&self, what: &str) {
-        let c_str = std::ffi::CString::new(what).unwrap();
 	unsafe {
-	    P::c_print_comp_col_matrix(c_str.as_ptr(), &self.c_super_matrix);
+	    P::c_print_comp_col_matrix(what, &self.c_super_matrix);
 	}
     }
 }

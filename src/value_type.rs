@@ -87,8 +87,6 @@ pub trait ValueType<P>: Num + Copy + FromStr + std::fmt::Debug {
     ///
     unsafe fn c_create_comp_col_matrix(
         num_rows: usize,
-        num_columns: usize,
-        num_non_zeros: usize,
         non_zero_values: &mut Vec<P>,
         row_indices: &mut Vec<i32>,
         column_offsets: &mut Vec<i32>,
@@ -141,25 +139,17 @@ pub trait ValueType<P>: Num + Copy + FromStr + std::fmt::Debug {
 impl ValueType<f32> for f32 {
     unsafe fn c_create_comp_col_matrix(
         num_rows: usize,
-        num_columns: usize,
-        num_non_zeros: usize,
         non_zero_values: &mut Vec<f32>,
         row_indices: &mut Vec<i32>,
         column_offsets: &mut Vec<i32>,
         mtype: Mtype_t,
     ) -> Result<c_SuperMatrix, Error> {
-	check_comp_col_conditions(
-	    num_columns,
-	    num_non_zeros,
-	    non_zero_values,
-	    row_indices,
-	    column_offsets)?;
 	let mut a = c_SuperMatrix::alloc();
         sCreate_CompCol_Matrix(
             &mut a as *mut c_SuperMatrix,
             num_rows as i32,
-            num_columns as i32,
-            num_non_zeros as i32,
+            column_offsets.len() - 1 as i32,
+            non_zero_values.len() as i32,
             non_zero_values.as_mut_ptr(),
             row_indices.as_mut_ptr(),
             column_offsets.as_mut_ptr(),

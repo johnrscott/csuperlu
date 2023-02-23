@@ -86,8 +86,6 @@ pub trait ValueType<P>: Num + Copy + FromStr + std::fmt::Debug {
     /// apart from column_offsets[last]; and all values in row_indices must
     /// be < num_rows).
     ///
-    /// TODO add the other conditions on the vectors.
-    ///
     unsafe fn c_create_comp_col_matrix(
         num_rows: usize,
         non_zero_values: &mut Vec<P>,
@@ -96,7 +94,8 @@ pub trait ValueType<P>: Num + Copy + FromStr + std::fmt::Debug {
         mtype: Mtype_t,
     ) -> Result<c_SuperMatrix, Error>;
 
-    /// Print a compressed-column matrix (from SuperLU library)
+    /// Print a compressed-column matrix (using the print
+    /// from the SuperLU library)
     ///
     /// The function makes the assumption that the C library does
     /// not modify the arguments.
@@ -105,14 +104,14 @@ pub trait ValueType<P>: Num + Copy + FromStr + std::fmt::Debug {
     ///
     /// This function is unsafe because the matrix (c_SuperMatrix)
     /// passed as the argument must have been created using the
-    /// c_create_comp_col_matrix function -- using other c_SuperMatrix
+    /// c_create_comp_col_matrix function. Using other c_SuperMatrix
     /// items may result in undefined behaviour.
     ///
     unsafe fn c_print_comp_col_matrix(what: &str, a: &c_SuperMatrix);
 
     /// Create a dense matrix from a raw vector
     ///
-    /// # Error
+    /// # Errors
     ///
     /// If the length of column_major_values is not equal to
     /// num_rows * num_columns, an error variant is returned. 
@@ -123,11 +122,53 @@ pub trait ValueType<P>: Num + Copy + FromStr + std::fmt::Debug {
         column_major_values: &mut Vec<P>,
         mtype: Mtype_t,
     ) -> Result<c_SuperMatrix, Error>;
-    
+
+    /// Print a dense matrix (using the print
+    /// from the SuperLU library)
+    ///
+    /// The function makes the assumption that the C library does
+    /// not modify the arguments.
+    ///
+    /// # Safety
+    ///
+    /// This function is unsafe because the matrix (c_SuperMatrix)
+    /// passed as the argument must have been created using the
+    /// c_create_dense_matrix function. Using other c_SuperMatrix
+    /// items may result in undefined behaviour.
+    ///
     unsafe fn c_print_dense_matrix(what: &str, a: &c_SuperMatrix);
 
+    /// Print a super-nodal matrix (using the print
+    /// from the SuperLU library)
+    ///
+    /// The function makes the assumption that the C library does
+    /// not modify the arguments.
+    ///
+    /// # Safety
+    ///
+    /// This function is unsafe because the matrix (c_SuperMatrix)
+    /// passed as the argument must be a super-nodal matrix (i.e.
+    /// the L returned by the solver). Using other c_SuperMatrix
+    /// items may result in undefined behaviour.
+    ///
     unsafe fn c_print_super_node_matrix(what: &str, a: &c_SuperMatrix);
 
+    
+    /// Solve a sparse linear system using the simple driver
+    ///
+    /// # Errors
+    ///
+    /// Can catch incorrect dimensions in a, b, perm_c and perm_r.
+    /// Can also probably catch incorrect matrices a and b (consider
+    /// doing this in the other functions too where applicable).
+    ///
+    /// # Safety
+    ///
+    /// The matrix a must be a compressed-column matrix (TODO
+    /// implement the compressed-row matrix version). The matrix
+    /// b must be a dense matrix. The matrices l and u must be
+    /// allocated structures (c_SuperMatrix::alloc).
+    ///
     unsafe fn c_simple_driver(
 	options: &mut superlu_options_t,
 	a: &c_SuperMatrix,

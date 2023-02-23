@@ -156,6 +156,10 @@ pub trait ValueType<P>: Num + Copy + FromStr + std::fmt::Debug {
     
     /// Solve a sparse linear system using the simple driver
     ///
+    /// Maybe this doesn't need to be unsafe? Although it may
+    /// depend on the options (for example, if perm_c or perm_r
+    /// contain content).
+    ///
     /// # Errors
     ///
     /// Can catch incorrect dimensions in a, b, perm_c and perm_r.

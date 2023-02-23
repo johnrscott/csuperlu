@@ -59,7 +59,6 @@ fn check_dense_conditions<T>(
     Ok(())
 }
 
-
 /// Valid numerical value types for the C SuperLU library
 ///
 pub trait ValueType<P>: Num + Copy + FromStr + std::fmt::Debug {
@@ -105,7 +104,7 @@ pub trait ValueType<P>: Num + Copy + FromStr + std::fmt::Debug {
     /// c_create_comp_col_matrix function -- using other c_SuperMatrix
     /// items may result in undefined behaviour.
     ///
-    unsafe fn c_print_comp_col_matrix(what: *const libc::c_char, a: &c_SuperMatrix);
+    unsafe fn c_print_comp_col_matrix(what: &str, a: &c_SuperMatrix);
 
     /// Create a dense matrix from a raw vector
     ///
@@ -121,16 +120,16 @@ pub trait ValueType<P>: Num + Copy + FromStr + std::fmt::Debug {
         mtype: Mtype_t,
     ) -> Result<c_SuperMatrix, Error>;
     
-    unsafe fn c_print_dense_matrix(what: *const libc::c_char, a: &c_SuperMatrix);
-    unsafe fn c_print_super_node_matrix(what: *const libc::c_char, a: &c_SuperMatrix);
+    unsafe fn c_print_dense_matrix(what: &str, a: &c_SuperMatrix);
+    unsafe fn c_print_super_node_matrix(what: &str, a: &c_SuperMatrix);
     unsafe fn c_simple_driver(
 	options: &mut superlu_options_t,
-	a: *mut c_SuperMatrix,
+	a: &mut c_SuperMatrix,
 	perm_c: &mut Vec<i32>,
 	perm_r: &mut Vec<i32>,
 	l: &mut c_SuperMatrix,
 	u: &mut c_SuperMatrix,
-	b: *mut c_SuperMatrix,
+	b: &mut c_SuperMatrix,
 	stat: &mut SuperLUStat_t,
 	info: &mut i32,
     );
@@ -222,25 +221,17 @@ impl ValueType<f32> for f32 {
 impl ValueType<f64> for f64 {
     unsafe fn c_create_comp_col_matrix(
         num_rows: usize,
-        num_columns: usize,
-        num_non_zeros: usize,
         non_zero_values: &mut Vec<f64>,
         row_indices: &mut Vec<i32>,
         column_offsets: &mut Vec<i32>,
         mtype: Mtype_t,
     ) -> Result<c_SuperMatrix, Error> {
-	check_comp_col_conditions(
-	    num_columns,
-	    num_non_zeros,
-	    non_zero_values,
-	    row_indices,
-	    column_offsets)?;
 	let mut a = c_SuperMatrix::alloc();
         dCreate_CompCol_Matrix(
             &mut a as *mut c_SuperMatrix,
             num_rows as i32,
-            num_columns as i32,
-            num_non_zeros as i32,
+            column_offsets.len() - 1 as i32,
+            non_zero_values.len() as i32,
             non_zero_values.as_mut_ptr(),
             row_indices.as_mut_ptr(),
             column_offsets.as_mut_ptr(),
@@ -311,25 +302,17 @@ impl ValueType<f64> for f64 {
 impl ValueType<num::Complex<f32>> for num::Complex<f32> {
     unsafe fn c_create_comp_col_matrix(
         num_rows: usize,
-        num_columns: usize,
-        num_non_zeros: usize,
         non_zero_values: &mut Vec<num::Complex<f32>>,
         row_indices: &mut Vec<i32>,
         column_offsets: &mut Vec<i32>,
         mtype: Mtype_t,
     ) -> Result<c_SuperMatrix, Error> {
-	check_comp_col_conditions(
-	    num_columns,
-	    num_non_zeros,
-	    non_zero_values,
-	    row_indices,
-	    column_offsets)?;
 	let mut a = c_SuperMatrix::alloc();
         cCreate_CompCol_Matrix(
             &mut a as *mut c_SuperMatrix,
             num_rows as i32,
-            num_columns as i32,
-            num_non_zeros as i32,
+            column_offsets.len() - 1 as i32,
+            non_zero_values.len() as i32,
             non_zero_values.as_mut_ptr() as *mut libc::c_float,
             row_indices.as_mut_ptr(),
             column_offsets.as_mut_ptr(),
@@ -398,25 +381,17 @@ impl ValueType<num::Complex<f32>> for num::Complex<f32> {
 impl ValueType<num::Complex<f64>> for num::Complex<f64> {
     unsafe fn c_create_comp_col_matrix(
         num_rows: usize,
-        num_columns: usize,
-        num_non_zeros: usize,
         non_zero_values: &mut Vec<num::Complex<f64>>,
         row_indices: &mut Vec<i32>,
         column_offsets: &mut Vec<i32>,
         mtype: Mtype_t,
     ) -> Result<c_SuperMatrix, Error> {
-	check_comp_col_conditions(
-	    num_columns,
-	    num_non_zeros,
-	    non_zero_values,
-	    row_indices,
-	    column_offsets)?;
 	let mut a = c_SuperMatrix::alloc();
         zCreate_CompCol_Matrix(
             &mut a as *mut c_SuperMatrix,
             num_rows as i32,
-            num_columns as i32,
-            num_non_zeros as i32,
+            column_offsets.len() - 1 as i32,
+            non_zero_values.len() as i32,
             non_zero_values.as_mut_ptr() as *mut libc::c_double,
             row_indices.as_mut_ptr(),
             column_offsets.as_mut_ptr(),
@@ -438,7 +413,7 @@ impl ValueType<num::Complex<f64>> for num::Complex<f64> {
         column_major_values: &mut Vec<num::Complex<f64>>,
         mtype: Mtype_t,
     ) -> Result<c_SuperMatrix, Error> {
-	check_dense_conditions(
+        check_dense_conditions(
             num_rows,
             num_columns,
             column_major_values)?;

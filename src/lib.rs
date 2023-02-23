@@ -38,6 +38,7 @@
 
 
 //#![warn(missing_docs)]
+pub mod error;
 pub mod comp_col;
 pub mod dense;
 pub mod simple_driver;
@@ -47,6 +48,8 @@ pub mod lu_decomp;
 pub mod harwell_boeing;
 pub mod utils;
 pub mod value_type;
+
+pub use error::Error;
 
 #[cfg(test)]
 mod tests {
@@ -60,13 +63,10 @@ mod tests {
     
     #[test]
     fn comp_col_matrix_values() {
+
 	// Matrix dimensions
 	let num_rows = 5usize;
-	let num_columns = 5usize;
-
-	// Number of non-zeros
-	let num_non_zeros = 12usize;
-
+	
 	// Matrix elements
 	let s: f64 = 19.0;
 	let u: f64 = 21.0;
@@ -76,17 +76,19 @@ mod tests {
 	let l: f64 = 12.0;
 
 	// Vector of doubles of length nnz
-	let a = vec![s, l, l, u, l, l, u, p, u, e, u, r];
+	let non_zero_values = vec![s, l, l, u, l, l, u, p, u, e, u, r];
 
 	// Vector of ints of length nnz
-	let asub = vec![0, 1, 4, 1, 2, 4, 0, 2, 0, 3, 3, 4];
+	let row_indices = vec![0, 1, 4, 1, 2, 4, 0, 2, 0, 3, 3, 4];
 
-	// Vector of ints of length n+1
-	let xa = vec![0, 3, 6, 8, 10, 12];
-
+	// Vector of ints of length num_columns + 1
+	let column_offsets = vec![0, 3, 6, 8, 10, 12];
+	
 	// Make the left-hand side matrix
-	let mut a = CompColMatrix::from_vectors(num_rows, num_columns,
-						num_non_zeros, a, asub, xa);
+	let mut a = CompColMatrix::from_vectors(num_rows,
+						non_zero_values,
+						row_indices,
+						column_offsets);
 
 	// Check non-zero matrix values
 	assert_eq!((a.value(0,0) - s).abs() < 1e-8, true);
@@ -124,9 +126,6 @@ mod tests {
 	let num_rows = 5usize;
 	let num_columns = 5usize;
 
-	// Number of non-zeros
-	let num_non_zeros = 12usize;
-
 	// Matrix elements
 	let s: f64 = 19.0;
 	let u: f64 = 21.0;
@@ -136,17 +135,19 @@ mod tests {
 	let l: f64 = 12.0;
 
 	// Vector of doubles of length nnz
-	let a = vec![s, l, l, u, l, l, u, p, u, e, u, r];
+	let non_zero_values = vec![s, l, l, u, l, l, u, p, u, e, u, r];
 
 	// Vector of ints of length nnz
-	let asub = vec![0, 1, 4, 1, 2, 4, 0, 2, 0, 3, 3, 4];
+	let row_indices = vec![0, 1, 4, 1, 2, 4, 0, 2, 0, 3, 3, 4];
 
-	// Vector of ints of length n+1
-	let xa = vec![0, 3, 6, 8, 10, 12];
+	// Vector of ints of length num_columns + 1
+	let column_offsets = vec![0, 3, 6, 8, 10, 12];
 
 	// Make the left-hand side matrix
-	let mut a = CompColMatrix::from_vectors(num_rows, num_columns,
-						num_non_zeros, a, asub, xa);
+	let mut a = CompColMatrix::from_vectors(num_rows,
+						non_zero_values,
+						row_indices,
+						column_offsets);
 
 	// Make the RHS vector
 	let nrhs = 1;

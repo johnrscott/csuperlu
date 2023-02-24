@@ -56,7 +56,7 @@ mod tests {
 
     use crate::comp_col::CompColMatrix;
     use crate::dense::DenseMatrix;
-    use crate::simple_driver::{SimpleSolution, SimpleSystem};
+    use crate::simple_driver::{SimpleSolution, SimpleSystem, ColumnPermPolicy};
     use crate::utils::distance;
     use csuperlu_sys::options::{colperm_t, superlu_options_t};
     use csuperlu_sys::stat::SuperLUStat_t;
@@ -157,8 +157,10 @@ mod tests {
 	} = SimpleSystem {
 	    a: &a,
 	    b,
-	}.solve(&mut stat).expect("Failed to solve linear system");
+	}.solve(&mut stat, ColumnPermPolicy::Natural)
+	    .expect("Failed to solve linear system");
 
+	    
         let x_vals = x.column_major_values();
 
         // True solution

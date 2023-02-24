@@ -3,6 +3,7 @@ use std::process;
 
 use csuperlu::comp_col::CompColMatrix;
 use csuperlu::dense::DenseMatrix;
+use csuperlu::simple_driver::ColumnPermPolicy;
 use csuperlu::simple_driver::SimpleSystem;
 use csuperlu::simple_driver::SimpleSolution;
 use csuperlu::super_matrix::SuperMatrix;
@@ -42,7 +43,8 @@ fn main() {
     } = SimpleSystem {
 	a: &a,
 	b,
-    }.solve(&mut stat).expect("Failed to solve linear system");
+    }.solve(&mut stat, ColumnPermPolicy::Natural)
+	.expect("Failed to solve linear system");
 
     x.print("X");
 

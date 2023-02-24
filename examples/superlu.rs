@@ -14,7 +14,7 @@
 
 use csuperlu::comp_col::CompColMatrix;
 use csuperlu::dense::DenseMatrix;
-use csuperlu::simple_driver::{SimpleSolution, SimpleSystem};
+use csuperlu::simple_driver::{SimpleSolution, SimpleSystem, ColumnPermPolicy};
 use csuperlu::super_matrix::SuperMatrix;
 use csuperlu_sys::stat::{c_StatPrint, SuperLUStat_t};
 
@@ -57,7 +57,8 @@ fn main() {
     } = SimpleSystem {
 	a: &a,
 	b,
-    }.solve(&mut stat).expect("Failed to solve linear system");
+    }.solve(&mut stat, ColumnPermPolicy::Natural)
+	.expect("Failed to solve linear system");
 
     // Print the performance statistics
     c_StatPrint(&mut stat);

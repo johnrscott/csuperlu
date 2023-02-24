@@ -40,7 +40,7 @@ fn main() {
 	mut x,
 	..
     } = SimpleSystem {
-	a,
+	a: &a,
 	b,
     }.solve(&mut stat).expect("Failed to solve linear system");
 

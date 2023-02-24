@@ -65,14 +65,14 @@ impl RowPerm {
 }
 
 
-pub struct SimpleSystem<P: ValueType<P>> {
+pub struct SimpleSystem<'c, P: ValueType<P>> {
     /// The (sparse) matrix A in AX = B
-    pub a: CompColMatrix<P>,
+    pub a: &'c CompColMatrix<P>,
     /// The right-hand side(s) matrix B in AX = B 
     pub b: DenseMatrix<P>,
 }
 
-impl<P: ValueType<P>> SimpleSystem<P> {
+impl<'c, P: ValueType<P>> SimpleSystem<'c, P> {
 
     /// Solve a simple linear system AX = B with default solver
     /// options
@@ -99,7 +99,7 @@ impl<P: ValueType<P>> SimpleSystem<P> {
 
             P::c_simple_driver(
 		&mut options,
-		&a.super_matrix(),
+		a.super_matrix(),
 		&mut column_perm,
 		&mut row_perm,
 		&mut l,

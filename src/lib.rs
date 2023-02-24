@@ -56,7 +56,7 @@ mod tests {
 
     use crate::comp_col::CompColMatrix;
     use crate::dense::DenseMatrix;
-    use crate::simple_driver::{simple_driver, SimpleSolution};
+    use crate::simple_driver::{SimpleSolution, SimpleSystem, ColumnPermPolicy};
     use crate::utils::distance;
     use csuperlu_sys::options::{colperm_t, superlu_options_t};
     use csuperlu_sys::stat::SuperLUStat_t;
@@ -149,17 +149,18 @@ mod tests {
         let rhs = vec![1.0; num_rows];
         let b = DenseMatrix::from_vectors(num_rows, nrhs, rhs);
 
-        let mut options = superlu_options_t::new();
-        options.ColPerm = colperm_t::NATURAL;
+	let mut stat = SuperLUStat_t::new();
 
-        let mut perm_r = Vec::<i32>::with_capacity(num_rows);
-        let mut perm_c = Vec::<i32>::with_capacity(num_columns);
+	let SimpleSolution {
+	    mut x,
+	    ..
+	} = SimpleSystem {
+	    a: &a,
+	    b,
+	}.solve(&mut stat, ColumnPermPolicy::Natural)
+	    .expect("Failed to solve linear system");
 
-        let mut stat = SuperLUStat_t::new();
-        let SimpleSolution { mut x, lu: _ } =
-            simple_driver(options, &mut a, &mut perm_c, &mut perm_r, b, &mut stat)
-                .expect("Failed to solve linear system");
-
+	    
         let x_vals = x.column_major_values();
 
         // True solution

@@ -3,7 +3,7 @@ use std::process;
 
 use csuperlu::comp_col::CompColMatrix;
 use csuperlu::dense::DenseMatrix;
-use csuperlu::simple_driver::simple_driver;
+use csuperlu::simple_driver::SimpleSystem;
 use csuperlu::simple_driver::SimpleSolution;
 use csuperlu::super_matrix::SuperMatrix;
 use csuperlu::utils::distance;
@@ -34,16 +34,17 @@ fn main() {
 
     b.print("b");
 
-    let options = superlu_options_t::new();
-
-    let mut perm_r = Vec::<i32>::with_capacity(num_rows);
-    let mut perm_c = Vec::<i32>::with_capacity(num_columns);
-
     let mut stat = SuperLUStat_t::new();
 
-    let SimpleSolution { mut x, lu: _ } =
-        simple_driver(options, &mut a, &mut perm_c, &mut perm_r, b, &mut stat)
-            .expect("Failed to solve linear system");
+    let SimpleSolution {
+	mut x,
+	lu: _,
+	column_perm: _,
+	row_perm: _,
+    } = SimpleSystem {
+	a,
+	b,
+    }.solve(&mut stat).expect("Failed to solve linear system");
 
     x.print("X");
 

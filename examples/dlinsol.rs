@@ -38,9 +38,7 @@ fn main() {
 
     let SimpleSolution {
 	mut x,
-	lu: _,
-	column_perm: _,
-	row_perm: _,
+	..
     } = SimpleSystem {
 	a,
 	b,

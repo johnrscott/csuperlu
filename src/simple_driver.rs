@@ -34,6 +34,24 @@ pub struct SimpleSolution<P: ValueType<P>> {
     pub lu: LUDecomp<P>,
 }
 
+pub struct ColumnPerm {
+    column_perm: Vec<i32>,
+}
+
+pub struct RowPerm {
+    row_perm: Vec<i32>,
+}
+
+pub struct SimpleSystem<P: ValueType<P>> {
+    /// The (sparse) matrix A in AX = B
+    a: CompColMatrix<P>,
+    /// The right-hand side(s) matrix B in AX = B 
+    b: DenseMatrix<P>,
+}
+
+
+
+
 /// Solve a sparse linear system AX = B.
 ///
 /// The inputs to the function are the matrix A, the rhs matrix B,

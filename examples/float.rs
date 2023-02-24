@@ -49,15 +49,16 @@ fn main() {
     let b = DenseMatrix::from_vectors(num_rows, nrhs, rhs);
 
     let mut stat = SuperLUStat_t::new();
-    
+
     let SimpleSolution {
 	mut x,
 	mut lu,
 	..
     } = SimpleSystem {
-	&a,
+	a: &a,
 	b,
     }.solve(&mut stat).expect("Failed to solve linear system");
+
     // Print the performance statistics
     c_StatPrint(&mut stat);
 

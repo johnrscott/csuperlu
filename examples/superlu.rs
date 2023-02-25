@@ -51,11 +51,12 @@ fn main() {
     let mut stat = SuperLUStat_t::new();
 
     let SimpleSolution {
+	mut a,
 	mut x,
 	mut lu,
 	..
     } = SimpleSystem {
-	a: &a,
+	a,
 	b,
     }.solve(&mut stat, ColumnPermPolicy::Natural)
 	.expect("Failed to solve linear system");

@@ -30,6 +30,7 @@ impl fmt::Display for SolverError {
 }
 
 pub struct SimpleSolution<P: ValueType<P>> {
+    pub a: CompColMatrix<P>,
     pub x: DenseMatrix<P>,
     pub lu: LUDecomp<P>,
     pub column_perm: ColumnPerm,
@@ -82,9 +83,9 @@ pub enum ColumnPermPolicy {
     ColAMD,
 }
 
-pub struct SimpleSystem<'c, P: ValueType<P>> {
+pub struct SimpleSystem<P: ValueType<P>> {
     /// The (sparse) matrix A in AX = B
-    pub a: &'c CompColMatrix<P>,
+    pub a: CompColMatrix<P>,
     /// The right-hand side(s) matrix B in AX = B 
     pub b: DenseMatrix<P>,
 }
@@ -96,10 +97,12 @@ pub struct SamePattern<P: ValueType<P>> {
 }
 
 impl<P: ValueType<P>> SamePattern<P> {
-    fn solve() -> SimpleSolution
+    fn solve() {
+
+    }
 }
 
-impl<'c, P: ValueType<P>> SimpleSystem<'c, P> {
+impl<P: ValueType<P>> SimpleSystem<P> {
 
     /// Solve a simple linear system AX = B with default solver
     /// options
@@ -143,7 +146,7 @@ impl<'c, P: ValueType<P>> SimpleSystem<'c, P> {
 
             P::c_simple_driver(
 		&mut options,
-		a.super_matrix(),
+		&mut a.super_matrix(),
 		&mut column_perm,
 		&mut row_perm,
 		&mut l,
@@ -162,7 +165,7 @@ impl<'c, P: ValueType<P>> SimpleSystem<'c, P> {
             if info != 0 {
 		Err(SolverError { info })
             } else {
-		Ok(SimpleSolution { x, lu, column_perm, row_perm })
+		Ok(SimpleSolution { a, x, lu, column_perm, row_perm })
             }
 	}
     }

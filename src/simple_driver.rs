@@ -121,10 +121,11 @@ impl<P: ValueType<P>> SamePattern<P> {
 
 	let mut options = superlu_options_t::new();
 
-	// Use the same column permutation 
-	options.Fact = fact_t::SamePattern;
-
-	// Is this also necessary?
+	// Use the same column permutation. In the superlu
+	// source code, it seems that the SamePattern option is
+	// not valid for the dgssv function. However, you can still
+	// pass MY_PERMC.
+	//options.Fact = fact_t::SamePattern;
 	options.ColPerm = colperm_t::MY_PERMC;
 	
 	let mut row_perm = Vec::<i32>::with_capacity(a.num_rows());

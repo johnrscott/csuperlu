@@ -89,6 +89,16 @@ pub struct SimpleSystem<'c, P: ValueType<P>> {
     pub b: DenseMatrix<P>,
 }
 
+pub struct SamePattern<P: ValueType<P>> {
+    pub a: CompColMatrix<P>,
+    pub b: DenseMatrix<P>,
+    pub column_perm: ColumnPerm,
+}
+
+impl<P: ValueType<P>> SamePattern<P> {
+    fn solve() -> SimpleSolution
+}
+
 impl<'c, P: ValueType<P>> SimpleSystem<'c, P> {
 
     /// Solve a simple linear system AX = B with default solver

@@ -41,7 +41,7 @@ fn main() {
     let column_offsets = vec![0, 3, 6, 8, 10, 12];
 
     // Make the left-hand side matrix
-    let mut a = CompColMatrix::from_vectors(num_rows, non_zero_values, row_indices, column_offsets);
+    let a = CompColMatrix::from_vectors(num_rows, non_zero_values, row_indices, column_offsets);
 
     // Make the RHS vector
     let nrhs = 1;

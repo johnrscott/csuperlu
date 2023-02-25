@@ -128,7 +128,7 @@ impl<P: ValueType<P>> SamePattern<P> {
 	options.ColPerm = colperm_t::MY_PERMC;
 	
 	let mut row_perm = Vec::<i32>::with_capacity(a.num_rows());
-	
+
 	let mut info = 0;
 	unsafe {
             let mut l = c_SuperMatrix::alloc();
@@ -198,7 +198,11 @@ impl<P: ValueType<P>> SimpleSystem<P> {
 
 	let mut column_perm = Vec::<i32>::with_capacity(a.num_columns());
 	let mut row_perm = Vec::<i32>::with_capacity(a.num_rows());
-	
+	unsafe {
+	    column_perm.set_len(a.num_columns());
+	    row_perm.set_len(a.num_rows());
+	}
+
 	let mut info = 0;
 	unsafe {
             let mut l = c_SuperMatrix::alloc();

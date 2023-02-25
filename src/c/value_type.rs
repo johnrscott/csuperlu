@@ -15,7 +15,7 @@ use csuperlu_sys::{
     sCreate_Dense_Matrix, sPrint_Dense_Matrix, zCreate_Dense_Matrix, zPrint_Dense_Matrix,
     superlu_options_t, cgssv, dgssv, sgssv, zgssv, SuperLUStat_t, SuperMatrix as c_SuperMatrix,
     cPrint_SuperNode_Matrix, dPrint_SuperNode_Matrix, sPrint_SuperNode_Matrix,
-    zPrint_SuperNode_Matrix,
+    zPrint_SuperNode_Matrix, Stype_t_SLU_NC, Dtype_t_SLU_S, Mtype_t,
 };
 
 use crate::Error;
@@ -211,8 +211,8 @@ impl ValueType<f32> for f32 {
             non_zero_values.as_mut_ptr(),
             row_indices.as_mut_ptr(),
             column_offsets.as_mut_ptr(),
-            Stype_t::SLU_NC,
-            Dtype_t::SLU_S,
+            Stype_t_SLU_NC,
+            Dtype_t_SLU_S,
             mtype,
         );
         Ok(a)
@@ -240,8 +240,8 @@ impl ValueType<f32> for f32 {
                 num_columns as i32,
                 column_major_values.as_mut_ptr(),
                 num_rows as i32,
-                Stype_t::SLU_DN,
-                Dtype_t::SLU_S,
+                Stype_t_SLU_NC,
+                Dtype_t_SLU_S,
                 mtype,
             );
             Ok(x)
@@ -305,8 +305,8 @@ impl ValueType<f64> for f64 {
             non_zero_values.as_mut_ptr(),
             row_indices.as_mut_ptr(),
             column_offsets.as_mut_ptr(),
-            Stype_t::SLU_NC,
-            Dtype_t::SLU_D,
+            Stype_t_SLU_NC,
+            Dtype_t_SLU_S,
             mtype,
         );
         Ok(a)
@@ -334,8 +334,8 @@ impl ValueType<f64> for f64 {
                 num_columns as i32,
                 column_major_values.as_mut_ptr(),
                 num_rows as i32,
-                Stype_t::SLU_DN,
-                Dtype_t::SLU_D,
+                Stype_t_SLU_NC,
+                Dtype_t_SLU_S,
                 mtype,
             );
             Ok(x)
@@ -399,8 +399,8 @@ impl ValueType<num::Complex<f32>> for num::Complex<f32> {
             non_zero_values.as_mut_ptr() as *mut libc::c_float,
             row_indices.as_mut_ptr(),
             column_offsets.as_mut_ptr(),
-            Stype_t::SLU_NC,
-            Dtype_t::SLU_C,
+            Stype_t_SLU_NC,
+            Dtype_t_SLU_S,
             mtype,
         );
         Ok(a)
@@ -428,8 +428,8 @@ impl ValueType<num::Complex<f32>> for num::Complex<f32> {
                 num_columns as i32,
                 column_major_values.as_mut_ptr() as *mut libc::c_float,
                 num_rows as i32,
-                Stype_t::SLU_DN,
-                Dtype_t::SLU_C,
+                Stype_t_SLU_NC,
+                Dtype_t_SLU_S,
                 mtype,
             );
             Ok(x)
@@ -491,8 +491,8 @@ impl ValueType<num::Complex<f64>> for num::Complex<f64> {
             non_zero_values.as_mut_ptr() as *mut libc::c_double,
             row_indices.as_mut_ptr(),
             column_offsets.as_mut_ptr(),
-            Stype_t::SLU_NC,
-            Dtype_t::SLU_Z,
+            Stype_t_SLU_NC,
+            Dtype_t_SLU_S,
             mtype,
         );
         Ok(a)
@@ -520,8 +520,8 @@ impl ValueType<num::Complex<f64>> for num::Complex<f64> {
                 num_columns as i32,
                 column_major_values.as_mut_ptr() as *mut libc::c_double,
                 num_rows as i32,
-                Stype_t::SLU_DN,
-                Dtype_t::SLU_Z,
+                Stype_t_SLU_NC,
+                Dtype_t_SLU_S,
                 mtype,
             );
             Ok(x)

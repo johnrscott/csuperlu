@@ -5,6 +5,7 @@ use crate::free::c_destroy_dense_matrix;
 use crate::super_matrix::SuperMatrix;
 use crate::value_type::ValueType;
 use csuperlu_sys::DNformat;
+use csuperlu_sys::Mtype_t_SLU_GE;
 use csuperlu_sys::SuperMatrix as c_SuperMatrix;
 
 pub struct DenseMatrix<P: ValueType<P>> {
@@ -23,7 +24,7 @@ impl<P: ValueType<P>> DenseMatrix<P> {
     ///
     pub fn from_vectors(num_rows: usize, num_columns: usize, mut x: Vec<P>) -> Self {
         let c_super_matrix =
-            P::c_create_dense_matrix(num_rows, num_columns, &mut x, Mtype_t::SLU_GE)
+            P::c_create_dense_matrix(num_rows, num_columns, &mut x, Mtype_t_SLU_GE)
                 .expect("Failed to create dense matrix -- replace with error handling");
         std::mem::forget(x);
         Self {

@@ -8,7 +8,6 @@ use csuperlu::simple_driver::SimpleSystem;
 use csuperlu::simple_driver::SimpleSolution;
 use csuperlu::super_matrix::SuperMatrix;
 use csuperlu::utils::distance;
-use csuperlu_sys::options::superlu_options_t;
 use csuperlu_sys::stat::SuperLUStat_t;
 
 fn main() {
@@ -41,7 +40,7 @@ fn main() {
 	mut x,
 	..
     } = SimpleSystem {
-	a: &a,
+	a,
 	b,
     }.solve(&mut stat, ColumnPermPolicy::Natural)
 	.expect("Failed to solve linear system");

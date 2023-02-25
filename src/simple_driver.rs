@@ -4,7 +4,7 @@
 use crate::comp_col::CompColMatrix;
 use crate::dense::DenseMatrix;
 use crate::value_type::ValueType;
-use csuperlu_sys::options::{superlu_options_t, colperm_t};
+use csuperlu_sys::options::{superlu_options_t, colperm_t, fact_t};
 use csuperlu_sys::stat::SuperLUStat_t;
 use csuperlu_sys::super_matrix::c_SuperMatrix;
 
@@ -30,15 +30,23 @@ impl fmt::Display for SolverError {
 }
 
 pub struct SimpleSolution<P: ValueType<P>> {
+    pub a: CompColMatrix<P>,
     pub x: DenseMatrix<P>,
     pub lu: LUDecomp<P>,
     pub column_perm: ColumnPerm,
     pub row_perm: RowPerm,
 }
 
+#[derive(Debug)]
 pub struct ColumnPerm {
     column_perm: Vec<i32>,
 }
+
+// impl<'a> ColumnPerm {
+//     fn get_perm(&'a mut self) -> &'a mut Vec<i32> {
+// 	&mut self.column_perm
+//     }
+// }
 
 impl ColumnPerm {
     /// Unsafe because content of Vec is not checked
@@ -82,14 +90,84 @@ pub enum ColumnPermPolicy {
     ColAMD,
 }
 
-pub struct SimpleSystem<'c, P: ValueType<P>> {
+pub struct SimpleSystem<P: ValueType<P>> {
     /// The (sparse) matrix A in AX = B
-    pub a: &'c CompColMatrix<P>,
+    pub a: CompColMatrix<P>,
     /// The right-hand side(s) matrix B in AX = B 
     pub b: DenseMatrix<P>,
 }
 
-impl<'c, P: ValueType<P>> SimpleSystem<'c, P> {
+pub struct SamePattern<P: ValueType<P>> {
+    pub a: CompColMatrix<P>,
+    pub b: DenseMatrix<P>,
+    pub column_perm: ColumnPerm,
+}
+
+impl<P: ValueType<P>> SamePattern<P> {
+    pub fn solve(
+	self,
+	stat: &mut SuperLUStat_t,
+    ) -> Result<SimpleSolution<P>, SolverError> {
+
+	let SamePattern {
+	    a,
+	    b,
+	    column_perm: ColumnPerm {
+		mut column_perm,
+	    }
+	} = self;
+
+	// TODO: Check for invalid dimensions
+
+	let mut options = superlu_options_t::new();
+
+	// Use the same column permutation. In the dgssv
+	// (simple driver) source code, the options.Fact
+	// value must be set to DOFACT (it is not allowed
+	// to use SamePattern). The use of a user supplied
+	// column permutation is controlled by MY_PERMC,
+	// which, if specified, means that get_perm_c
+	// (computing the column permutation) is not called
+	// (line 192-193, dgssv.c).
+	options.ColPerm = colperm_t::MY_PERMC;
+	
+	let mut row_perm = Vec::<i32>::with_capacity(a.num_rows());
+
+	let mut info = 0;
+	unsafe {
+            let mut l = c_SuperMatrix::alloc();
+            let mut u = c_SuperMatrix::alloc();
+
+            let mut b_super_matrix = b.into_super_matrix();
+
+            P::c_simple_driver(
+		&mut options,
+		&mut a.super_matrix(),
+		&mut column_perm,
+		&mut row_perm,
+		&mut l,
+		&mut u,
+		&mut b_super_matrix,
+		stat,
+		&mut info,
+            );
+            let l = SuperNodeMatrix::from_super_matrix(l);
+            let u = CompColMatrix::from_super_matrix(u);
+            let lu = LUDecomp::from_matrices(l, u);
+            let x = DenseMatrix::<P>::from_super_matrix(b_super_matrix);
+	    let column_perm = ColumnPerm::from_raw(column_perm);
+	    let row_perm = RowPerm::from_raw(row_perm);
+	    
+            if info != 0 {
+		Err(SolverError { info })
+            } else {
+		Ok(SimpleSolution { a, x, lu, column_perm, row_perm })
+            }
+	}
+    }
+}
+
+impl<P: ValueType<P>> SimpleSystem<P> {
 
     /// Solve a simple linear system AX = B with default solver
     /// options
@@ -112,7 +190,8 @@ impl<'c, P: ValueType<P>> SimpleSystem<'c, P> {
 
 	let SimpleSystem {a, b} = self;
 
-	// Check for invalid dimensions
+	// TODO: Check for invalid dimensions
+
 	let mut options = superlu_options_t::new();
 	match column_perm_policy {
 	    ColumnPermPolicy::Natural => options.ColPerm = colperm_t::NATURAL,
@@ -123,7 +202,11 @@ impl<'c, P: ValueType<P>> SimpleSystem<'c, P> {
 
 	let mut column_perm = Vec::<i32>::with_capacity(a.num_columns());
 	let mut row_perm = Vec::<i32>::with_capacity(a.num_rows());
-	
+	unsafe {
+	    column_perm.set_len(a.num_columns());
+	    row_perm.set_len(a.num_rows());
+	}
+
 	let mut info = 0;
 	unsafe {
             let mut l = c_SuperMatrix::alloc();
@@ -133,7 +216,7 @@ impl<'c, P: ValueType<P>> SimpleSystem<'c, P> {
 
             P::c_simple_driver(
 		&mut options,
-		a.super_matrix(),
+		&mut a.super_matrix(),
 		&mut column_perm,
 		&mut row_perm,
 		&mut l,
@@ -152,7 +235,7 @@ impl<'c, P: ValueType<P>> SimpleSystem<'c, P> {
             if info != 0 {
 		Err(SolverError { info })
             } else {
-		Ok(SimpleSolution { x, lu, column_perm, row_perm })
+		Ok(SimpleSolution { a, x, lu, column_perm, row_perm })
             }
 	}
     }

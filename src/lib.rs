@@ -155,7 +155,7 @@ mod tests {
 	    mut x,
 	    ..
 	} = SimpleSystem {
-	    a: &a,
+	    a,
 	    b,
 	}.solve(&mut stat, ColumnPermPolicy::Natural)
 	    .expect("Failed to solve linear system");

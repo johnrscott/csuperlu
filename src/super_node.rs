@@ -4,7 +4,7 @@
 use crate::free::c_destroy_super_node_matrix;
 use crate::super_matrix::SuperMatrix;
 use crate::value_type::ValueType;
-use csuperlu_sys::super_matrix::{c_SCformat, c_SuperMatrix};
+use csuperlu_sys::{SCformat, SuperMatrix as c_SuperMatrix};
 
 /// Super-node matrix
 ///
@@ -24,7 +24,7 @@ impl<P: ValueType<P>> SuperNodeMatrix<P> {
     }
     pub fn values(&mut self) -> &[P] {
         unsafe {
-            let c_scformat = &mut *(self.c_super_matrix.Store as *mut c_SCformat);
+            let c_scformat = &mut *(self.c_super_matrix.Store as *mut SCformat);
             std::slice::from_raw_parts(c_scformat.nzval as *mut P, c_scformat.nnz as usize)
         }
     }

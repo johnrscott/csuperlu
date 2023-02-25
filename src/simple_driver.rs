@@ -4,9 +4,9 @@
 use crate::comp_col::CompColMatrix;
 use crate::dense::DenseMatrix;
 use crate::value_type::ValueType;
-use csuperlu_sys::options::{superlu_options_t, colperm_t, fact_t};
-use csuperlu_sys::stat::SuperLUStat_t;
-use csuperlu_sys::super_matrix::c_SuperMatrix;
+use csuperlu_sys::{superlu_options_t, colperm_t, colperm_t_MY_PERMC};
+use csuperlu_sys::SuperLUStat_t;
+use csuperlu_sys::SuperMatrix as c_SuperMatrix;
 
 use crate::lu_decomp::LUDecomp;
 use crate::super_matrix::SuperMatrix;
@@ -129,7 +129,7 @@ impl<P: ValueType<P>> SamePattern<P> {
 	// which, if specified, means that get_perm_c
 	// (computing the column permutation) is not called
 	// (line 192-193, dgssv.c).
-	options.ColPerm = colperm_t::MY_PERMC;
+	options.ColPerm = colperm_t_MY_PERMC;
 	
 	let mut row_perm = Vec::<i32>::with_capacity(a.num_rows());
 

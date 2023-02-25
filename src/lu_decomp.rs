@@ -2,7 +2,7 @@ use crate::comp_col::CompColMatrix;
 use crate::super_matrix::SuperMatrix;
 use crate::super_node::SuperNodeMatrix;
 use crate::value_type::ValueType;
-use csuperlu_sys::super_matrix::{c_NCformat, c_SCformat};
+use csuperlu_sys::{NCformat, SCformat};
 
 pub struct LUDecomp<P: ValueType<P>> {
     l: SuperNodeMatrix<P>,
@@ -38,8 +38,8 @@ impl<P: ValueType<P>> LUDecomp<P> {
             col < l_c_super_matrix.ncol as usize,
             "Column index out of range"
         );
-        let _l_c_scformat = unsafe { &mut *(l_c_super_matrix.Store as *mut c_SCformat) };
-        let _u_c_ncformat = unsafe { &mut *(u_c_super_matrix.Store as *mut c_NCformat) };
+        let _l_c_scformat = unsafe { &mut *(l_c_super_matrix.Store as *mut SCformat) };
+        let _u_c_ncformat = unsafe { &mut *(u_c_super_matrix.Store as *mut NCformat) };
         todo!("Finish this off later");
     }
 }

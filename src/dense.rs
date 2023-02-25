@@ -4,8 +4,8 @@
 use crate::free::c_destroy_dense_matrix;
 use crate::super_matrix::SuperMatrix;
 use crate::value_type::ValueType;
-use csuperlu_sys::super_matrix::c_DNformat;
-use csuperlu_sys::super_matrix::{c_SuperMatrix, Mtype_t};
+use csuperlu_sys::DNformat;
+use csuperlu_sys::SuperMatrix as c_SuperMatrix;
 
 pub struct DenseMatrix<P: ValueType<P>> {
     c_super_matrix: c_SuperMatrix,
@@ -80,7 +80,7 @@ impl<P: ValueType<P>> DenseMatrix<P> {
 
     pub fn column_major_values(&mut self) -> &[P] {
         unsafe {
-            let c_dnformat = &mut *(self.c_super_matrix.Store as *mut c_DNformat);
+            let c_dnformat = &mut *(self.c_super_matrix.Store as *mut DNformat);
             let size = self.c_super_matrix.nrow * self.c_super_matrix.ncol;
             std::slice::from_raw_parts(c_dnformat.nzval as *mut P, size as usize)
         }

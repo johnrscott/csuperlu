@@ -8,23 +8,14 @@ use std::{ffi::CString, str::FromStr};
 use num::Num;
 
 use csuperlu_sys::{
-    comp_col::{
-        cCreate_CompCol_Matrix, cPrint_CompCol_Matrix, dCreate_CompCol_Matrix,
-        dPrint_CompCol_Matrix, sCreate_CompCol_Matrix, sPrint_CompCol_Matrix,
-        zCreate_CompCol_Matrix, zPrint_CompCol_Matrix,
-    },
-    dense::{
-        cCreate_Dense_Matrix, cPrint_Dense_Matrix, dCreate_Dense_Matrix, dPrint_Dense_Matrix,
-        sCreate_Dense_Matrix, sPrint_Dense_Matrix, zCreate_Dense_Matrix, zPrint_Dense_Matrix,
-    },
-    options::superlu_options_t,
-    simple_driver::{cgssv, dgssv, sgssv, zgssv},
-    stat::SuperLUStat_t,
-    super_matrix::{c_SuperMatrix, Dtype_t, Mtype_t, Stype_t},
-    super_node::{
-        cPrint_SuperNode_Matrix, dPrint_SuperNode_Matrix, sPrint_SuperNode_Matrix,
-        zPrint_SuperNode_Matrix,
-    },
+    cCreate_CompCol_Matrix, cPrint_CompCol_Matrix, dCreate_CompCol_Matrix,
+    dPrint_CompCol_Matrix, sCreate_CompCol_Matrix, sPrint_CompCol_Matrix,
+    zCreate_CompCol_Matrix, zPrint_CompCol_Matrix,
+    cCreate_Dense_Matrix, cPrint_Dense_Matrix, dCreate_Dense_Matrix, dPrint_Dense_Matrix,
+    sCreate_Dense_Matrix, sPrint_Dense_Matrix, zCreate_Dense_Matrix, zPrint_Dense_Matrix,
+    superlu_options_t, cgssv, dgssv, sgssv, zgssv, SuperLUStat_t, SuperMatrix as c_SuperMatrix,
+    cPrint_SuperNode_Matrix, dPrint_SuperNode_Matrix, sPrint_SuperNode_Matrix,
+    zPrint_SuperNode_Matrix,
 };
 
 use crate::Error;

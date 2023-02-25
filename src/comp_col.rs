@@ -16,8 +16,8 @@
 use crate::free::c_destroy_comp_col_matrix;
 use crate::harwell_boeing::HarwellBoeingMatrix;
 use crate::super_matrix::SuperMatrix;
+use csuperlu_sys::{SuperMatrix as c_SuperMatrix, Mtype_t_SLU_GE, NCformat};
 use crate::value_type::ValueType;
-use csuperlu_sys::super_matrix::{c_NCformat, c_SuperMatrix, Mtype_t};
 use std::fs;
 use std::ops::Mul;
 use std::process;
@@ -86,7 +86,7 @@ impl<P: ValueType<P>> CompColMatrix<P> {
                 &mut non_zero_values,
                 &mut row_indices,
                 &mut column_offsets,
-                Mtype_t::SLU_GE,
+                Mtype_t_SLU_GE,
             )
             .expect("Error creating comp col -- replace with error handling");
             // The freeing of the input vectors is handed over
@@ -128,13 +128,13 @@ impl<P: ValueType<P>> CompColMatrix<P> {
 
     pub fn non_zero_values(&self) -> &[P] {
         unsafe {
-            let c_ncformat = &mut *(self.c_super_matrix.Store as *mut c_NCformat);
+            let c_ncformat = &mut *(self.c_super_matrix.Store as *mut NCformat);
             std::slice::from_raw_parts(c_ncformat.nzval as *mut P, c_ncformat.nnz as usize)
         }
     }
     pub fn column_offsets(&self) -> &[i32] {
         unsafe {
-            let c_ncformat = &mut *(self.c_super_matrix.Store as *mut c_NCformat);
+            let c_ncformat = &mut *(self.c_super_matrix.Store as *mut NCformat);
             std::slice::from_raw_parts(
                 c_ncformat.colptr as *mut i32,
                 self.c_super_matrix.ncol as usize + 1,
@@ -143,7 +143,7 @@ impl<P: ValueType<P>> CompColMatrix<P> {
     }
     pub fn row_indices(&self) -> &[i32] {
         unsafe {
-            let c_ncformat = &mut *(self.c_super_matrix.Store as *mut c_NCformat);
+            let c_ncformat = &mut *(self.c_super_matrix.Store as *mut NCformat);
             std::slice::from_raw_parts(c_ncformat.rowind as *mut i32, c_ncformat.nnz as usize)
         }
     }

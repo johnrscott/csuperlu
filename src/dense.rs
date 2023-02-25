@@ -1,12 +1,11 @@
 //! Functions to create dense matrices.
 //!
 
-use csuperlu_sys::dense::c_Destroy_Dense_Matrix;
-use csuperlu_sys::super_matrix::c_DNformat;
-use csuperlu_sys::super_matrix::{c_SuperMatrix, Mtype_t};
+use crate::free::c_destroy_dense_matrix;
 use crate::super_matrix::SuperMatrix;
 use crate::value_type::ValueType;
-use std::mem::MaybeUninit;
+use csuperlu_sys::super_matrix::c_DNformat;
+use csuperlu_sys::super_matrix::{c_SuperMatrix, Mtype_t};
 
 pub struct DenseMatrix<P: ValueType<P>> {
     c_super_matrix: c_SuperMatrix,
@@ -22,20 +21,53 @@ impl<P: ValueType<P>> DenseMatrix<P> {
     /// the solver when the dense matrix is used as the right-hand
     /// side matrix.
     ///
-    pub fn from_vectors(num_rows: usize, num_columns: usize,
-			mut x: Vec<P>) -> Self {
-        let c_super_matrix = unsafe {
-            let mut c_super_matrix = MaybeUninit::<c_SuperMatrix>::uninit();
-            P::c_create_dense_matrix(&mut c_super_matrix, num_rows as i32,
-				     num_columns as i32, &mut x, num_rows as i32,
-				     Mtype_t::SLU_GE);
-            c_super_matrix.assume_init()
-        };
+    pub fn from_vectors(num_rows: usize, num_columns: usize, mut x: Vec<P>) -> Self {
+        let c_super_matrix =
+            P::c_create_dense_matrix(num_rows, num_columns, &mut x, Mtype_t::SLU_GE)
+                .expect("Failed to create dense matrix -- replace with error handling");
         std::mem::forget(x);
         Self {
             c_super_matrix,
             marker: std::marker::PhantomData,
         }
+    }
+
+    /// Create a DenseMatrix from a c_SuperMatrix
+    ///
+    /// # Safety
+    ///
+    /// This function is unsafe because the c_SuperMatrix
+    /// argument must be a valid initialised dense matrix.
+    /// If it is not, the DenseMatrix may not be valid, and
+    /// may lead to undefined behaviour in subsequent parts
+    /// of the program.
+    ///
+    pub unsafe fn from_super_matrix(c_super_matrix: c_SuperMatrix) -> Self {
+        Self {
+            c_super_matrix,
+            marker: std::marker::PhantomData,
+        }
+    }
+
+    /// Obtain the underlying c_SuperMatrix from this DenseMatrix
+    ///
+    ///
+    /// # Safety
+    ///
+    /// The function is unsafe because the resulting object that
+    /// is returned will not have its resources freed when it goes
+    /// out of scope. It is necessary to ensure that the c_SuperMatrix
+    /// is wrapped back in a DenseMatrix, or its resources are freed
+    /// manually (c_destroy_dense_matrix).
+    ///
+    pub unsafe fn into_super_matrix(self) -> c_SuperMatrix {
+        // TODO check this really carefully. The idea is to get
+        // the super matrix all the way out of the function without
+        // copying it at any time, or calling the drop for Dense
+        // Matrix (which would deallocate it).
+        let c_super_matrix = std::ptr::read(&self.c_super_matrix);
+        std::mem::forget(self);
+        c_super_matrix
     }
 
     pub fn num_rows(&self) -> usize {
@@ -49,11 +81,10 @@ impl<P: ValueType<P>> DenseMatrix<P> {
     pub fn column_major_values(&mut self) -> &[P] {
         unsafe {
             let c_dnformat = &mut *(self.c_super_matrix.Store as *mut c_DNformat);
-	    let size = self.c_super_matrix.nrow * self.c_super_matrix.ncol;
-            std::slice::from_raw_parts(c_dnformat.nzval as *mut P, size as usize) 
+            let size = self.c_super_matrix.nrow * self.c_super_matrix.ncol;
+            std::slice::from_raw_parts(c_dnformat.nzval as *mut P, size as usize)
         }
     }
-
 }
 
 impl<P: ValueType<P>> SuperMatrix for DenseMatrix<P> {
@@ -61,17 +92,16 @@ impl<P: ValueType<P>> SuperMatrix for DenseMatrix<P> {
         &self.c_super_matrix
     }
     fn print(&self, what: &str) {
-        let c_str = std::ffi::CString::new(what).unwrap();
-        P::c_print_dense_matrix(
-	    c_str.as_ptr() as *mut libc::c_char,
-	    &self.c_super_matrix as *const c_SuperMatrix
-		as *mut c_SuperMatrix);
+        unsafe {
+            P::c_print_dense_matrix(what, &self.c_super_matrix);
+        }
     }
 }
 
 impl<P: ValueType<P>> Drop for DenseMatrix<P> {
     fn drop(&mut self) {
-        // Note that the input vectors are not freed by this line
-        c_Destroy_Dense_Matrix(&mut self.c_super_matrix);
+        unsafe {
+            c_destroy_dense_matrix(&mut self.c_super_matrix);
+        }
     }
 }

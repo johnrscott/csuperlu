@@ -43,7 +43,6 @@ pub mod error;
 pub mod harwell_boeing;
 pub mod lu_decomp;
 pub mod simple_driver;
-pub mod super_matrix;
 pub mod super_node;
 pub mod utils;
 pub mod c;

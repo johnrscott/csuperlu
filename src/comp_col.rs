@@ -15,7 +15,6 @@
 
 use crate::free::c_destroy_comp_col_matrix;
 use crate::harwell_boeing::HarwellBoeingMatrix;
-use crate::super_matrix::SuperMatrix;
 use csuperlu_sys::{SuperMatrix as c_SuperMatrix, Mtype_t_SLU_GE, NCformat};
 use crate::value_type::ValueType;
 use std::fs;

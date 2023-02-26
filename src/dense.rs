@@ -2,13 +2,13 @@
 //!
 
 use crate::free::c_destroy_dense_matrix;
+use crate::super_matrix::CSuperMatrix;
 use crate::value_type::ValueType;
 use csuperlu_sys::DNformat;
 use csuperlu_sys::Mtype_t_SLU_GE;
-use csuperlu_sys::SuperMatrix;
 
 pub struct DenseMatrix<P: ValueType<P>> {
-    super_matrix: SuperMatrix,
+    super_matrix: CSuperMatrix,
     marker: std::marker::PhantomData<P>,
 }
 
@@ -42,7 +42,7 @@ impl<P: ValueType<P>> DenseMatrix<P> {
     /// may lead to undefined behaviour in subsequent parts
     /// of the program.
     ///
-    pub unsafe fn from_super_matrix(super_matrix: SuperMatrix) -> Self {
+    pub unsafe fn from_super_matrix(super_matrix: CSuperMatrix) -> Self {
         Self {
             super_matrix,
             marker: std::marker::PhantomData,
@@ -60,7 +60,7 @@ impl<P: ValueType<P>> DenseMatrix<P> {
     /// is wrapped back in a DenseMatrix, or its resources are freed
     /// manually (c_destroy_dense_matrix).
     ///
-    pub unsafe fn into_super_matrix(self) -> SuperMatrix {
+    pub unsafe fn into_super_matrix(self) -> CSuperMatrix {
         // TODO check this really carefully. The idea is to get
         // the super matrix all the way out of the function without
         // copying it at any time, or calling the drop for Dense
@@ -70,24 +70,27 @@ impl<P: ValueType<P>> DenseMatrix<P> {
         super_matrix
     }
 
+    /// Get the number of rows in the dense matrix
     pub fn num_rows(&self) -> usize {
-        self.super_matrix.nrow as usize
+        self.super_matrix.num_rows()
     }
 
+    /// Get the number of columns in the dense matrix
     pub fn num_columns(&self) -> usize {
-        self.super_matrix.ncol as usize
+        self.super_matrix.num_columns()
     }
 
     pub fn column_major_values(&mut self) -> &[P] {
         unsafe {
-            let c_dnformat = &mut *(self.super_matrix.Store as *mut DNformat);
-            let size = self.super_matrix.nrow * self.super_matrix.ncol;
+            let c_dnformat = self.super_matrix.store::<DNformat>();
+            let size = self.num_rows() * self.num_columns();
             std::slice::from_raw_parts(c_dnformat.nzval as *mut P, size as usize)
         }
     }
-    pub fn super_matrix<'a>(&'a self) -> &'a SuperMatrix {
+    pub fn super_matrix<'a>(&'a self) -> &'a CSuperMatrix {
         &self.super_matrix
     }
+    
     pub fn print(&self, what: &str) {
         unsafe {
             P::c_print_dense_matrix(what, &self.super_matrix);

@@ -5,6 +5,7 @@ use crate::comp_col::CompColMatrix;
 use crate::dense::DenseMatrix;
 use crate::options::{CSuperluOptions, ColumnPermPolicy};
 use crate::stat::CSuperluStat;
+use crate::super_matrix::CSuperMatrix;
 use crate::value_type::ValueType;
 use csuperlu_sys::SuperMatrix;
 
@@ -41,12 +42,6 @@ pub struct SimpleSolution<P: ValueType<P>> {
 pub struct ColumnPerm {
     column_perm: Vec<i32>,
 }
-
-// impl<'a> ColumnPerm {
-//     fn get_perm(&'a mut self) -> &'a mut Vec<i32> {
-// 	&mut self.column_perm
-//     }
-// }
 
 impl ColumnPerm {
     /// Unsafe because content of Vec is not checked
@@ -117,9 +112,8 @@ impl<P: ValueType<P>> SamePattern<P> {
 
 	let mut info = 0;
 	unsafe {
-	    // TODO: undefined behaviour?
-            let mut l = MaybeUninit::<SuperMatrix>::uninit().assume_init();
-            let mut u = MaybeUninit::<SuperMatrix>::uninit().assume_init();
+	    let mut l = CSuperMatrix::alloc();
+            let mut u = CSuperMatrix::alloc();
 
             let mut b_super_matrix = b.into_super_matrix();
 
@@ -189,13 +183,8 @@ impl<P: ValueType<P>> SimpleSystem<P> {
 	
 	let mut info = 0;
 	unsafe {
-	    // TODO: undefined behaviour? I want a way to reserver space
-	    // for the super matrix, but not fill the values (they are
-	    // necessarily invalid until dgssv runs). I have also used this
-	    // trick in value_type, so if it is wrong, it needs fixing there
-	    // too.
-            let mut l = MaybeUninit::<SuperMatrix>::uninit().assume_init();
-            let mut u = MaybeUninit::<SuperMatrix>::uninit().assume_init();
+	    let mut l = CSuperMatrix::alloc();
+            let mut u = CSuperMatrix::alloc();
 	    
             let mut b_super_matrix = b.into_super_matrix();
 
@@ -225,64 +214,3 @@ impl<P: ValueType<P>> SimpleSystem<P> {
 	}
     }
 }
-
-
-/*
-/// Solve a sparse linear system AX = B.
-///
-/// The inputs to the function are the matrix A, the rhs matrix B,
-/// and the permutation vectors. The outputs are the solution X
-/// (which uses the same storage as B), the L and U matrices of
-/// the LU decomposition.
-///
-/// The matrix A must be in column-major compressed-column format.
-/// (see Section 2.3 in the SuperLU manual.) If a row-major matrix
-/// is passed for A (CompRowMatrix), then the routine will decompose
-/// A^T. Make sure to convert the CompRowMatrix to a CompColumnMatrix
-/// if you want to solve A.
-///
-/// # Safety?
-///
-/// If perm_c and perm_r are input arguments (depends on the options),
-/// then either a check is needed for validity (too costly), or this
-/// function must be marked as unsafe. 
-///
-pub fn simple_driver<P: ValueType<P>>(
-    mut options: superlu_options_t,
-    a: &CompColMatrix<P>,
-    perm_c: &mut Vec<i32>,
-    perm_r: &mut Vec<i32>,
-    b: DenseMatrix<P>,
-    stat: &mut SuperLUStat_t,
-) -> Result<SimpleSolution<P>, SolverError> {
-    let mut info = 0;
-    unsafe {
-        let mut l = c_SuperMatrix::alloc();
-        let mut u = c_SuperMatrix::alloc();
-
-        let mut b_super_matrix = b.into_super_matrix();
-
-        P::c_simple_driver(
-            &mut options,
-            a.super_matrix(),
-            perm_c,
-            perm_r,
-            &mut l,
-            &mut u,
-            &mut b_super_matrix,
-            stat,
-            &mut info,
-        );
-        let l = SuperNodeMatrix::from_super_matrix(l);
-        let u = CompColMatrix::from_super_matrix(u);
-        let lu = LUDecomp::from_matrices(l, u);
-        let x = DenseMatrix::<P>::from_super_matrix(b_super_matrix);
-
-        if info != 0 {
-            Err(SolverError { info })
-        } else {
-            Ok(SimpleSolution { x, lu })
-        }
-    }
-}
-*/

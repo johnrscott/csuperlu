@@ -15,7 +15,8 @@
 
 use crate::free::c_destroy_comp_col_matrix;
 use crate::harwell_boeing::HarwellBoeingMatrix;
-use csuperlu_sys::{SuperMatrix, Mtype_t_SLU_GE, NCformat};
+use crate::super_matrix::CSuperMatrix;
+use csuperlu_sys::{Mtype_t_SLU_GE, NCformat};
 use crate::value_type::ValueType;
 use std::fs;
 use std::ops::Mul;
@@ -25,14 +26,14 @@ use std::process;
 ///
 ///
 pub struct CompColMatrix<P: ValueType<P>> {
-    super_matrix: SuperMatrix,
+    super_matrix: CSuperMatrix,
     marker: std::marker::PhantomData<P>,
 }
 
 impl<P: ValueType<P>> CompColMatrix<P> {
     /// Create a compressed-column matrix from a SuperMatrix structure
     ///
-    pub fn from_super_matrix(super_matrix: SuperMatrix) -> Self {
+    pub fn from_super_matrix(super_matrix: CSuperMatrix) -> Self {
         Self {
             super_matrix,
             marker: std::marker::PhantomData,
@@ -103,9 +104,9 @@ impl<P: ValueType<P>> CompColMatrix<P> {
 
     pub fn value(&mut self, row: usize, col: usize) -> P {
         let super_matrix = self.super_matrix();
-        assert!(row < super_matrix.nrow as usize, "Row index out of range");
+        assert!(row < super_matrix.num_rows(), "Row index out of range");
         assert!(
-            col < super_matrix.ncol as usize,
+            col < super_matrix.num_columns(),
             "Column index out of range"
         );
         let col_start = self.column_offsets()[col] as usize;
@@ -117,38 +118,49 @@ impl<P: ValueType<P>> CompColMatrix<P> {
         }
     }
 
+    /// Get the number of rows in the sparse matrix
     pub fn num_rows(&self) -> usize {
-        self.super_matrix.nrow as usize
+        self.super_matrix.num_rows()
     }
 
+    /// Get the number of columns in the sparse matrix
     pub fn num_columns(&self) -> usize {
-        self.super_matrix.ncol as usize
+        self.super_matrix.num_columns()
     }
 
+    /// Get the read-only non-zero values in the compressed-column format
     pub fn non_zero_values(&self) -> &[P] {
         unsafe {
-            let c_ncformat = &mut *(self.super_matrix.Store as *mut NCformat);
+            let c_ncformat = self.super_matrix.store::<NCformat>();
             std::slice::from_raw_parts(c_ncformat.nzval as *mut P, c_ncformat.nnz as usize)
         }
     }
+
+    /// Get the read-only column offsets in the compressed-column format
     pub fn column_offsets(&self) -> &[i32] {
         unsafe {
-            let c_ncformat = &mut *(self.super_matrix.Store as *mut NCformat);
+            let c_ncformat = self.super_matrix.store::<NCformat>();
             std::slice::from_raw_parts(
                 c_ncformat.colptr as *mut i32,
-                self.super_matrix.ncol as usize + 1,
+                self.super_matrix.num_columns() + 1,
             )
         }
     }
+
+    /// Get the read-only row indices in the compressed-column format
     pub fn row_indices(&self) -> &[i32] {
         unsafe {
-            let c_ncformat = &mut *(self.super_matrix.Store as *mut NCformat);
+            let c_ncformat = self.super_matrix.store::<NCformat>();
             std::slice::from_raw_parts(c_ncformat.rowind as *mut i32, c_ncformat.nnz as usize)
         }
     }
-    pub fn super_matrix<'a>(&'a self) -> &'a SuperMatrix {
+
+    /// Get the underlying CSuperMatrix
+    pub fn super_matrix<'a>(&'a self) -> &'a CSuperMatrix {
         &self.super_matrix
     }
+
+    /// Call the SuperLU C library print function for this type
     pub fn print(&self, what: &str) {
         unsafe {
             P::c_print_comp_col_matrix(what, &self.super_matrix);

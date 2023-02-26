@@ -3,7 +3,7 @@
 //! double (f64), complex float (num::Complex<f32>), and complex
 //! double (num::Complex<f64>).
 
-use std::{ffi::CString, str::FromStr, mem::MaybeUninit};
+use std::{ffi::CString, str::FromStr};
 
 use num::Num;
 
@@ -18,7 +18,7 @@ use csuperlu_sys::{
     zPrint_SuperNode_Matrix, Stype_t_SLU_NC, Dtype_t_SLU_S, Mtype_t, complex, doublecomplex, Dtype_t_SLU_D, Dtype_t_SLU_Z, Dtype_t_SLU_C, Stype_t_SLU_DN,
 };
 
-use crate::{Error, options::CSuperluOptions, stat::CSuperluStat};
+use crate::{Error, options::CSuperluOptions, stat::CSuperluStat, super_matrix::CSuperMatrix};
 
 /// Check necessary conditions for creating a compressed
 /// column matrix
@@ -100,7 +100,7 @@ pub trait ValueType<P>: Num + Copy + FromStr + std::fmt::Debug {
         row_indices: &mut Vec<i32>,
         column_offsets: &mut Vec<i32>,
         mtype: Mtype_t,
-    ) -> Result<SuperMatrix, Error>;
+    ) -> Result<CSuperMatrix, Error>;
 
     /// Print a compressed-column matrix (using the print
     /// from the SuperLU library)
@@ -115,7 +115,7 @@ pub trait ValueType<P>: Num + Copy + FromStr + std::fmt::Debug {
     /// c_create_comp_col_matrix function. Using other SuperMatrix
     /// items may result in undefined behaviour.
     ///
-    unsafe fn c_print_comp_col_matrix(what: &str, a: &SuperMatrix);
+    unsafe fn c_print_comp_col_matrix(what: &str, a: &CSuperMatrix);
 
     /// Create a dense matrix from a raw vector
     ///
@@ -129,7 +129,7 @@ pub trait ValueType<P>: Num + Copy + FromStr + std::fmt::Debug {
         num_columns: usize,
         column_major_values: &mut Vec<P>,
         mtype: Mtype_t,
-    ) -> Result<SuperMatrix, Error>;
+    ) -> Result<CSuperMatrix, Error>;
 
     /// Print a dense matrix (using the print
     /// from the SuperLU library)
@@ -144,7 +144,7 @@ pub trait ValueType<P>: Num + Copy + FromStr + std::fmt::Debug {
     /// c_create_dense_matrix function. Using other SuperMatrix
     /// items may result in undefined behaviour.
     ///
-    unsafe fn c_print_dense_matrix(what: &str, a: &SuperMatrix);
+    unsafe fn c_print_dense_matrix(what: &str, a: &CSuperMatrix);
 
     /// Print a super-nodal matrix (using the print
     /// from the SuperLU library)
@@ -159,7 +159,7 @@ pub trait ValueType<P>: Num + Copy + FromStr + std::fmt::Debug {
     /// the L returned by the solver). Using other SuperMatrix
     /// items may result in undefined behaviour.
     ///
-    unsafe fn c_print_super_node_matrix(what: &str, a: &SuperMatrix);
+    unsafe fn c_print_super_node_matrix(what: &str, a: &CSuperMatrix);
 
     /// Solve a sparse linear system using the simple driver
     ///
@@ -186,12 +186,12 @@ pub trait ValueType<P>: Num + Copy + FromStr + std::fmt::Debug {
     ///
     unsafe fn c_simple_driver(
         options: &CSuperluOptions,
-        a: &SuperMatrix,
+        a: &CSuperMatrix,
         perm_c: &mut Vec<i32>,
         perm_r: &mut Vec<i32>,
-        l: &mut SuperMatrix,
-        u: &mut SuperMatrix,
-        b: &mut SuperMatrix,
+        l: &mut CSuperMatrix,
+        u: &mut CSuperMatrix,
+        b: &mut CSuperMatrix,
         stat: &mut CSuperluStat,
         info: &mut i32,
     );
@@ -204,11 +204,11 @@ impl ValueType<f32> for f32 {
         row_indices: &mut Vec<i32>,
         column_offsets: &mut Vec<i32>,
         mtype: Mtype_t,
-    ) -> Result<SuperMatrix, Error> {
+    ) -> Result<CSuperMatrix, Error> {
         check_comp_col_conditions(non_zero_values, row_indices, column_offsets)?;
-        let mut a = MaybeUninit::<SuperMatrix>::uninit().assume_init();
+        let mut a = CSuperMatrix::alloc();
         sCreate_CompCol_Matrix(
-            &mut a as *mut SuperMatrix,
+            a.super_matrix() as *const SuperMatrix as *mut SuperMatrix,
             i32::try_from(num_rows).unwrap(),
             (column_offsets.len() - 1) as i32,
             non_zero_values.len() as i32,
@@ -222,10 +222,10 @@ impl ValueType<f32> for f32 {
         Ok(a)
     }
 
-    unsafe fn c_print_comp_col_matrix(what: &str, a: &SuperMatrix) {
+    unsafe fn c_print_comp_col_matrix(what: &str, a: &CSuperMatrix) {
         sPrint_CompCol_Matrix(
             c_string(what).as_ptr() as *mut libc::c_char,
-            a as *const SuperMatrix as *mut SuperMatrix,
+            a.super_matrix() as *const SuperMatrix as *mut SuperMatrix,
         );
     }
 
@@ -234,12 +234,12 @@ impl ValueType<f32> for f32 {
         num_columns: usize,
         column_major_values: &mut Vec<f32>,
         mtype: Mtype_t,
-    ) -> Result<SuperMatrix, Error> {
+    ) -> Result<CSuperMatrix, Error> {
         check_dense_conditions(num_rows, num_columns, column_major_values)?;
         unsafe {
-	    let mut x = MaybeUninit::<SuperMatrix>::uninit().assume_init();
+            let mut x = CSuperMatrix::alloc();
             sCreate_Dense_Matrix(
-                &mut x as *mut SuperMatrix,
+                x.super_matrix() as *const SuperMatrix as *mut SuperMatrix,
                 num_rows as i32,
                 num_columns as i32,
                 column_major_values.as_mut_ptr(),
@@ -252,39 +252,39 @@ impl ValueType<f32> for f32 {
         }
     }
 
-    unsafe fn c_print_dense_matrix(what: &str, a: &SuperMatrix) {
+    unsafe fn c_print_dense_matrix(what: &str, a: &CSuperMatrix) {
         sPrint_Dense_Matrix(
             c_string(what).as_ptr() as *mut libc::c_char,
-            a as *const SuperMatrix as *mut SuperMatrix,
+            a.super_matrix()  as *const SuperMatrix as *mut SuperMatrix,
         );
     }
 
-    unsafe fn c_print_super_node_matrix(what: &str, a: &SuperMatrix) {
+    unsafe fn c_print_super_node_matrix(what: &str, a: &CSuperMatrix) {
         sPrint_SuperNode_Matrix(
             c_string(what).as_ptr() as *mut libc::c_char,
-            a as *const SuperMatrix as *mut SuperMatrix,
+            a.super_matrix() as *const SuperMatrix as *mut SuperMatrix,
         );
     }
 
     unsafe fn c_simple_driver(
         options: &CSuperluOptions,
-        a: &SuperMatrix,
+        a: &CSuperMatrix,
         perm_c: &mut Vec<i32>,
         perm_r: &mut Vec<i32>,
-        l: &mut SuperMatrix,
-        u: &mut SuperMatrix,
-        b: &mut SuperMatrix,
+        l: &mut CSuperMatrix,
+        u: &mut CSuperMatrix,
+        b: &mut CSuperMatrix,
         stat: &mut CSuperluStat,
         info: &mut i32,
     ) {
         sgssv(
             options.get_options() as *const superlu_options_t as *mut superlu_options_t,
-            a as *const SuperMatrix as *mut SuperMatrix,
+            a.super_matrix() as *const SuperMatrix as *mut SuperMatrix,
             perm_c.as_mut_ptr(),
             perm_r.as_mut_ptr(),
-            l,
-            u,
-            b,
+            l.super_matrix() as *const SuperMatrix as *mut SuperMatrix,
+            u.super_matrix() as *const SuperMatrix as *mut SuperMatrix,
+            b.super_matrix() as *const SuperMatrix as *mut SuperMatrix,
             stat.get_stat(),
             info,
         );
@@ -298,11 +298,11 @@ impl ValueType<f64> for f64 {
         row_indices: &mut Vec<i32>,
         column_offsets: &mut Vec<i32>,
         mtype: Mtype_t,
-    ) -> Result<SuperMatrix, Error> {
+    ) -> Result<CSuperMatrix, Error> {
         check_comp_col_conditions(non_zero_values, row_indices, column_offsets)?;
-        let mut a = MaybeUninit::<SuperMatrix>::uninit().assume_init();
+        let mut a = CSuperMatrix::alloc();
         dCreate_CompCol_Matrix(
-            &mut a as *mut SuperMatrix,
+            a.super_matrix() as *const SuperMatrix as *mut SuperMatrix,
             i32::try_from(num_rows).unwrap(),
             (column_offsets.len() - 1) as i32,
             non_zero_values.len() as i32,
@@ -316,10 +316,10 @@ impl ValueType<f64> for f64 {
         Ok(a)
     }
 
-    unsafe fn c_print_comp_col_matrix(what: &str, a: &SuperMatrix) {
+    unsafe fn c_print_comp_col_matrix(what: &str, a: &CSuperMatrix) {
         dPrint_CompCol_Matrix(
             c_string(what).as_ptr() as *mut libc::c_char,
-            a as *const SuperMatrix as *mut SuperMatrix,
+            a.super_matrix() as *const SuperMatrix as *mut SuperMatrix,
         );
     }
 
@@ -328,12 +328,12 @@ impl ValueType<f64> for f64 {
         num_columns: usize,
         column_major_values: &mut Vec<f64>,
         mtype: Mtype_t,
-    ) -> Result<SuperMatrix, Error> {
+    ) -> Result<CSuperMatrix, Error> {
         check_dense_conditions(num_rows, num_columns, column_major_values)?;
         unsafe {
-	    let mut x = MaybeUninit::<SuperMatrix>::uninit().assume_init();
+            let mut x = CSuperMatrix::alloc();
             dCreate_Dense_Matrix(
-                &mut x as *mut SuperMatrix,
+                x.super_matrix() as *const SuperMatrix as *mut SuperMatrix,
                 num_rows as i32,
                 num_columns as i32,
                 column_major_values.as_mut_ptr(),
@@ -346,39 +346,39 @@ impl ValueType<f64> for f64 {
         }
     }
 
-    unsafe fn c_print_dense_matrix(what: &str, a: &SuperMatrix) {
+    unsafe fn c_print_dense_matrix(what: &str, a: &CSuperMatrix) {
         dPrint_Dense_Matrix(
             c_string(what).as_ptr() as *mut libc::c_char,
-            a as *const SuperMatrix as *mut SuperMatrix,
+            a.super_matrix()  as *const SuperMatrix as *mut SuperMatrix,
         );
     }
 
-    unsafe fn c_print_super_node_matrix(what: &str, a: &SuperMatrix) {
+    unsafe fn c_print_super_node_matrix(what: &str, a: &CSuperMatrix) {
         dPrint_SuperNode_Matrix(
             c_string(what).as_ptr() as *mut libc::c_char,
-            a as *const SuperMatrix as *mut SuperMatrix,
+            a.super_matrix() as *const SuperMatrix as *mut SuperMatrix,
         );
     }
 
     unsafe fn c_simple_driver(
         options: &CSuperluOptions,
-        a: &SuperMatrix,
+        a: &CSuperMatrix,
         perm_c: &mut Vec<i32>,
         perm_r: &mut Vec<i32>,
-        l: &mut SuperMatrix,
-        u: &mut SuperMatrix,
-        b: &mut SuperMatrix,
+        l: &mut CSuperMatrix,
+        u: &mut CSuperMatrix,
+        b: &mut CSuperMatrix,
         stat: &mut CSuperluStat,
         info: &mut i32,
     ) {
         dgssv(
             options.get_options() as *const superlu_options_t as *mut superlu_options_t,
-            a as *const SuperMatrix as *mut SuperMatrix,
+            a.super_matrix() as *const SuperMatrix as *mut SuperMatrix,
             perm_c.as_mut_ptr(),
             perm_r.as_mut_ptr(),
-            l,
-            u,
-            b,
+            l.super_matrix() as *const SuperMatrix as *mut SuperMatrix,
+            u.super_matrix() as *const SuperMatrix as *mut SuperMatrix,
+            b.super_matrix() as *const SuperMatrix as *mut SuperMatrix,
             stat.get_stat(),
             info,
         );
@@ -392,11 +392,11 @@ impl ValueType<num::Complex<f32>> for num::Complex<f32> {
         row_indices: &mut Vec<i32>,
         column_offsets: &mut Vec<i32>,
         mtype: Mtype_t,
-    ) -> Result<SuperMatrix, Error> {
+    ) -> Result<CSuperMatrix, Error> {
         check_comp_col_conditions(non_zero_values, row_indices, column_offsets)?;
-        let mut a = MaybeUninit::<SuperMatrix>::uninit().assume_init();
+        let mut a = CSuperMatrix::alloc();
         cCreate_CompCol_Matrix(
-            &mut a as *mut SuperMatrix,
+            a.super_matrix() as *const SuperMatrix as *mut SuperMatrix,
             i32::try_from(num_rows).unwrap(),
             (column_offsets.len() - 1) as i32,
             non_zero_values.len() as i32,
@@ -410,10 +410,10 @@ impl ValueType<num::Complex<f32>> for num::Complex<f32> {
         Ok(a)
     }
 
-    unsafe fn c_print_comp_col_matrix(what: &str, a: &SuperMatrix) {
+    unsafe fn c_print_comp_col_matrix(what: &str, a: &CSuperMatrix) {
         cPrint_CompCol_Matrix(
             c_string(what).as_ptr() as *mut libc::c_char,
-            a as *const SuperMatrix as *mut SuperMatrix,
+            a.super_matrix() as *const SuperMatrix as *mut SuperMatrix,
         );
     }
 
@@ -422,12 +422,12 @@ impl ValueType<num::Complex<f32>> for num::Complex<f32> {
         num_columns: usize,
         column_major_values: &mut Vec<num::Complex<f32>>,
         mtype: Mtype_t,
-    ) -> Result<SuperMatrix, Error> {
+    ) -> Result<CSuperMatrix, Error> {
         check_dense_conditions(num_rows, num_columns, column_major_values)?;
         unsafe {
-            let mut x = MaybeUninit::<SuperMatrix>::uninit().assume_init();
+            let mut x = CSuperMatrix::alloc();
             cCreate_Dense_Matrix(
-                &mut x as *mut SuperMatrix,
+                x.super_matrix() as *const SuperMatrix as *mut SuperMatrix,
                 num_rows as i32,
                 num_columns as i32,
                 column_major_values.as_mut_ptr() as *mut complex,
@@ -440,37 +440,39 @@ impl ValueType<num::Complex<f32>> for num::Complex<f32> {
         }
     }
 
-    unsafe fn c_print_dense_matrix(what: &str, a: &SuperMatrix) {
+    unsafe fn c_print_dense_matrix(what: &str, a: &CSuperMatrix) {
         cPrint_Dense_Matrix(
             c_string(what).as_ptr() as *mut libc::c_char,
-            a as *const SuperMatrix as *mut SuperMatrix,
+            a.super_matrix()  as *const SuperMatrix as *mut SuperMatrix,
         );
     }
-    unsafe fn c_print_super_node_matrix(what: &str, a: &SuperMatrix) {
+
+    unsafe fn c_print_super_node_matrix(what: &str, a: &CSuperMatrix) {
         cPrint_SuperNode_Matrix(
             c_string(what).as_ptr() as *mut libc::c_char,
-            a as *const SuperMatrix as *mut SuperMatrix,
+            a.super_matrix() as *const SuperMatrix as *mut SuperMatrix,
         );
     }
+
     unsafe fn c_simple_driver(
         options: &CSuperluOptions,
-        a: &SuperMatrix,
+        a: &CSuperMatrix,
         perm_c: &mut Vec<i32>,
         perm_r: &mut Vec<i32>,
-        l: &mut SuperMatrix,
-        u: &mut SuperMatrix,
-        b: &mut SuperMatrix,
+        l: &mut CSuperMatrix,
+        u: &mut CSuperMatrix,
+        b: &mut CSuperMatrix,
         stat: &mut CSuperluStat,
         info: &mut i32,
     ) {
         cgssv(
             options.get_options() as *const superlu_options_t as *mut superlu_options_t,
-            a as *const SuperMatrix as *mut SuperMatrix,
+            a.super_matrix() as *const SuperMatrix as *mut SuperMatrix,
             perm_c.as_mut_ptr(),
             perm_r.as_mut_ptr(),
-            l,
-            u,
-            b,
+            l.super_matrix() as *const SuperMatrix as *mut SuperMatrix,
+            u.super_matrix() as *const SuperMatrix as *mut SuperMatrix,
+            b.super_matrix() as *const SuperMatrix as *mut SuperMatrix,
             stat.get_stat(),
             info,
         );
@@ -484,11 +486,11 @@ impl ValueType<num::Complex<f64>> for num::Complex<f64> {
         row_indices: &mut Vec<i32>,
         column_offsets: &mut Vec<i32>,
         mtype: Mtype_t,
-    ) -> Result<SuperMatrix, Error> {
+    ) -> Result<CSuperMatrix, Error> {
         check_comp_col_conditions(non_zero_values, row_indices, column_offsets)?;
-        let mut a = MaybeUninit::<SuperMatrix>::uninit().assume_init();
+        let mut a = CSuperMatrix::alloc();
         zCreate_CompCol_Matrix(
-            &mut a as *mut SuperMatrix,
+            a.super_matrix() as *const SuperMatrix as *mut SuperMatrix,
             i32::try_from(num_rows).unwrap(),
             (column_offsets.len() - 1) as i32,
             non_zero_values.len() as i32,
@@ -502,10 +504,10 @@ impl ValueType<num::Complex<f64>> for num::Complex<f64> {
         Ok(a)
     }
 
-    unsafe fn c_print_comp_col_matrix(what: &str, a: &SuperMatrix) {
+    unsafe fn c_print_comp_col_matrix(what: &str, a: &CSuperMatrix) {
         zPrint_CompCol_Matrix(
             c_string(what).as_ptr() as *mut libc::c_char,
-            a as *const SuperMatrix as *mut SuperMatrix,
+            a.super_matrix() as *const SuperMatrix as *mut SuperMatrix,
         );
     }
 
@@ -514,12 +516,12 @@ impl ValueType<num::Complex<f64>> for num::Complex<f64> {
         num_columns: usize,
         column_major_values: &mut Vec<num::Complex<f64>>,
         mtype: Mtype_t,
-    ) -> Result<SuperMatrix, Error> {
+    ) -> Result<CSuperMatrix, Error> {
         check_dense_conditions(num_rows, num_columns, column_major_values)?;
         unsafe {
-            let mut x = MaybeUninit::<SuperMatrix>::uninit().assume_init();
-	    zCreate_Dense_Matrix(
-                &mut x as *mut SuperMatrix,
+            let mut x = CSuperMatrix::alloc();
+            zCreate_Dense_Matrix(
+                x.super_matrix() as *const SuperMatrix as *mut SuperMatrix,
                 num_rows as i32,
                 num_columns as i32,
                 column_major_values.as_mut_ptr() as *mut doublecomplex,
@@ -531,39 +533,40 @@ impl ValueType<num::Complex<f64>> for num::Complex<f64> {
             Ok(x)
         }
     }
-    unsafe fn c_print_dense_matrix(what: &str, a: &SuperMatrix) {
+
+    unsafe fn c_print_dense_matrix(what: &str, a: &CSuperMatrix) {
         zPrint_Dense_Matrix(
             c_string(what).as_ptr() as *mut libc::c_char,
-            a as *const SuperMatrix as *mut SuperMatrix,
+            a.super_matrix()  as *const SuperMatrix as *mut SuperMatrix,
         );
     }
 
-    unsafe fn c_print_super_node_matrix(what: &str, a: &SuperMatrix) {
+    unsafe fn c_print_super_node_matrix(what: &str, a: &CSuperMatrix) {
         zPrint_SuperNode_Matrix(
             c_string(what).as_ptr() as *mut libc::c_char,
-            a as *const SuperMatrix as *mut SuperMatrix,
+            a.super_matrix() as *const SuperMatrix as *mut SuperMatrix,
         );
     }
 
     unsafe fn c_simple_driver(
         options: &CSuperluOptions,
-        a: &SuperMatrix,
+        a: &CSuperMatrix,
         perm_c: &mut Vec<i32>,
         perm_r: &mut Vec<i32>,
-        l: &mut SuperMatrix,
-        u: &mut SuperMatrix,
-        b: &mut SuperMatrix,
+        l: &mut CSuperMatrix,
+        u: &mut CSuperMatrix,
+        b: &mut CSuperMatrix,
         stat: &mut CSuperluStat,
         info: &mut i32,
     ) {
         zgssv(
             options.get_options() as *const superlu_options_t as *mut superlu_options_t,
-            a as *const SuperMatrix as *mut SuperMatrix,
+            a.super_matrix() as *const SuperMatrix as *mut SuperMatrix,
             perm_c.as_mut_ptr(),
             perm_r.as_mut_ptr(),
-            l,
-            u,
-            b,
+            l.super_matrix() as *const SuperMatrix as *mut SuperMatrix,
+            u.super_matrix() as *const SuperMatrix as *mut SuperMatrix,
+            b.super_matrix() as *const SuperMatrix as *mut SuperMatrix,
             stat.get_stat(),
             info,
         );

@@ -11,3 +11,4 @@ pub mod value_type;
 pub mod free;
 pub mod options;
 pub mod stat;
+pub mod super_matrix;

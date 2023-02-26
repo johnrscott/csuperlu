@@ -1,5 +1,4 @@
 use crate::comp_col::CompColMatrix;
-use crate::super_matrix::SuperMatrix;
 use crate::super_node::SuperNodeMatrix;
 use crate::value_type::ValueType;
 use csuperlu_sys::{NCformat, SCformat};

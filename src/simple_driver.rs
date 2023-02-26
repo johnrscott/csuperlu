@@ -9,7 +9,6 @@ use csuperlu_sys::SuperLUStat_t;
 use csuperlu_sys::SuperMatrix as c_SuperMatrix;
 
 use crate::lu_decomp::LUDecomp;
-use crate::super_matrix::SuperMatrix;
 use crate::super_node::SuperNodeMatrix;
 
 use std::{error::Error, fmt};

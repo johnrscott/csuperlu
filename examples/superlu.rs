@@ -14,8 +14,9 @@
 
 use csuperlu::comp_col::CompColMatrix;
 use csuperlu::dense::DenseMatrix;
+use csuperlu::options::ColumnPermPolicy;
 use csuperlu::simple_driver::{SimpleSolution, SimpleSystem};
-use csuperlu_sys::stat::{c_StatPrint, SuperLUStat_t};
+use csuperlu::stat::CSuperluStat;
 
 fn main() {
     // Matrix dimensions
@@ -47,7 +48,7 @@ fn main() {
     let rhs = vec![1.0; num_rows];
     let b = DenseMatrix::from_vectors(num_rows, nrhs, rhs);
 
-    let mut stat = SuperLUStat_t::new();
+    let mut stat = CSuperluStat::new();
 
     let SimpleSolution {
 	mut a,
@@ -61,7 +62,7 @@ fn main() {
 	.expect("Failed to solve linear system");
 
     // Print the performance statistics
-    c_StatPrint(&mut stat);
+    stat.print();
 
     // Print solution
     a.print("A");

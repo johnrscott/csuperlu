@@ -1,17 +1,16 @@
 //! Functions to create matrices in compressed column format.
 //!
-//! Compressed-column matrices are very important in SuperLU, because
-//! the main solver routines assume that the imput matrix $A$ is in
-//! column-major format.
-//!
-//! A compressed-column matrix stored stores a sparse matrix in
-//! column-major order, but only stores the non-zero elements in
+//! A compressed-column matrix only stores the non-zero elements in
 //! each column. In order to identify which elements in the column
 //! are non-zero, a vector of integers is maintained which stores
-//! the row indices of the elements in the column. Arrays like this
-//! are stored one after the other, one for each column in the matrix.
-//! Since each column may be a different length, a third vector of
-//! integers is maintained showing where each new column starts.
+//! the row indices of the elements in the column. The collection
+//! of non-zero values, and the row indices (which are both the same
+//! length, equal to the number of non-zero values in the matrix)
+//! are stored in two arrays. A third array is required to store
+//! the offsets to the starting positions of each column in the
+//! arrays.
+//!
+//!
 
 use crate::free::c_destroy_comp_col_matrix;
 use crate::harwell_boeing::HarwellBoeingMatrix;
@@ -118,25 +117,21 @@ impl<P: ValueType<P>> CompColMatrix<P> {
         }
     }
 
-    /// Get the number of rows in the sparse matrix
     pub fn num_rows(&self) -> usize {
         self.super_matrix.num_rows()
     }
-
-    /// Get the number of columns in the sparse matrix
+    
     pub fn num_columns(&self) -> usize {
         self.super_matrix.num_columns()
     }
-
-    /// Get the read-only non-zero values in the compressed-column format
+    
     pub fn non_zero_values(&self) -> &[P] {
         unsafe {
             let c_ncformat = self.super_matrix.store::<NCformat>();
             std::slice::from_raw_parts(c_ncformat.nzval as *mut P, c_ncformat.nnz as usize)
         }
     }
-
-    /// Get the read-only column offsets in the compressed-column format
+t
     pub fn column_offsets(&self) -> &[i32] {
         unsafe {
             let c_ncformat = self.super_matrix.store::<NCformat>();
@@ -147,7 +142,6 @@ impl<P: ValueType<P>> CompColMatrix<P> {
         }
     }
 
-    /// Get the read-only row indices in the compressed-column format
     pub fn row_indices(&self) -> &[i32] {
         unsafe {
             let c_ncformat = self.super_matrix.store::<NCformat>();
@@ -155,7 +149,6 @@ impl<P: ValueType<P>> CompColMatrix<P> {
         }
     }
 
-    /// Get the underlying CSuperMatrix
     pub fn super_matrix<'a>(&'a self) -> &'a CSuperMatrix {
         &self.super_matrix
     }

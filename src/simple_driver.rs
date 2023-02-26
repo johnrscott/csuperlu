@@ -4,9 +4,9 @@
 use crate::comp_col::CompColMatrix;
 use crate::dense::DenseMatrix;
 use crate::options::{CSuperluOptions, ColumnPermPolicy};
-use crate::super_matrix::CSuperMatrix;
 use crate::value_type::ValueType;
 use csuperlu_sys::SuperLUStat_t;
+use csuperlu_sys::SuperMatrix;
 
 use crate::lu_decomp::LUDecomp;
 use crate::super_node::SuperNodeMatrix;
@@ -116,8 +116,8 @@ impl<P: ValueType<P>> SamePattern<P> {
 
 	let mut info = 0;
 	unsafe {
-            let mut l = CSuperMatrix::alloc();
-            let mut u = CSuperMatrix::alloc();
+            let mut l = c_SuperMatrix::alloc();
+            let mut u = c_SuperMatrix::alloc();
 
             let mut b_super_matrix = b.into_super_matrix();
 

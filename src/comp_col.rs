@@ -15,7 +15,6 @@
 
 use crate::free::c_destroy_comp_col_matrix;
 use crate::harwell_boeing::HarwellBoeingMatrix;
-use crate::super_matrix::CSuperMatrix;
 use csuperlu_sys::{SuperMatrix, Mtype_t_SLU_GE, NCformat};
 use crate::value_type::ValueType;
 use std::fs;
@@ -26,14 +25,14 @@ use std::process;
 ///
 ///
 pub struct CompColMatrix<P: ValueType<P>> {
-    super_matrix: CSuperMatrix,
+    super_matrix: SuperMatrix,
     marker: std::marker::PhantomData<P>,
 }
 
 impl<P: ValueType<P>> CompColMatrix<P> {
     /// Create a compressed-column matrix from a SuperMatrix structure
     ///
-    pub fn from_super_matrix(super_matrix: CSuperMatrix) -> Self {
+    pub fn from_super_matrix(super_matrix: SuperMatrix) -> Self {
         Self {
             super_matrix,
             marker: std::marker::PhantomData,

@@ -1,10 +1,13 @@
 use itertools::Itertools;
 use std::collections::HashMap;
 
+use crate::comp_col::CompColMatrix;
+
 #[derive(Debug)]
 pub struct SparseMatrix {
     num_rows: usize,
     num_cols: usize,
+    // TODO: Handle f32 and complex numbers
     values: HashMap<(usize, usize), f64>,
 }
 
@@ -17,10 +20,12 @@ impl SparseMatrix {
         }
     }
 
+    // TODO: Can we overload something to make the input nicer, e.g a[row, col] = value
     pub fn set_value(&mut self, row: usize, col: usize, value: f64) {
         if row >= self.num_rows || col >= self.num_cols {
             panic!("Index out of range");
         }
+	// TODO: Do not insert into map when value = 0?
         self.values.insert((row, col), value);
     }
 
@@ -31,32 +36,39 @@ impl SparseMatrix {
         self.values.get(&(row, col)).copied().unwrap_or(0.0)
     }
 
-    pub fn print_sorted(&self) {
+    pub fn compressed_column_format(&self) -> CompColMatrix<f64> {
+	// Sort in column order
 	let sorted_keys = self.values.keys()
 	    .sorted_unstable_by_key(|a| (a.1, a.0)); 
 
-	let mut v = Vec::<f64>::new();
-	let mut col_index = Vec::<usize>::new();
-	let mut row_index = Vec::<usize>::new();
+	let num_non_zeros = self.values.len();
+	let mut non_zero_values = Vec::<f64>::with_capacity(num_non_zeros);
+	let mut column_offsets = Vec::<i32>::with_capacity(self.num_cols + 1);
+	let mut row_indices = Vec::<i32>::with_capacity(num_non_zeros);
 
-	col_index.push(0);
+	column_offsets.push(0);
 	let mut current_col = 0usize;
-	let mut index = 0usize;
 	
 	for key in sorted_keys {
-            println!("{:?} = {:?}", key, self.values[key]);
-	    v.push(self.values[key]);
-	    row_index.push(key.0);
 	    if key.1 > current_col {
-		col_index.push(index);
+		// TODO: handle empty columns 
+		column_offsets.push(non_zero_values.len() as i32);
 		current_col = key.1;
 	    }
-	    index += 1;
+	    non_zero_values.push(self.values[key]);
+	    row_indices.push(key.0 as i32);
 	}
-	col_index.push(index);
-	
-	println!("{:?}", v);
-	println!("{:?}", row_index);
-	println!("{:?}", col_index);
+	column_offsets.push(num_non_zeros as i32);
+
+	CompColMatrix::from_vectors(self.num_rows, non_zero_values, row_indices, column_offsets)
+    }
+
+    pub fn print(&self) {
+	println!("{} x {} matrix, {} non-zero values", self.num_rows, self.num_cols, self.values.len());
+	let sorted_keys = self.values.keys()
+	    .sorted_unstable_by_key(|a| (a.1, a.0)); 
+	for key in sorted_keys {
+	    println!("({}, {}) = {}", key.0, key.1, self.values[key]);
+	}
     }
 }

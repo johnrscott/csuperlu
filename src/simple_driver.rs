@@ -72,6 +72,7 @@ impl ColumnPerm {
 }
 
 /// Stores a row permutation vector
+#[derive(Debug)]
 pub struct RowPerm {
     row_perm: Vec<i32>,
 }

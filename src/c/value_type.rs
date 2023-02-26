@@ -13,12 +13,12 @@ use csuperlu_sys::{
     zCreate_CompCol_Matrix, zPrint_CompCol_Matrix,
     cCreate_Dense_Matrix, cPrint_Dense_Matrix, dCreate_Dense_Matrix, dPrint_Dense_Matrix,
     sCreate_Dense_Matrix, sPrint_Dense_Matrix, zCreate_Dense_Matrix, zPrint_Dense_Matrix,
-    superlu_options_t, cgssv, dgssv, sgssv, zgssv, SuperLUStat_t, SuperMatrix as c_SuperMatrix,
+    superlu_options_t, cgssv, dgssv, sgssv, zgssv, SuperLUStat_t,
     cPrint_SuperNode_Matrix, dPrint_SuperNode_Matrix, sPrint_SuperNode_Matrix,
     zPrint_SuperNode_Matrix, Stype_t_SLU_NC, Dtype_t_SLU_S, Mtype_t,
 };
 
-use crate::{Error, options::CSuperluOptions};
+use crate::{Error, options::CSuperluOptions, super_matrix::CSuperMatrix};
 
 /// Check necessary conditions for creating a compressed
 /// column matrix
@@ -100,7 +100,7 @@ pub trait ValueType<P>: Num + Copy + FromStr + std::fmt::Debug {
         row_indices: &mut Vec<i32>,
         column_offsets: &mut Vec<i32>,
         mtype: Mtype_t,
-    ) -> Result<c_SuperMatrix, Error>;
+    ) -> Result<CSuperMatrix, Error>;
 
     /// Print a compressed-column matrix (using the print
     /// from the SuperLU library)
@@ -129,7 +129,7 @@ pub trait ValueType<P>: Num + Copy + FromStr + std::fmt::Debug {
         num_columns: usize,
         column_major_values: &mut Vec<P>,
         mtype: Mtype_t,
-    ) -> Result<c_SuperMatrix, Error>;
+    ) -> Result<CSuperMatrix, Error>;
 
     /// Print a dense matrix (using the print
     /// from the SuperLU library)
@@ -144,7 +144,7 @@ pub trait ValueType<P>: Num + Copy + FromStr + std::fmt::Debug {
     /// c_create_dense_matrix function. Using other c_SuperMatrix
     /// items may result in undefined behaviour.
     ///
-    unsafe fn c_print_dense_matrix(what: &str, a: &c_SuperMatrix);
+    unsafe fn c_print_dense_matrix(what: &str, a: &CSuperMatrix);
 
     /// Print a super-nodal matrix (using the print
     /// from the SuperLU library)
@@ -159,7 +159,7 @@ pub trait ValueType<P>: Num + Copy + FromStr + std::fmt::Debug {
     /// the L returned by the solver). Using other c_SuperMatrix
     /// items may result in undefined behaviour.
     ///
-    unsafe fn c_print_super_node_matrix(what: &str, a: &c_SuperMatrix);
+    unsafe fn c_print_super_node_matrix(what: &str, a: &CSuperMatrix);
 
     /// Solve a sparse linear system using the simple driver
     ///

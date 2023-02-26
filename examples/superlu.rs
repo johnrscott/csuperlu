@@ -14,8 +14,7 @@
 
 use csuperlu::comp_col::CompColMatrix;
 use csuperlu::dense::DenseMatrix;
-use csuperlu::simple_driver::{SimpleSolution, SimpleSystem, ColumnPermPolicy};
-use csuperlu::super_matrix::SuperMatrix;
+use csuperlu::simple_driver::{SimpleSolution, SimpleSystem};
 use csuperlu_sys::stat::{c_StatPrint, SuperLUStat_t};
 
 fn main() {

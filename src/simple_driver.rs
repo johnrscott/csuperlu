@@ -183,13 +183,8 @@ impl<P: ValueType<P>> SimpleSystem<P> {
 	
 	let mut info = 0;
 	unsafe {
-	    // TODO: undefined behaviour? I want a way to reserver space
-	    // for the super matrix, but not fill the values (they are
-	    // necessarily invalid until dgssv runs). I have also used this
-	    // trick in value_type, so if it is wrong, it needs fixing there
-	    // too.
-            let mut l = MaybeUninit::<SuperMatrix>::uninit().assume_init();
-            let mut u = MaybeUninit::<SuperMatrix>::uninit().assume_init();
+	    let mut l = CSuperMatrix::alloc();
+            let mut u = CSuperMatrix::alloc();
 	    
             let mut b_super_matrix = b.into_super_matrix();
 

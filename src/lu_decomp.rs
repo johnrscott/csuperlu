@@ -13,11 +13,11 @@ impl<P: ValueType<P>> LUDecomp<P> {
         let l_c_super_matrix = l.super_matrix();
         let u_c_super_matrix = u.super_matrix();
         assert!(
-            l_c_super_matrix.nrow == u_c_super_matrix.nrow,
+            l_c_super_matrix.num_rows() == u_c_super_matrix.num_rows(),
             "Number of rows in L and U must match"
         );
         assert!(
-            l_c_super_matrix.ncol == u_c_super_matrix.ncol,
+            l_c_super_matrix.num_columns() == u_c_super_matrix.num_columns(),
             "Number of columns in L and U must match"
         );
         Self { l, u }
@@ -30,15 +30,15 @@ impl<P: ValueType<P>> LUDecomp<P> {
         let l_c_super_matrix = self.l.super_matrix();
         let u_c_super_matrix = self.u.super_matrix();
         assert!(
-            row < l_c_super_matrix.nrow as usize,
+            row < l_c_super_matrix.num_rows(),
             "Row index out of range"
         );
         assert!(
-            col < l_c_super_matrix.ncol as usize,
+            col < l_c_super_matrix.num_columns(),
             "Column index out of range"
         );
-        let _l_c_scformat = unsafe { &mut *(l_c_super_matrix.Store as *mut SCformat) };
-        let _u_c_ncformat = unsafe { &mut *(u_c_super_matrix.Store as *mut NCformat) };
+        // let _l_c_scformat = unsafe { &mut *(l_c_super_matrix.store::<SCformat>()) };
+        // let _u_c_ncformat = unsafe { &mut *(u_c_super_matrix.store::<NCformat>()) };
         todo!("Finish this off later");
     }
 }

@@ -104,9 +104,9 @@ impl<P: ValueType<P>> CompColMatrix<P> {
 
     pub fn value(&mut self, row: usize, col: usize) -> P {
         let super_matrix = self.super_matrix();
-        assert!(row < super_matrix.nrow as usize, "Row index out of range");
+        assert!(row < super_matrix.num_rows(), "Row index out of range");
         assert!(
-            col < super_matrix.ncol as usize,
+            col < super_matrix.num_columns(),
             "Column index out of range"
         );
         let col_start = self.column_offsets()[col] as usize;

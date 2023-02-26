@@ -3,7 +3,7 @@
 //! double (f64), complex float (num::Complex<f32>), and complex
 //! double (num::Complex<f64>).
 
-use std::{ffi::CString, str::FromStr, mem::MaybeUninit};
+use std::{ffi::CString, str::FromStr};
 
 use num::Num;
 
@@ -411,7 +411,7 @@ impl ValueType<num::Complex<f32>> for num::Complex<f32> {
     }
 
     unsafe fn c_print_comp_col_matrix(what: &str, a: &CSuperMatrix) {
-        sPrint_CompCol_Matrix(
+        cPrint_CompCol_Matrix(
             c_string(what).as_ptr() as *mut libc::c_char,
             a.super_matrix() as *const SuperMatrix as *mut SuperMatrix,
         );

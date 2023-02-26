@@ -85,10 +85,10 @@ impl<P: ValueType<P>> DenseMatrix<P> {
             std::slice::from_raw_parts(c_dnformat.nzval as *mut P, size as usize)
         }
     }
-    fn super_matrix<'a>(&'a self) -> &'a SuperMatrix {
+    pub fn super_matrix<'a>(&'a self) -> &'a SuperMatrix {
         &self.super_matrix
     }
-    fn print(&self, what: &str) {
+    pub fn print(&self, what: &str) {
         unsafe {
             P::c_print_dense_matrix(what, &self.super_matrix);
         }

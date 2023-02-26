@@ -27,10 +27,10 @@ impl<P: ValueType<P>> SuperNodeMatrix<P> {
             std::slice::from_raw_parts(c_scformat.nzval as *mut P, c_scformat.nnz as usize)
         }
     }
-    fn super_matrix<'a>(&'a self) -> &'a SuperMatrix {
+    pub fn super_matrix<'a>(&'a self) -> &'a SuperMatrix {
         &self.super_matrix
     }
-    fn print(&self, what: &str) {
+    pub fn print(&self, what: &str) {
         unsafe {
             P::c_print_super_node_matrix(what, &self.super_matrix);
         }

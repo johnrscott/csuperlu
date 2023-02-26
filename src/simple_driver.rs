@@ -6,7 +6,7 @@ use crate::dense::DenseMatrix;
 use crate::options::{CSuperluOptions, ColumnPermPolicy};
 use crate::value_type::ValueType;
 use csuperlu_sys::SuperLUStat_t;
-use csuperlu_sys::SuperMatrix as c_SuperMatrix;
+use csuperlu_sys::SuperMatrix;
 
 use crate::lu_decomp::LUDecomp;
 use crate::super_node::SuperNodeMatrix;

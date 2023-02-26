@@ -3,15 +3,15 @@
 
 use crate::comp_col::CompColMatrix;
 use crate::dense::DenseMatrix;
+use crate::options::{CSuperluOptions, ColumnPermPolicy};
+use crate::stat::CSuperluStat;
 use crate::value_type::ValueType;
-use csuperlu_sys::options::{superlu_options_t, colperm_t, fact_t};
-use csuperlu_sys::stat::SuperLUStat_t;
-use csuperlu_sys::super_matrix::c_SuperMatrix;
+use csuperlu_sys::SuperMatrix;
 
 use crate::lu_decomp::LUDecomp;
-use crate::super_matrix::SuperMatrix;
 use crate::super_node::SuperNodeMatrix;
 
+use std::mem::MaybeUninit;
 use std::{error::Error, fmt};
 
 #[derive(Debug)]
@@ -72,24 +72,6 @@ impl RowPerm {
     }
 }
 
-/// SuperLU implements several policies for re-ordering the
-/// columns of A before solving, when a specific ordering is
-/// to passed to the solver. The orderings are described in
-/// Section 1.3.5 of the SuperLU manual.
-pub enum ColumnPermPolicy {
-    /// Do not re-order columns (Pc = I)
-    Natural,
-    /// Multiple minimum degree applied to A^TA
-    MmdAtA,
-    /// Multiple minimum degree applied to A^T + A    
-    MmdAtPlusA,
-    /// Column approximate minimum degree. Designed particularly
-    /// for unsymmetric matrices when partial pivoting is needed.
-    /// It usually gives comparable orderings as MmdAtA, but
-    /// is faster.
-    ColAMD,
-}
-
 pub struct SimpleSystem<P: ValueType<P>> {
     /// The (sparse) matrix A in AX = B
     pub a: CompColMatrix<P>,
@@ -106,7 +88,7 @@ pub struct SamePattern<P: ValueType<P>> {
 impl<P: ValueType<P>> SamePattern<P> {
     pub fn solve(
 	self,
-	stat: &mut SuperLUStat_t,
+	stat: &mut CSuperluStat,
     ) -> Result<SimpleSolution<P>, SolverError> {
 
 	let SamePattern {
@@ -119,7 +101,7 @@ impl<P: ValueType<P>> SamePattern<P> {
 
 	// TODO: Check for invalid dimensions
 
-	let mut options = superlu_options_t::new();
+	let mut options = CSuperluOptions::new();
 
 	// Use the same column permutation. In the dgssv
 	// (simple driver) source code, the options.Fact
@@ -129,14 +111,15 @@ impl<P: ValueType<P>> SamePattern<P> {
 	// which, if specified, means that get_perm_c
 	// (computing the column permutation) is not called
 	// (line 192-193, dgssv.c).
-	options.ColPerm = colperm_t::MY_PERMC;
+	options.set_user_column_perm();
 	
 	let mut row_perm = Vec::<i32>::with_capacity(a.num_rows());
 
 	let mut info = 0;
 	unsafe {
-            let mut l = c_SuperMatrix::alloc();
-            let mut u = c_SuperMatrix::alloc();
+	    // TODO: undefined behaviour?
+            let mut l = MaybeUninit::<SuperMatrix>::uninit().assume_init();
+            let mut u = MaybeUninit::<SuperMatrix>::uninit().assume_init();
 
             let mut b_super_matrix = b.into_super_matrix();
 
@@ -184,7 +167,7 @@ impl<P: ValueType<P>> SimpleSystem<P> {
     ///
     pub fn solve(
 	self,
-	stat: &mut SuperLUStat_t,
+	stat: &mut CSuperluStat,
 	column_perm_policy: ColumnPermPolicy,
     ) -> Result<SimpleSolution<P>, SolverError> {
 
@@ -192,14 +175,9 @@ impl<P: ValueType<P>> SimpleSystem<P> {
 
 	// TODO: Check for invalid dimensions
 
-	let mut options = superlu_options_t::new();
-	match column_perm_policy {
-	    ColumnPermPolicy::Natural => options.ColPerm = colperm_t::NATURAL,
-	    ColumnPermPolicy::MmdAtA => options.ColPerm = colperm_t::MMD_ATA,
-	    ColumnPermPolicy::MmdAtPlusA => options.ColPerm = colperm_t::MMD_AT_PLUS_A,
-	    ColumnPermPolicy::ColAMD => options.ColPerm = colperm_t::COLAMD,
-	}
-
+	let mut options = CSuperluOptions::new();
+	options.set_column_perm_policy(column_perm_policy);
+	
 	let mut column_perm = Vec::<i32>::with_capacity(a.num_columns());
 	let mut row_perm = Vec::<i32>::with_capacity(a.num_rows());
 	unsafe {
@@ -207,11 +185,18 @@ impl<P: ValueType<P>> SimpleSystem<P> {
 	    row_perm.set_len(a.num_rows());
 	}
 
+	b.print("B");
+	
 	let mut info = 0;
 	unsafe {
-            let mut l = c_SuperMatrix::alloc();
-            let mut u = c_SuperMatrix::alloc();
-
+	    // TODO: undefined behaviour? I want a way to reserver space
+	    // for the super matrix, but not fill the values (they are
+	    // necessarily invalid until dgssv runs). I have also used this
+	    // trick in value_type, so if it is wrong, it needs fixing there
+	    // too.
+            let mut l = MaybeUninit::<SuperMatrix>::uninit().assume_init();
+            let mut u = MaybeUninit::<SuperMatrix>::uninit().assume_init();
+	    
             let mut b_super_matrix = b.into_super_matrix();
 
             P::c_simple_driver(

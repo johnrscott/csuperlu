@@ -3,12 +3,11 @@ use std::process;
 
 use csuperlu::comp_col::CompColMatrix;
 use csuperlu::dense::DenseMatrix;
-use csuperlu::simple_driver::ColumnPermPolicy;
+use csuperlu::options::ColumnPermPolicy;
 use csuperlu::simple_driver::SimpleSystem;
 use csuperlu::simple_driver::SimpleSolution;
-use csuperlu::super_matrix::SuperMatrix;
+use csuperlu::stat::CSuperluStat;
 use csuperlu::utils::distance;
-use csuperlu_sys::stat::SuperLUStat_t;
 
 fn main() {
     let args: Vec<String> = env::args().collect();
@@ -34,7 +33,7 @@ fn main() {
 
     b.print("b");
 
-    let mut stat = SuperLUStat_t::new();
+    let mut stat = CSuperluStat::new();
 
     let SimpleSolution {
 	mut x,

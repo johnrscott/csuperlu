@@ -1,7 +1,8 @@
 //! Functions for freeing memory allocated to superlu structures
 //!
 
-use csuperlu_sys::{comp_col::Destroy_CompCol_Matrix, super_matrix::c_SuperMatrix, dense::Destroy_Dense_Matrix, super_node::Destroy_SuperNode_Matrix};
+use csuperlu_sys::{Destroy_CompCol_Matrix, SuperMatrix as c_SuperMatrix,
+		   Destroy_Dense_Matrix, Destroy_SuperNode_Matrix};
 
 /// Deallocate a c_SuperMatrix structure and store
 ///

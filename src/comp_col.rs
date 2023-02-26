@@ -16,7 +16,7 @@
 use crate::free::c_destroy_comp_col_matrix;
 use crate::harwell_boeing::HarwellBoeingMatrix;
 use crate::super_matrix::CSuperMatrix;
-use csuperlu_sys::{SuperMatrix, Mtype_t_SLU_GE, NCformat};
+use csuperlu_sys::{Mtype_t_SLU_GE, NCformat};
 use crate::value_type::ValueType;
 use std::fs;
 use std::ops::Mul;
@@ -128,12 +128,15 @@ impl<P: ValueType<P>> CompColMatrix<P> {
         self.super_matrix.num_columns()
     }
 
+    /// Get the read-only non-zero values in the compressed-column format
     pub fn non_zero_values(&self) -> &[P] {
         unsafe {
             let c_ncformat = self.super_matrix.store::<NCformat>();
             std::slice::from_raw_parts(c_ncformat.nzval as *mut P, c_ncformat.nnz as usize)
         }
     }
+
+    /// Get the read-only column offsets in the compressed-column format
     pub fn column_offsets(&self) -> &[i32] {
         unsafe {
             let c_ncformat = self.super_matrix.store::<NCformat>();
@@ -143,15 +146,21 @@ impl<P: ValueType<P>> CompColMatrix<P> {
             )
         }
     }
+
+    /// Get the read-only row indices in the compressed-column format
     pub fn row_indices(&self) -> &[i32] {
         unsafe {
             let c_ncformat = self.super_matrix.store::<NCformat>();
             std::slice::from_raw_parts(c_ncformat.rowind as *mut i32, c_ncformat.nnz as usize)
         }
     }
+
+    /// Get the underlying CSuperMatrix
     pub fn super_matrix<'a>(&'a self) -> &'a CSuperMatrix {
         &self.super_matrix
     }
+
+    /// Call the SuperLU C library print function for this type
     pub fn print(&self, what: &str) {
         unsafe {
             P::c_print_comp_col_matrix(what, &self.super_matrix);

@@ -17,7 +17,7 @@ impl CSuperMatrix {
     /// # Safety
     ///
     /// You will get an object which is not a valid CSuperMatrix. Only
-    /// certain functions (e.g. c_create_dense_matrix) can create valid
+    /// certain functions (e.g. c_create_dense_matrix, dgssv ) can create valid
     /// CSuperMatrix structs. You must pass the object created here to
     /// dgssv as the L and U parameters in order to have them initialised
     /// properly.
@@ -44,6 +44,12 @@ impl CSuperMatrix {
     /// Get the number of columns in the matrix
     pub fn num_columns(&self) -> usize {
 	self.super_matrix.ncol as usize
+    }
+
+    /// Get a reference to the underlying SuperMatrix
+    ///
+    pub fn super_matrix(&self) -> &SuperMatrix {
+	&self.super_matrix
     }
     
     /// Get the SuperMatrix store

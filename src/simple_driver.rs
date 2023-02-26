@@ -173,6 +173,8 @@ impl<P: ValueType<P>> SimpleSystem<P> {
 
 	let SimpleSystem {a, b} = self;
 
+	a.print("A");
+	
 	// TODO: Check for invalid dimensions
 
 	let mut options = CSuperluOptions::new();

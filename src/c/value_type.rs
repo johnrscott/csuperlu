@@ -310,7 +310,7 @@ impl ValueType<f64> for f64 {
             row_indices.as_mut_ptr(),
             column_offsets.as_mut_ptr(),
             Stype_t_SLU_NC,
-            Dtype_t_SLU_S,
+            Dtype_t_SLU_D,
             mtype,
         );
         Ok(a)

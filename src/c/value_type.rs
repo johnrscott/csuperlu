@@ -15,7 +15,7 @@ use csuperlu_sys::{
     sCreate_Dense_Matrix, sPrint_Dense_Matrix, zCreate_Dense_Matrix, zPrint_Dense_Matrix,
     superlu_options_t, cgssv, dgssv, sgssv, zgssv, SuperMatrix,
     cPrint_SuperNode_Matrix, dPrint_SuperNode_Matrix, sPrint_SuperNode_Matrix,
-    zPrint_SuperNode_Matrix, Stype_t_SLU_NC, Dtype_t_SLU_S, Mtype_t, complex, doublecomplex, Dtype_t_SLU_D, Dtype_t_SLU_Z, Dtype_t_SLU_C,
+    zPrint_SuperNode_Matrix, Stype_t_SLU_NC, Dtype_t_SLU_S, Mtype_t, complex, doublecomplex, Dtype_t_SLU_D, Dtype_t_SLU_Z, Dtype_t_SLU_C, Stype_t_SLU_DN,
 };
 
 use crate::{Error, options::CSuperluOptions, stat::CSuperluStat};
@@ -244,7 +244,7 @@ impl ValueType<f32> for f32 {
                 num_columns as i32,
                 column_major_values.as_mut_ptr(),
                 num_rows as i32,
-                Stype_t_SLU_NC,
+                Stype_t_SLU_DN,
                 Dtype_t_SLU_S,
                 mtype,
             );
@@ -338,7 +338,7 @@ impl ValueType<f64> for f64 {
                 num_columns as i32,
                 column_major_values.as_mut_ptr(),
                 num_rows as i32,
-                Stype_t_SLU_NC,
+                Stype_t_SLU_DN,
                 Dtype_t_SLU_D,
                 mtype,
             );
@@ -432,7 +432,7 @@ impl ValueType<num::Complex<f32>> for num::Complex<f32> {
                 num_columns as i32,
                 column_major_values.as_mut_ptr() as *mut complex,
                 num_rows as i32,
-                Stype_t_SLU_NC,
+                Stype_t_SLU_DN,
                 Dtype_t_SLU_C,
                 mtype,
             );
@@ -524,7 +524,7 @@ impl ValueType<num::Complex<f64>> for num::Complex<f64> {
                 num_columns as i32,
                 column_major_values.as_mut_ptr() as *mut doublecomplex,
                 num_rows as i32,
-                Stype_t_SLU_NC,
+                Stype_t_SLU_DN,
                 Dtype_t_SLU_Z,
                 mtype,
             );

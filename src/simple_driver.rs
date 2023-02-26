@@ -173,8 +173,6 @@ impl<P: ValueType<P>> SimpleSystem<P> {
 
 	let SimpleSystem {a, b} = self;
 
-	a.print("A");
-	
 	// TODO: Check for invalid dimensions
 
 	let mut options = CSuperluOptions::new();
@@ -187,6 +185,8 @@ impl<P: ValueType<P>> SimpleSystem<P> {
 	    row_perm.set_len(a.num_rows());
 	}
 
+	b.print("B");
+	
 	let mut info = 0;
 	unsafe {
 	    // TODO: undefined behaviour? I want a way to reserver space

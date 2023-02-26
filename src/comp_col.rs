@@ -131,7 +131,7 @@ impl<P: ValueType<P>> CompColMatrix<P> {
             std::slice::from_raw_parts(c_ncformat.nzval as *mut P, c_ncformat.nnz as usize)
         }
     }
-t
+
     pub fn column_offsets(&self) -> &[i32] {
         unsafe {
             let c_ncformat = self.super_matrix.store::<NCformat>();

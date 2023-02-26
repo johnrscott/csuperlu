@@ -7,14 +7,13 @@ use crate::options::{CSuperluOptions, ColumnPermPolicy};
 use crate::stat::CSuperluStat;
 use crate::super_matrix::CSuperMatrix;
 use crate::value_type::ValueType;
-use csuperlu_sys::SuperMatrix;
 
 use crate::lu_decomp::LUDecomp;
 use crate::super_node::SuperNodeMatrix;
 
-use std::mem::MaybeUninit;
 use std::{error::Error, fmt};
 
+/// Errors from the solver
 #[derive(Debug)]
 pub struct SolverError {
     /// info != 0 indicates solver error. See e.g. dgssv documentation
@@ -30,6 +29,7 @@ impl fmt::Display for SolverError {
     }
 }
 
+/// Contains the solution corresponding to a SimpleSystem
 pub struct SimpleSolution<P: ValueType<P>> {
     pub a: CompColMatrix<P>,
     pub x: DenseMatrix<P>,
@@ -38,6 +38,7 @@ pub struct SimpleSolution<P: ValueType<P>> {
     pub row_perm: RowPerm,
 }
 
+/// Stores a column permutation vector
 #[derive(Debug)]
 pub struct ColumnPerm {
     column_perm: Vec<i32>,
@@ -53,6 +54,7 @@ impl ColumnPerm {
     }
 }
 
+/// Stores a row permutation vector
 pub struct RowPerm {
     row_perm: Vec<i32>,
 }
@@ -67,16 +69,22 @@ impl RowPerm {
     }
 }
 
+/// Defines a simple sparse linear system $AX = B$
 pub struct SimpleSystem<P: ValueType<P>> {
-    /// The (sparse) matrix A in AX = B
+    /// The (sparse) matrix $A$
     pub a: CompColMatrix<P>,
-    /// The right-hand side(s) matrix B in AX = B 
+    /// The right-hand side(s) matrix $B$
     pub b: DenseMatrix<P>,
 }
 
+/// Defines a sparse linear system $AX = B$ and a predefined
+/// column permutation for use during the solution
 pub struct SamePattern<P: ValueType<P>> {
+    /// The (sparse) matrix $A$
     pub a: CompColMatrix<P>,
+    /// The right-hand side(s) matrix $B$
     pub b: DenseMatrix<P>,
+    /// The column permutation to use for the solution
     pub column_perm: ColumnPerm,
 }
 

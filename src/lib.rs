@@ -37,30 +37,29 @@
 //!
 
 //#![warn(missing_docs)]
-pub mod c;
 pub mod comp_col;
 pub mod dense;
 pub mod error;
 pub mod harwell_boeing;
 pub mod lu_decomp;
 pub mod simple_driver;
-pub mod sparse_matrix;
-pub mod super_matrix;
 pub mod super_node;
 pub mod utils;
-
-pub use c::*;
+pub mod c;
+pub mod sparse_matrix;
+    
 pub use error::Error;
+pub use c::*;
 
 #[cfg(test)]
 mod tests {
 
     use crate::comp_col::CompColMatrix;
     use crate::dense::DenseMatrix;
-    use crate::simple_driver::{ColumnPermPolicy, SimpleSolution, SimpleSystem};
+    use crate::options::ColumnPermPolicy;
+    use crate::simple_driver::{SimpleSolution, SimpleSystem};
+    use crate::stat::CSuperluStat;
     use crate::utils::distance;
-    use csuperlu_sys::options::{colperm_t, superlu_options_t};
-    use csuperlu_sys::stat::SuperLUStat_t;
 
     #[test]
     fn comp_col_matrix_values() {
@@ -150,12 +149,18 @@ mod tests {
         let rhs = vec![1.0; num_rows];
         let b = DenseMatrix::from_vectors(num_rows, nrhs, rhs);
 
-        let mut stat = SuperLUStat_t::new();
+	let mut stat = CSuperluStat::new();
 
-        let SimpleSolution { mut x, .. } = SimpleSystem { a: &a, b }
-            .solve(&mut stat, ColumnPermPolicy::Natural)
-            .expect("Failed to solve linear system");
+	let SimpleSolution {
+	    mut x,
+	    ..
+	} = SimpleSystem {
+	    a,
+	    b,
+	}.solve(&mut stat, ColumnPermPolicy::Natural)
+	    .expect("Failed to solve linear system");
 
+	    
         let x_vals = x.column_major_values();
 
         // True solution

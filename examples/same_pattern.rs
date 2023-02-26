@@ -15,7 +15,7 @@
 use csuperlu::comp_col::CompColMatrix;
 use csuperlu::dense::DenseMatrix;
 use csuperlu::options::ColumnPermPolicy;
-use csuperlu::simple_driver::{SimpleSolution, SimpleSystem};
+use csuperlu::simple_driver::{SimpleSolution, SimpleSystem, SamePattern};
 use csuperlu::stat::CSuperluStat;
 
 fn main() {
@@ -41,7 +41,7 @@ fn main() {
     let column_offsets = vec![0, 3, 6, 8, 10, 12];
 
     // Make the left-hand side matrix
-    let mut a = CompColMatrix::from_vectors(num_rows, non_zero_values, row_indices, column_offsets);
+    let a = CompColMatrix::from_vectors(num_rows, non_zero_values, row_indices, column_offsets);
 
     // Make the RHS vector
     let nrhs = 1;
@@ -54,16 +54,42 @@ fn main() {
 	mut a,
 	mut x,
 	mut lu,
+	column_perm,
 	..
     } = SimpleSystem {
 	a,
 	b,
-    }.solve(&mut stat, ColumnPermPolicy::Natural)
+    }.solve(&mut stat, ColumnPermPolicy::ColAMD)
 	.expect("Failed to solve linear system");
 
+    // Print the column permutation
+    println!("First solution gave: {:?}", column_perm);
+
+    // Recreate b
+    let nrhs = 1;
+    let rhs = vec![1.0; num_rows];
+    let b = DenseMatrix::from_vectors(num_rows, nrhs, rhs);
+    
+    // Now solve again with the same pattern
+    let SimpleSolution {
+	mut a,
+	mut x,
+	mut lu,
+	column_perm,
+	..
+    } = SamePattern {
+	a,
+	b,
+	column_perm,
+    }.solve(&mut stat)
+	.expect("Failed to solve linear system");
+
+    // Print the column permutation
+    println!("Second solution gave: {:?}", column_perm);
+    
     // Print the performance statistics
     stat.print();
-
+    
     // Print solution
     a.print("A");
     lu.print();

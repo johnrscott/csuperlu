@@ -3,13 +3,11 @@ use std::process;
 
 use csuperlu::comp_col::CompColMatrix;
 use csuperlu::dense::DenseMatrix;
-use csuperlu::simple_driver::ColumnPermPolicy;
-use csuperlu::simple_driver::SimpleSolution;
+use csuperlu::options::ColumnPermPolicy;
 use csuperlu::simple_driver::SimpleSystem;
-use csuperlu::super_matrix::SuperMatrix;
+use csuperlu::simple_driver::SimpleSolution;
+use csuperlu::stat::CSuperluStat;
 use csuperlu::utils::distance;
-use csuperlu_sys::options::superlu_options_t;
-use csuperlu_sys::stat::SuperLUStat_t;
 
 fn main() {
     let args: Vec<String> = env::args().collect();
@@ -35,11 +33,16 @@ fn main() {
 
     b.print("b");
 
-    let mut stat = SuperLUStat_t::new();
+    let mut stat = CSuperluStat::new();
 
-    let SimpleSolution { mut x, .. } = SimpleSystem { a: &a, b }
-        .solve(&mut stat, ColumnPermPolicy::Natural)
-        .expect("Failed to solve linear system");
+    let SimpleSolution {
+	mut x,
+	..
+    } = SimpleSystem {
+	a,
+	b,
+    }.solve(&mut stat, ColumnPermPolicy::Natural)
+	.expect("Failed to solve linear system");
 
     x.print("X");
 

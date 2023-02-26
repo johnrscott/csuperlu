@@ -13,12 +13,12 @@ use csuperlu_sys::{
     zCreate_CompCol_Matrix, zPrint_CompCol_Matrix,
     cCreate_Dense_Matrix, cPrint_Dense_Matrix, dCreate_Dense_Matrix, dPrint_Dense_Matrix,
     sCreate_Dense_Matrix, sPrint_Dense_Matrix, zCreate_Dense_Matrix, zPrint_Dense_Matrix,
-    superlu_options_t, cgssv, dgssv, sgssv, zgssv, SuperLUStat_t, SuperMatrix,
+    superlu_options_t, cgssv, dgssv, sgssv, zgssv, SuperMatrix,
     cPrint_SuperNode_Matrix, dPrint_SuperNode_Matrix, sPrint_SuperNode_Matrix,
     zPrint_SuperNode_Matrix, Stype_t_SLU_NC, Dtype_t_SLU_S, Mtype_t, complex, doublecomplex,
 };
 
-use crate::{Error, options::CSuperluOptions};
+use crate::{Error, options::CSuperluOptions, stat::CSuperluStat};
 
 /// Check necessary conditions for creating a compressed
 /// column matrix
@@ -192,7 +192,7 @@ pub trait ValueType<P>: Num + Copy + FromStr + std::fmt::Debug {
         l: &mut SuperMatrix,
         u: &mut SuperMatrix,
         b: &mut SuperMatrix,
-        stat: &mut SuperLUStat_t,
+        stat: &mut CSuperluStat,
         info: &mut i32,
     );
 }
@@ -274,7 +274,7 @@ impl ValueType<f32> for f32 {
         l: &mut SuperMatrix,
         u: &mut SuperMatrix,
         b: &mut SuperMatrix,
-        stat: &mut SuperLUStat_t,
+        stat: &mut CSuperluStat,
         info: &mut i32,
     ) {
         sgssv(
@@ -285,7 +285,7 @@ impl ValueType<f32> for f32 {
             l,
             u,
             b,
-            stat,
+            stat.get_stat(),
             info,
         );
     }
@@ -368,7 +368,7 @@ impl ValueType<f64> for f64 {
         l: &mut SuperMatrix,
         u: &mut SuperMatrix,
         b: &mut SuperMatrix,
-        stat: &mut SuperLUStat_t,
+        stat: &mut CSuperluStat,
         info: &mut i32,
     ) {
         dgssv(
@@ -379,7 +379,7 @@ impl ValueType<f64> for f64 {
             l,
             u,
             b,
-            stat,
+            stat.get_stat(),
             info,
         );
     }
@@ -460,7 +460,7 @@ impl ValueType<num::Complex<f32>> for num::Complex<f32> {
         l: &mut SuperMatrix,
         u: &mut SuperMatrix,
         b: &mut SuperMatrix,
-        stat: &mut SuperLUStat_t,
+        stat: &mut CSuperluStat,
         info: &mut i32,
     ) {
         cgssv(
@@ -471,7 +471,7 @@ impl ValueType<num::Complex<f32>> for num::Complex<f32> {
             l,
             u,
             b,
-            stat,
+            stat.get_stat(),
             info,
         );
     }
@@ -553,7 +553,7 @@ impl ValueType<num::Complex<f64>> for num::Complex<f64> {
         l: &mut SuperMatrix,
         u: &mut SuperMatrix,
         b: &mut SuperMatrix,
-        stat: &mut SuperLUStat_t,
+        stat: &mut CSuperluStat,
         info: &mut i32,
     ) {
         zgssv(
@@ -564,7 +564,7 @@ impl ValueType<num::Complex<f64>> for num::Complex<f64> {
             l,
             u,
             b,
-            stat,
+            stat.get_stat(),
             info,
         );
     }

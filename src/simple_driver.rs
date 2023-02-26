@@ -4,8 +4,8 @@
 use crate::comp_col::CompColMatrix;
 use crate::dense::DenseMatrix;
 use crate::options::{CSuperluOptions, ColumnPermPolicy};
+use crate::stat::CSuperluStat;
 use crate::value_type::ValueType;
-use csuperlu_sys::SuperLUStat_t;
 use csuperlu_sys::SuperMatrix;
 
 use crate::lu_decomp::LUDecomp;
@@ -88,7 +88,7 @@ pub struct SamePattern<P: ValueType<P>> {
 impl<P: ValueType<P>> SamePattern<P> {
     pub fn solve(
 	self,
-	stat: &mut SuperLUStat_t,
+	stat: &mut CSuperluStat,
     ) -> Result<SimpleSolution<P>, SolverError> {
 
 	let SamePattern {
@@ -167,7 +167,7 @@ impl<P: ValueType<P>> SimpleSystem<P> {
     ///
     pub fn solve(
 	self,
-	stat: &mut SuperLUStat_t,
+	stat: &mut CSuperluStat,
 	column_perm_policy: ColumnPermPolicy,
     ) -> Result<SimpleSolution<P>, SolverError> {
 

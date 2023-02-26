@@ -30,6 +30,14 @@ impl CSuperluStat {
 	}
     }
 
+    /// Get the underlying SuperLUStat_t struct
+    ///
+    /// This function is intended for use in the driver wrapper
+    /// routines for getting raw access to the stat struct.
+    pub fn get_stat(&mut self) -> &mut SuperLUStat_t {
+	&mut self.stat
+    }
+    
     /// Print a stats struct (using the C library print function)
     ///
     /// This function makes the assumption that the C library does not

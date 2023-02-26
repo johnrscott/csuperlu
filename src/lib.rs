@@ -46,6 +46,7 @@ pub mod simple_driver;
 pub mod super_node;
 pub mod utils;
 pub mod c;
+pub mod sparse_matrix;
     
 pub use error::Error;
 pub use c::*;

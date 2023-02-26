@@ -3,8 +3,9 @@
 
 use crate::comp_col::CompColMatrix;
 use crate::dense::DenseMatrix;
+use crate::options::CSuperluOptions;
 use crate::value_type::ValueType;
-use csuperlu_sys::{superlu_options_t, colperm_t, colperm_t_MY_PERMC};
+use csuperlu_sys::{colperm_t, colperm_t_MY_PERMC};
 use csuperlu_sys::SuperLUStat_t;
 use csuperlu_sys::SuperMatrix as c_SuperMatrix;
 
@@ -119,7 +120,7 @@ impl<P: ValueType<P>> SamePattern<P> {
 
 	// TODO: Check for invalid dimensions
 
-	let mut options = superlu_options_t::new();
+	let mut options = CSuperluOptions::new();
 
 	// Use the same column permutation. In the dgssv
 	// (simple driver) source code, the options.Fact

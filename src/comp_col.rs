@@ -15,7 +15,7 @@
 
 use crate::free::c_destroy_comp_col_matrix;
 use crate::harwell_boeing::HarwellBoeingMatrix;
-use csuperlu_sys::{SuperMatrix as c_SuperMatrix, Mtype_t_SLU_GE, NCformat};
+use csuperlu_sys::{SuperMatrix, Mtype_t_SLU_GE, NCformat};
 use crate::value_type::ValueType;
 use std::fs;
 use std::ops::Mul;
@@ -25,16 +25,16 @@ use std::process;
 ///
 ///
 pub struct CompColMatrix<P: ValueType<P>> {
-    c_super_matrix: c_SuperMatrix,
+    super_matrix: SuperMatrix,
     marker: std::marker::PhantomData<P>,
 }
 
 impl<P: ValueType<P>> CompColMatrix<P> {
-    /// Create a compressed-column matrix from a c_SuperMatrix structure
+    /// Create a compressed-column matrix from a SuperMatrix structure
     ///
-    pub fn from_super_matrix(c_super_matrix: c_SuperMatrix) -> Self {
+    pub fn from_super_matrix(super_matrix: SuperMatrix) -> Self {
         Self {
-            c_super_matrix,
+            super_matrix,
             marker: std::marker::PhantomData,
         }
     }
@@ -63,7 +63,7 @@ impl<P: ValueType<P>> CompColMatrix<P> {
 
     /// Specify a compressed column matrix from input vectors.
     ///
-    /// Use this function to make a c_SuperMatrix in compressed column
+    /// Use this function to make a SuperMatrix in compressed column
     /// format, from the vector of values, row indices, and column
     /// offsets. Compressed column format is documented in Section
     /// 2.3 of the SuperLU manual.
@@ -79,8 +79,8 @@ impl<P: ValueType<P>> CompColMatrix<P> {
         mut row_indices: Vec<i32>,
         mut column_offsets: Vec<i32>,
     ) -> Self {
-        let c_super_matrix = unsafe {
-            let c_super_matrix = P::c_create_comp_col_matrix(
+        let super_matrix = unsafe {
+            let super_matrix = P::c_create_comp_col_matrix(
                 num_rows,
                 &mut non_zero_values,
                 &mut row_indices,
@@ -93,19 +93,19 @@ impl<P: ValueType<P>> CompColMatrix<P> {
             std::mem::forget(non_zero_values);
             std::mem::forget(row_indices);
             std::mem::forget(column_offsets);
-            c_super_matrix
+            super_matrix
         };
         Self {
-            c_super_matrix,
+            super_matrix,
             marker: std::marker::PhantomData,
         }
     }
 
     pub fn value(&mut self, row: usize, col: usize) -> P {
-        let c_super_matrix = self.super_matrix();
-        assert!(row < c_super_matrix.nrow as usize, "Row index out of range");
+        let super_matrix = self.super_matrix();
+        assert!(row < super_matrix.nrow as usize, "Row index out of range");
         assert!(
-            col < c_super_matrix.ncol as usize,
+            col < super_matrix.ncol as usize,
             "Column index out of range"
         );
         let col_start = self.column_offsets()[col] as usize;
@@ -118,32 +118,40 @@ impl<P: ValueType<P>> CompColMatrix<P> {
     }
 
     pub fn num_rows(&self) -> usize {
-        self.c_super_matrix.nrow as usize
+        self.super_matrix.nrow as usize
     }
 
     pub fn num_columns(&self) -> usize {
-        self.c_super_matrix.ncol as usize
+        self.super_matrix.ncol as usize
     }
 
     pub fn non_zero_values(&self) -> &[P] {
         unsafe {
-            let c_ncformat = &mut *(self.c_super_matrix.Store as *mut NCformat);
+            let c_ncformat = &mut *(self.super_matrix.Store as *mut NCformat);
             std::slice::from_raw_parts(c_ncformat.nzval as *mut P, c_ncformat.nnz as usize)
         }
     }
     pub fn column_offsets(&self) -> &[i32] {
         unsafe {
-            let c_ncformat = &mut *(self.c_super_matrix.Store as *mut NCformat);
+            let c_ncformat = &mut *(self.super_matrix.Store as *mut NCformat);
             std::slice::from_raw_parts(
                 c_ncformat.colptr as *mut i32,
-                self.c_super_matrix.ncol as usize + 1,
+                self.super_matrix.ncol as usize + 1,
             )
         }
     }
     pub fn row_indices(&self) -> &[i32] {
         unsafe {
-            let c_ncformat = &mut *(self.c_super_matrix.Store as *mut NCformat);
+            let c_ncformat = &mut *(self.super_matrix.Store as *mut NCformat);
             std::slice::from_raw_parts(c_ncformat.rowind as *mut i32, c_ncformat.nnz as usize)
+        }
+    }
+    fn super_matrix<'a>(&'a self) -> &'a SuperMatrix {
+        &self.super_matrix
+    }
+    fn print(&self, what: &str) {
+        unsafe {
+            P::c_print_comp_col_matrix(what, &self.super_matrix);
         }
     }
 }
@@ -171,21 +179,10 @@ impl<'a, P: ValueType<P>> Mul<&Vec<P>> for &'a mut CompColMatrix<P> {
     }
 }
 
-impl<P: ValueType<P>> SuperMatrix for CompColMatrix<P> {
-    fn super_matrix<'a>(&'a self) -> &'a c_SuperMatrix {
-        &self.c_super_matrix
-    }
-    fn print(&self, what: &str) {
-        unsafe {
-            P::c_print_comp_col_matrix(what, &self.c_super_matrix);
-        }
-    }
-}
-
 impl<P: ValueType<P>> Drop for CompColMatrix<P> {
     fn drop(&mut self) {
         unsafe {
-	    c_destroy_comp_col_matrix(&mut self.c_super_matrix);
+	    c_destroy_comp_col_matrix(&mut self.super_matrix);
 	}
     }
 }

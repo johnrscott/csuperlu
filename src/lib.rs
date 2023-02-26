@@ -55,10 +55,10 @@ mod tests {
 
     use crate::comp_col::CompColMatrix;
     use crate::dense::DenseMatrix;
-    use crate::simple_driver::{SimpleSolution, SimpleSystem, ColumnPermPolicy};
+    use crate::options::ColumnPermPolicy;
+    use crate::simple_driver::{SimpleSolution, SimpleSystem};
+    use crate::stat::CSuperluStat;
     use crate::utils::distance;
-    use csuperlu_sys::options::{colperm_t, superlu_options_t};
-    use csuperlu_sys::stat::SuperLUStat_t;
 
     #[test]
     fn comp_col_matrix_values() {
@@ -148,7 +148,7 @@ mod tests {
         let rhs = vec![1.0; num_rows];
         let b = DenseMatrix::from_vectors(num_rows, nrhs, rhs);
 
-	let mut stat = SuperLUStat_t::new();
+	let mut stat = CSuperluStat::new();
 
 	let SimpleSolution {
 	    mut x,

@@ -1,17 +1,11 @@
-//! This example is the same as the one in section 2.2 of the SuperLU manual.
-//!
-//! From the original source code:
-//! " This is the small 5x5 example used in the Sections 2 and 3 of the
-//!   Users’ Guide to illustrate how to call a SuperLU routine, and the
-//!   matrix data structures used by SuperLU. "
-//!
-//! This example shows the equivalent rust code for the example in the
-//! user guide.
+//! This example shows how to reuse the column permutation
+//! and row permutation from a previous solution. Do this if
+//! the next matrix $A$ has similar values to the previous $A$
 
 use csuperlu::comp_col::CompColMatrix;
 use csuperlu::dense::DenseMatrix;
 use csuperlu::c::options::ColumnPermPolicy;
-use csuperlu::simple_driver::{SimpleSolution, SimpleSystem};
+use csuperlu::simple_driver::{SimpleSolution, SimpleSystem, SamePattern, SimilarValues};
 use csuperlu::c::stat::CSuperluStat;
 
 fn main() {
@@ -37,7 +31,7 @@ fn main() {
     let column_offsets = vec![0, 3, 6, 8, 10, 12];
 
     // Make the left-hand side matrix
-    let mut a = CompColMatrix::from_vectors(num_rows, non_zero_values, row_indices, column_offsets);
+    let a = CompColMatrix::from_vectors(num_rows, non_zero_values, row_indices, column_offsets);
 
     // Make the RHS vector
     let nrhs = 1;
@@ -50,16 +44,45 @@ fn main() {
 	mut a,
 	mut x,
 	mut lu,
+	column_perm,
+	row_perm,
 	..
     } = SimpleSystem {
 	a,
 	b,
-    }.solve(&mut stat, ColumnPermPolicy::Natural)
+    }.solve(&mut stat, ColumnPermPolicy::ColAMD)
 	.expect("Failed to solve linear system");
 
+    println!("First solution gave Pc = {:?}", column_perm);
+    println!("First solution gave Pr = {:?}", row_perm);
+
+    // Recreate b
+    let nrhs = 1;
+    let rhs = vec![1.0; num_rows];
+    let b = DenseMatrix::from_vectors(num_rows, nrhs, rhs);
+    
+    // Now solve again with the same pattern
+    let SimpleSolution {
+	mut a,
+	mut x,
+	mut lu,
+	column_perm,
+	row_perm,
+	..
+    } = SimilarValues {
+	a,
+	b,
+	column_perm,
+	row_perm,
+    }.solve(&mut stat)
+	.expect("Failed to solve linear system");
+
+    println!("Second solution gave Pc = {:?}", column_perm);
+    println!("Second solution gave Pr = {:?}", row_perm);
+    
     // Print the performance statistics
     stat.print();
-
+    
     // Print solution
     a.print("A");
     lu.print();

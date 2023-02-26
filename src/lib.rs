@@ -1,7 +1,5 @@
 //! csuperlu is a Rust interface to SuperLU, a C library for solving sparse
-//! linear systems. Currently, only the sequential solver is supported, but
-//! the intent is to gradually extend the library to support all the features
-//! of the underlying C library.
+//! linear systems. Currently, only the sequential solver is supported.
 //!
 //! The SuperLU User Guide is
 //! [here](https://portal.nersc.gov/project/sparse/superlu/superlu_ug.pdf),
@@ -28,12 +26,6 @@
 //! The library is currently under development, and the API is not stable
 //! yet. The API will be stable at version 1.0.0.
 //!
-//! **This version is A frontend package for SuperLU. Currently, it
-//! manually links to libsuperlu-dev on unix systems. This means you can use
-//! this crate now, if you are happy to manually install superlu yourself. A
-//! libsuperlu-sys package is planned that will expose the underlying
-//! library in a portable way. This will not affect the API of this crate.**
-//!
 //!
 
 //#![warn(missing_docs)]
@@ -49,16 +41,15 @@ pub mod c;
 pub mod sparse_matrix;
     
 pub use error::Error;
-pub use c::*;
 
 #[cfg(test)]
 mod tests {
 
     use crate::comp_col::CompColMatrix;
     use crate::dense::DenseMatrix;
-    use crate::options::ColumnPermPolicy;
+    use crate::c::options::ColumnPermPolicy;
     use crate::simple_driver::{SimpleSolution, SimpleSystem};
-    use crate::stat::CSuperluStat;
+    use crate::c::stat::CSuperluStat;
     use crate::utils::distance;
 
     #[test]

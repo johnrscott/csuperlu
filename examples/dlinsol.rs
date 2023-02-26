@@ -3,10 +3,10 @@ use std::process;
 
 use csuperlu::comp_col::CompColMatrix;
 use csuperlu::dense::DenseMatrix;
-use csuperlu::options::ColumnPermPolicy;
+use csuperlu::c::options::ColumnPermPolicy;
 use csuperlu::simple_driver::SimpleSystem;
 use csuperlu::simple_driver::SimpleSolution;
-use csuperlu::stat::CSuperluStat;
+use csuperlu::c::stat::CSuperluStat;
 use csuperlu::utils::distance;
 
 fn main() {

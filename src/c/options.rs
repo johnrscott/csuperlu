@@ -7,7 +7,7 @@
 
 use std::mem::MaybeUninit;
 
-use csuperlu_sys::{superlu_options_t, set_default_options, colperm_t_NATURAL, colperm_t_MMD_ATA, colperm_t_MMD_AT_PLUS_A, colperm_t_COLAMD, colperm_t_MY_PERMC};
+use csuperlu_sys::{superlu_options_t, set_default_options, colperm_t_NATURAL, colperm_t_MMD_ATA, colperm_t_MMD_AT_PLUS_A, colperm_t_COLAMD, colperm_t_MY_PERMC, rowperm_t_MY_PERMR};
 
 /// SuperLU implements several policies for re-ordering the
 /// columns of A before solving, when a specific ordering is
@@ -87,4 +87,12 @@ impl CSuperluOptions {
     pub fn set_user_column_perm(&mut self) {
 	self.options.ColPerm = colperm_t_MY_PERMC;
     }
+
+    /// Set the column permutation option to use a user supplied vector
+    ///
+    pub fn set_user_row_perm(&mut self) {
+	self.options.RowPerm = rowperm_t_MY_PERMR;
+    }
+
+    
 }

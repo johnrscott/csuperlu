@@ -1,4 +1,4 @@
-use crate::value_type::ValueType;
+use crate::c::value_type::ValueType;
 
 /// Todo implement properly
 pub fn distance<P: ValueType<P>>(v1: &[P], v2: Vec<P>) -> P {

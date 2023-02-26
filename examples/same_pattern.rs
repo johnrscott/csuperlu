@@ -1,22 +1,12 @@
-//! This example is the same as the one in section 2.2 of the SuperLU manual.
-//!
-//! From the original source code:
-//! " This is the small 5x5 example used in the Sections 2 and 3 of the
-//!   Users’ Guide to illustrate how to call a SuperLU routine, and the
-//!   matrix data structures used by SuperLU. "
-//!
-//! This code calls all the same functions as the C code, but with names
-//! prefixed with c_. However, there are a few differences compared to the
-//! C code. First, Rust vectors are used instead of C style vectors (allocated
-//! with malloc). Second, Rust requires unsafe blocks whenever a struct is
-//! initialised by a function taking the uninitialised struct as an input/output
-//! parameter.
+//! This example shows how to reuse the column permutation from
+//! a previous solution. Do this if the sparse structure of the matrix
+//! is the same as the first solution.
 
 use csuperlu::comp_col::CompColMatrix;
 use csuperlu::dense::DenseMatrix;
-use csuperlu::options::ColumnPermPolicy;
+use csuperlu::c::options::ColumnPermPolicy;
 use csuperlu::simple_driver::{SimpleSolution, SimpleSystem, SamePattern};
-use csuperlu::stat::CSuperluStat;
+use csuperlu::c::stat::CSuperluStat;
 
 fn main() {
     // Matrix dimensions

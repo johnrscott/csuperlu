@@ -3,10 +3,7 @@
 //! SuperLU records performance statistics such as the number
 //! of floating-point operations and the execution time of the
 //! solvers. This module contains a wrapper around the
-//! SuperLUStat_t object in the C library. All the functions
-//! related to this structure are exposed here, except the
-//! memory related functions (alloc and free) which are wrapped
-//! up in new and drop.
+//! SuperLUStat_t object in the C library.
 
 use std::mem::MaybeUninit;
 

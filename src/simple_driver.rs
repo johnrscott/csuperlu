@@ -42,12 +42,6 @@ pub struct ColumnPerm {
     column_perm: Vec<i32>,
 }
 
-// impl<'a> ColumnPerm {
-//     fn get_perm(&'a mut self) -> &'a mut Vec<i32> {
-// 	&mut self.column_perm
-//     }
-// }
-
 impl ColumnPerm {
     /// Unsafe because content of Vec is not checked
     /// (elements need to be unique)

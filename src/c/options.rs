@@ -7,7 +7,7 @@
 
 use std::mem::MaybeUninit;
 
-use csuperlu_sys::{superlu_options_t, set_default_options, colperm_t_NATURAL, colperm_t_MMD_ATA, colperm_t_MMD_AT_PLUS_A, colperm_t_COLAMD};
+use csuperlu_sys::{superlu_options_t, set_default_options, colperm_t_NATURAL, colperm_t_MMD_ATA, colperm_t_MMD_AT_PLUS_A, colperm_t_COLAMD, colperm_t_MY_PERMC};
 
 /// SuperLU implements several policies for re-ordering the
 /// columns of A before solving, when a specific ordering is
@@ -65,10 +65,14 @@ impl CSuperluOptions {
 
     /// Get the underlying superlu_options_t struct
     ///
+    /// This function is intended for use in the driver wrapper
+    /// routines for getting raw access to the options struct.
     pub fn get_options(&self) -> &superlu_options_t {
 	&self.options
     }
 
+    /// Setting the algorithm to be used for computing column permutations
+    ///
     pub fn set_column_perm_policy(&mut self, policy: ColumnPermPolicy) {
 	match policy {
 	    ColumnPermPolicy::Natural => self.options.ColPerm = colperm_t_NATURAL,
@@ -76,5 +80,11 @@ impl CSuperluOptions {
 	    ColumnPermPolicy::MmdAtPlusA => self.options.ColPerm = colperm_t_MMD_AT_PLUS_A,
 	    ColumnPermPolicy::ColAMD => self.options.ColPerm = colperm_t_COLAMD,
 	}
+    }
+
+    /// Set the column permutation option to use a user supplied vector
+    ///
+    pub fn set_user_column_perm(&mut self) {
+	self.options.ColPerm = colperm_t_MY_PERMC;
     }
 }

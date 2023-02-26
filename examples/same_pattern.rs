@@ -2,16 +2,17 @@
 //! a previous solution. Do this if the sparse structure of the matrix
 //! is the same as the first solution.
 
-use csuperlu::comp_col::CompColMatrix;
 use csuperlu::dense::DenseMatrix;
 use csuperlu::c::options::ColumnPermPolicy;
 use csuperlu::simple_driver::{SimpleSolution, SimpleSystem, SamePattern};
 use csuperlu::c::stat::CSuperluStat;
+use csuperlu::sparse_matrix::SparseMatrix;
 
 fn main() {
-    // Matrix dimensions
     let num_rows = 5usize;
     let num_columns = 5usize;
+    
+    let mut a = SparseMatrix::new(num_rows, num_columns);
 
     // Matrix elements
     let s: f64 = 19.0;
@@ -20,19 +21,25 @@ fn main() {
     let e: f64 = 5.0;
     let r: f64 = 18.0;
     let l: f64 = 12.0;
+    // Set values
+    a.set_value(0, 0, s);
+    a.set_value(1, 1, u);
+    a.set_value(2, 2, p);
+    a.set_value(3, 3, e);
+    a.set_value(4, 4, r);
 
-    // Vector of doubles of length nnz
-    let non_zero_values = vec![s, l, l, u, l, l, u, p, u, e, u, r];
+    a.set_value(1, 0, l);
+    a.set_value(2, 1, l);
+    a.set_value(4, 0, l);
+    a.set_value(4, 1, l);
 
-    // Vector of ints of length nnz
-    let row_indices = vec![0, 1, 4, 1, 2, 4, 0, 2, 0, 3, 3, 4];
-
-    // Vector of ints of length num_columns + 1
-    let column_offsets = vec![0, 3, 6, 8, 10, 12];
-
+    a.set_value(0, 2, u);
+    a.set_value(0, 3, u);
+    a.set_value(3, 4, u);
+    
     // Make the left-hand side matrix
-    let a = CompColMatrix::from_vectors(num_rows, non_zero_values, row_indices, column_offsets);
-
+    let mut a = a.compressed_column_format();
+    
     // Make the RHS vector
     let nrhs = 1;
     let rhs = vec![1.0; num_rows];

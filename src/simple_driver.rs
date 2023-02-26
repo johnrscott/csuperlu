@@ -73,24 +73,6 @@ impl RowPerm {
     }
 }
 
-/// SuperLU implements several policies for re-ordering the
-/// columns of A before solving, when a specific ordering is
-/// to passed to the solver. The orderings are described in
-/// Section 1.3.5 of the SuperLU manual.
-pub enum ColumnPermPolicy {
-    /// Do not re-order columns (Pc = I)
-    Natural,
-    /// Multiple minimum degree applied to A^TA
-    MmdAtA,
-    /// Multiple minimum degree applied to A^T + A    
-    MmdAtPlusA,
-    /// Column approximate minimum degree. Designed particularly
-    /// for unsymmetric matrices when partial pivoting is needed.
-    /// It usually gives comparable orderings as MmdAtA, but
-    /// is faster.
-    ColAMD,
-}
-
 pub struct SimpleSystem<P: ValueType<P>> {
     /// The (sparse) matrix A in AX = B
     pub a: CompColMatrix<P>,
@@ -193,14 +175,9 @@ impl<P: ValueType<P>> SimpleSystem<P> {
 
 	// TODO: Check for invalid dimensions
 
-	let mut options = superlu_options_t::new();
-	match column_perm_policy {
-	    ColumnPermPolicy::Natural => options.ColPerm = colperm_t::NATURAL,
-	    ColumnPermPolicy::MmdAtA => options.ColPerm = colperm_t::MMD_ATA,
-	    ColumnPermPolicy::MmdAtPlusA => options.ColPerm = colperm_t::MMD_AT_PLUS_A,
-	    ColumnPermPolicy::ColAMD => options.ColPerm = colperm_t::COLAMD,
-	}
-
+	let mut options = CSuperluOptions::new();
+	options.set_column_perm_policy(column_perm_policy);
+	
 	let mut column_perm = Vec::<i32>::with_capacity(a.num_columns());
 	let mut row_perm = Vec::<i32>::with_capacity(a.num_rows());
 	unsafe {

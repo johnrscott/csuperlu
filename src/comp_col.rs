@@ -64,7 +64,7 @@ impl<P: ValueType<P>> CompColMatrix<P> {
     /// Specify a compressed column matrix from input vectors.
     ///
     /// Use this function to make a SuperMatrix in compressed column
-    /// format, from the vector of values, row indices, and column
+    /// format, from the vector of non-zero values, row indices, and column
     /// offsets. Compressed column format is documented in Section
     /// 2.3 of the SuperLU manual.
     ///

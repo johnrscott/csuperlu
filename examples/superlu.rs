@@ -5,12 +5,8 @@
 //!   Users’ Guide to illustrate how to call a SuperLU routine, and the
 //!   matrix data structures used by SuperLU. "
 //!
-//! This code calls all the same functions as the C code, but with names
-//! prefixed with c_. However, there are a few differences compared to the
-//! C code. First, Rust vectors are used instead of C style vectors (allocated
-//! with malloc). Second, Rust requires unsafe blocks whenever a struct is
-//! initialised by a function taking the uninitialised struct as an input/output
-//! parameter.
+//! This example shows the equivalent rust code for the example in the
+//! user guide.
 
 use csuperlu::comp_col::CompColMatrix;
 use csuperlu::dense::DenseMatrix;

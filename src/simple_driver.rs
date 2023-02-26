@@ -1,5 +1,22 @@
 //! Solve sparse linear systems using the simple driver
 //!
+//! This module contains sparse solvers based on the simple
+//! driver in SuperLU (sgssv, dgssv, cgssv and zgssv). The
+//! simple driver allow access to a subset of the solver
+//! options, but not all of them. More advanced options are
+//! available using the expert driver.
+//!
+//! The simple driver performs the following steps to solve a
+//! linear system $AX = B$, outlined in the SuperLU manual:
+//!
+//! 1. Permute the columns of $A$ to increase sparsity, using
+//! a column-permutation $P_c$ which is either user-defined, or
+//! is computed using a user-defined algorithm.
+//! 2. Factor $A$ as $P_rAP_c = LU$, using Gaussian elimitation,
+//! where $P_r$ is the row permutation obtained by using partial
+//! pivoting.
+//! 3. Solve the equation $AX = B$ using the $LU$-decomposition
+//! in step 2.
 
 use crate::comp_col::CompColMatrix;
 use crate::dense::DenseMatrix;
@@ -78,7 +95,7 @@ pub struct SimpleSystem<P: ValueType<P>> {
 }
 
 /// Defines a sparse linear system $AX = B$ and a predefined
-/// column permutation for use during the solution
+/// column permutation for use during the solution.
 pub struct SamePattern<P: ValueType<P>> {
     /// The (sparse) matrix $A$
     pub a: CompColMatrix<P>,
@@ -86,6 +103,86 @@ pub struct SamePattern<P: ValueType<P>> {
     pub b: DenseMatrix<P>,
     /// The column permutation to use for the solution
     pub column_perm: ColumnPerm,
+}
+
+/// Defines a sparse linear system $AX = B$ and predefined
+/// column and row permutations for use during the solution
+pub struct SimilarValues<P: ValueType<P>> {
+    /// The (sparse) matrix $A$
+    pub a: CompColMatrix<P>,
+    /// The right-hand side(s) matrix $B$
+    pub b: DenseMatrix<P>,
+    /// The column permutation to use for the solution
+    pub column_perm: ColumnPerm,
+    /// The row permutation to use for the solution
+    pub row_perm: RowPerm,
+}
+
+impl<P: ValueType<P>> SimilarValues<P> {
+    pub fn solve(
+	self,
+	stat: &mut CSuperluStat,
+    ) -> Result<SimpleSolution<P>, SolverError> {
+
+	let SimilarValues {
+	    a,
+	    b,
+	    column_perm: ColumnPerm {
+		mut column_perm,
+	    },
+	    row_perm: RowPerm {
+		mut row_perm,
+	    }
+
+	} = self;
+
+	// TODO: Check for invalid dimensions
+
+	let mut options = CSuperluOptions::new();
+
+	// Use the same column permutation. In the dgssv
+	// (simple driver) source code, the options.Fact
+	// value must be set to DOFACT (it is not allowed
+	// to use SamePattern). The use of a user supplied
+	// column permutation is controlled by MY_PERMC,
+	// which, if specified, means that get_perm_c
+	// (computing the column permutation) is not called
+	// (line 192-193, dgssv.c).
+	options.set_user_column_perm();
+	options.set_user_row_perm();
+	
+	let mut info = 0;
+	unsafe {
+	    let mut l = CSuperMatrix::alloc();
+            let mut u = CSuperMatrix::alloc();
+
+            let mut b_super_matrix = b.into_super_matrix();
+
+            P::c_simple_driver(
+		&mut options,
+		&mut a.super_matrix(),
+		&mut column_perm,
+		&mut row_perm,
+		&mut l,
+		&mut u,
+		&mut b_super_matrix,
+		stat,
+		&mut info,
+            );
+            let l = SuperNodeMatrix::from_super_matrix(l);
+            let u = CompColMatrix::from_super_matrix(u);
+            let lu = LUDecomp::from_matrices(l, u);
+            let x = DenseMatrix::<P>::from_super_matrix(b_super_matrix);
+	    let column_perm = ColumnPerm::from_raw(column_perm);
+	    let row_perm = RowPerm::from_raw(row_perm);
+	    
+            if info != 0 {
+		Err(SolverError { info })
+            } else {
+		Ok(SimpleSolution { a, x, lu, column_perm, row_perm })
+            }
+	}
+    }
 }
 
 impl<P: ValueType<P>> SamePattern<P> {

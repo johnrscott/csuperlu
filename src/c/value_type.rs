@@ -18,7 +18,7 @@ use csuperlu_sys::{
     zPrint_SuperNode_Matrix, Stype_t_SLU_NC, Dtype_t_SLU_S, Mtype_t,
 };
 
-use crate::Error;
+use crate::{Error, options::CSuperluOptions};
 
 /// Check necessary conditions for creating a compressed
 /// column matrix
@@ -167,6 +167,10 @@ pub trait ValueType<P>: Num + Copy + FromStr + std::fmt::Debug {
     /// depend on the options (for example, if perm_c or perm_r
     /// contain content).
     ///
+    /// This function makes the assumption that dgssv etc. do not
+    /// modify the options argument, or the input matrix a.
+    /// TODO: check these assumptions.
+    ///
     /// # Errors
     ///
     /// Can catch incorrect dimensions in a, b, perm_c and perm_r.
@@ -181,7 +185,7 @@ pub trait ValueType<P>: Num + Copy + FromStr + std::fmt::Debug {
     /// allocated structures (c_SuperMatrix::alloc).
     ///
     unsafe fn c_simple_driver(
-        options: &mut superlu_options_t,
+        options: &CSuperluOptions,
         a: &c_SuperMatrix,
         perm_c: &mut Vec<i32>,
         perm_r: &mut Vec<i32>,
@@ -263,7 +267,7 @@ impl ValueType<f32> for f32 {
     }
 
     unsafe fn c_simple_driver(
-        options: &mut superlu_options_t,
+        options: &CSuperluOptions,
         a: &c_SuperMatrix,
         perm_c: &mut Vec<i32>,
         perm_r: &mut Vec<i32>,
@@ -274,7 +278,7 @@ impl ValueType<f32> for f32 {
         info: &mut i32,
     ) {
         sgssv(
-            options,
+            options.get_options() as *const superlu_options_t as *mut superlu_options_t,
             a as *const c_SuperMatrix as *mut c_SuperMatrix,
             perm_c.as_mut_ptr(),
             perm_r.as_mut_ptr(),
@@ -357,7 +361,7 @@ impl ValueType<f64> for f64 {
     }
 
     unsafe fn c_simple_driver(
-        options: &mut superlu_options_t,
+        options: &CSuperluOptions,
         a: &c_SuperMatrix,
         perm_c: &mut Vec<i32>,
         perm_r: &mut Vec<i32>,
@@ -368,7 +372,7 @@ impl ValueType<f64> for f64 {
         info: &mut i32,
     ) {
         dgssv(
-            options,
+            options.get_options() as *const superlu_options_t as *mut superlu_options_t,
             a as *const c_SuperMatrix as *mut c_SuperMatrix,
             perm_c.as_mut_ptr(),
             perm_r.as_mut_ptr(),
@@ -449,7 +453,7 @@ impl ValueType<num::Complex<f32>> for num::Complex<f32> {
         );
     }
     unsafe fn c_simple_driver(
-        options: &mut superlu_options_t,
+        options: &CSuperluOptions,
         a: &c_SuperMatrix,
         perm_c: &mut Vec<i32>,
         perm_r: &mut Vec<i32>,
@@ -460,7 +464,7 @@ impl ValueType<num::Complex<f32>> for num::Complex<f32> {
         info: &mut i32,
     ) {
         cgssv(
-            options,
+            options.get_options() as *const superlu_options_t as *mut superlu_options_t,
             a as *const c_SuperMatrix as *mut c_SuperMatrix,
             perm_c.as_mut_ptr(),
             perm_r.as_mut_ptr(),
@@ -542,7 +546,7 @@ impl ValueType<num::Complex<f64>> for num::Complex<f64> {
     }
 
     unsafe fn c_simple_driver(
-        options: &mut superlu_options_t,
+        options: &CSuperluOptions,
         a: &c_SuperMatrix,
         perm_c: &mut Vec<i32>,
         perm_r: &mut Vec<i32>,
@@ -553,7 +557,7 @@ impl ValueType<num::Complex<f64>> for num::Complex<f64> {
         info: &mut i32,
     ) {
         zgssv(
-            options,
+            options.get_options() as *const superlu_options_t as *mut superlu_options_t,
             a as *const c_SuperMatrix as *mut c_SuperMatrix,
             perm_c.as_mut_ptr(),
             perm_r.as_mut_ptr(),

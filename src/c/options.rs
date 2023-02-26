@@ -29,7 +29,7 @@ pub enum ColumnPermPolicy {
 
 /// Wrapper for the SuperLU C library superlu_options_t. 
 ///
-/// The superlu_options_t enum controls the behaviour of the
+/// The superlu_options_t struct controls the behaviour of the
 /// simple driver and expert drivers.
 pub struct CSuperluOptions {
     options: superlu_options_t
@@ -61,6 +61,12 @@ impl CSuperluOptions {
 	Self {
 	    options,
 	}
+    }
+
+    /// Get the underlying superlu_options_t struct
+    ///
+    pub fn get_options(&self) -> &superlu_options_t {
+	&self.options
     }
 
     pub fn set_column_perm_policy(&mut self, policy: ColumnPermPolicy) {

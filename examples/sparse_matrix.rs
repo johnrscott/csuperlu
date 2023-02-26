@@ -25,8 +25,8 @@ fn main() {
     a.set_value(0, 3, u);
     a.set_value(3, 4, u);
 
+    a.print();
+    
     let ccf = a.compressed_column_format();
-
-    println!("{:?}", a);
     ccf.print("CCF");
 }

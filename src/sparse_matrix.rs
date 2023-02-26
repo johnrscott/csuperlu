@@ -59,11 +59,16 @@ impl SparseMatrix {
 	    row_indices.push(key.0 as i32);
 	}
 	column_offsets.push(num_non_zeros as i32);
-	
-	println!("{:?}", non_zero_values);
-	println!("{:?}", row_indices);
-	println!("{:?}", column_offsets);
 
 	CompColMatrix::from_vectors(self.num_rows, non_zero_values, row_indices, column_offsets)
+    }
+
+    pub fn print(&self) {
+	println!("{} x {} matrix, {} non-zero values", self.num_rows, self.num_cols, self.values.len());
+	let sorted_keys = self.values.keys()
+	    .sorted_unstable_by_key(|a| (a.1, a.0)); 
+	for key in sorted_keys {
+	    println!("({}, {}) = {}", key.0, key.1, self.values[key]);
+	}
     }
 }

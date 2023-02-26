@@ -15,10 +15,11 @@ use csuperlu_sys::{
     sCreate_Dense_Matrix, sPrint_Dense_Matrix, zCreate_Dense_Matrix, zPrint_Dense_Matrix,
     superlu_options_t, cgssv, dgssv, sgssv, zgssv, SuperMatrix,
     cPrint_SuperNode_Matrix, dPrint_SuperNode_Matrix, sPrint_SuperNode_Matrix,
-    zPrint_SuperNode_Matrix, Stype_t_SLU_NC, Dtype_t_SLU_S, Mtype_t, complex, doublecomplex, Dtype_t_SLU_D, Dtype_t_SLU_Z, Dtype_t_SLU_C, Stype_t_SLU_DN,
+    zPrint_SuperNode_Matrix, Stype_t_SLU_NC, Dtype_t_SLU_S, Mtype_t, complex, doublecomplex,
+    Dtype_t_SLU_D, Dtype_t_SLU_Z, Dtype_t_SLU_C, Stype_t_SLU_DN,
 };
 
-use crate::{Error, options::CSuperluOptions, stat::CSuperluStat, super_matrix::CSuperMatrix};
+use crate::{Error, c::options::CSuperluOptions, c::stat::CSuperluStat, c::super_matrix::CSuperMatrix};
 
 /// Check necessary conditions for creating a compressed
 /// column matrix

@@ -1,9 +1,9 @@
 //! Functions to create dense matrices.
 //!
 
-use crate::free::c_destroy_dense_matrix;
-use crate::super_matrix::CSuperMatrix;
-use crate::value_type::ValueType;
+use crate::c::free::c_destroy_dense_matrix;
+use crate::c::super_matrix::CSuperMatrix;
+use crate::c::value_type::ValueType;
 use csuperlu_sys::DNformat;
 use csuperlu_sys::Mtype_t_SLU_GE;
 

@@ -4,7 +4,7 @@
 use csuperlu_sys::{Destroy_CompCol_Matrix,
 		   Destroy_Dense_Matrix, Destroy_SuperNode_Matrix, SuperMatrix};
 
-use crate::super_matrix::CSuperMatrix;
+use crate::c::super_matrix::CSuperMatrix;
 
 /// Deallocate a c_SuperMatrix structure and store
 ///

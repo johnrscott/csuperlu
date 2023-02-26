@@ -1,7 +1,6 @@
 use crate::comp_col::CompColMatrix;
 use crate::super_node::SuperNodeMatrix;
-use crate::value_type::ValueType;
-use csuperlu_sys::{NCformat, SCformat};
+use crate::c::value_type::ValueType;
 
 pub struct LUDecomp<P: ValueType<P>> {
     l: SuperNodeMatrix<P>,

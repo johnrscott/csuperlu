@@ -12,11 +12,11 @@
 //!
 //!
 
-use crate::free::c_destroy_comp_col_matrix;
+use crate::c::free::c_destroy_comp_col_matrix;
 use crate::harwell_boeing::HarwellBoeingMatrix;
-use crate::super_matrix::CSuperMatrix;
+use crate::c::super_matrix::CSuperMatrix;
 use csuperlu_sys::{Mtype_t_SLU_GE, NCformat};
-use crate::value_type::ValueType;
+use crate::c::value_type::ValueType;
 use std::fs;
 use std::ops::Mul;
 use std::process;

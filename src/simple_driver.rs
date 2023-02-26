@@ -3,10 +3,10 @@
 
 use crate::comp_col::CompColMatrix;
 use crate::dense::DenseMatrix;
-use crate::options::{CSuperluOptions, ColumnPermPolicy};
-use crate::stat::CSuperluStat;
-use crate::super_matrix::CSuperMatrix;
-use crate::value_type::ValueType;
+use crate::c::options::{CSuperluOptions, ColumnPermPolicy};
+use crate::c::stat::CSuperluStat;
+use crate::c::super_matrix::CSuperMatrix;
+use crate::c::value_type::ValueType;
 
 use crate::lu_decomp::LUDecomp;
 use crate::super_node::SuperNodeMatrix;

@@ -14,9 +14,9 @@
 
 use csuperlu::comp_col::CompColMatrix;
 use csuperlu::dense::DenseMatrix;
-use csuperlu::options::ColumnPermPolicy;
+use csuperlu::c::options::ColumnPermPolicy;
 use csuperlu::simple_driver::{SimpleSolution, SimpleSystem, SamePattern};
-use csuperlu::stat::CSuperluStat;
+use csuperlu::c::stat::CSuperluStat;
 
 fn main() {
     // Matrix dimensions

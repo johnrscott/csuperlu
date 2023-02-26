@@ -40,16 +40,15 @@ pub mod utils;
 pub mod c;
     
 pub use error::Error;
-pub use c::*;
 
 #[cfg(test)]
 mod tests {
 
     use crate::comp_col::CompColMatrix;
     use crate::dense::DenseMatrix;
-    use crate::options::ColumnPermPolicy;
+    use crate::c::options::ColumnPermPolicy;
     use crate::simple_driver::{SimpleSolution, SimpleSystem};
-    use crate::stat::CSuperluStat;
+    use crate::c::stat::CSuperluStat;
     use crate::utils::distance;
 
     #[test]

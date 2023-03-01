@@ -51,8 +51,10 @@ impl<P: ValueType<P>> SparseMatrix<P> {
 	
 	for key in sorted_keys {
 	    if key.1 > current_col {
-		// TODO: handle empty columns 
-		column_offsets.push(non_zero_values.len() as i32);
+		// Handle empty columns with this range
+		for _ in 0..(key.1 - current_col) {
+		    column_offsets.push(non_zero_values.len() as i32);
+		}
 		current_col = key.1;
 	    }
 	    non_zero_values.push(self.values[key]);
@@ -62,6 +64,19 @@ impl<P: ValueType<P>> SparseMatrix<P> {
 
 	CompColMatrix::from_vectors(self.num_rows, non_zero_values, row_indices, column_offsets)
     }
+
+    pub fn num_rows(&self) -> usize {
+	self.num_rows
+    }
+
+    pub fn num_cols(&self) -> usize {
+	self.num_cols
+    }
+
+    pub fn num_non_zeros(&self) -> usize {
+	self.values.len()
+    }
+    
 }
 
 impl<P: ValueType<P>> fmt::Display for SparseMatrix<P> {

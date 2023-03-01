@@ -26,6 +26,7 @@ fn main() {
     a.set_value(3, 4, u);
 
     println!("{a}");
+    println!("{}x{}: {}", a.num_rows(), a.num_cols(), a.num_non_zeros());
     
     let ccf = a.compressed_column_format();
     ccf.print("CCF");

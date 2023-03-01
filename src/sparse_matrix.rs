@@ -25,8 +25,15 @@ impl<P: ValueType<P>> SparseMatrix<P> {
         if row >= self.num_rows || col >= self.num_cols {
             panic!("Index out of range");
         }
-	// TODO: Do not insert into map when value = 0?
-        self.values.insert((row, col), value);
+
+	if value == P::zero() {
+	    if self.values.contains_key(&(row, col)) {
+		self.values.remove(&(row, col));
+	    }
+	}
+	else {
+            self.values.insert((row, col), value);
+	}
     }
 
     pub fn get_value(&self, row: usize, col: usize) -> P {
@@ -36,7 +43,7 @@ impl<P: ValueType<P>> SparseMatrix<P> {
         self.values.get(&(row, col)).copied().unwrap_or(P::zero())
     }
 
-    pub fn compressed_column_format(&self) -> CompColMatrix<P> {
+    pub fn compressed_column_format(&self) -> CompColMatrix<P> {	
 	// Sort in column order
 	let sorted_keys = self.values.keys()
 	    .sorted_unstable_by_key(|a| (a.1, a.0)); 

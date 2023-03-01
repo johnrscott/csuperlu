@@ -1,4 +1,5 @@
 use itertools::Itertools;
+use std::fmt;
 use std::collections::HashMap;
 
 use crate::{comp_col::CompColMatrix, c::value_type::ValueType};
@@ -61,13 +62,17 @@ impl<P: ValueType<P>> SparseMatrix<P> {
 
 	CompColMatrix::from_vectors(self.num_rows, non_zero_values, row_indices, column_offsets)
     }
+}
 
-    pub fn print(&self) {
-	println!("{} x {} matrix, {} non-zero values", self.num_rows, self.num_cols, self.values.len());
+impl<P: ValueType<P>> fmt::Display for SparseMatrix<P> {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+	writeln!(f, "{} x {} matrix, {} non-zero values", self.num_rows, self.num_cols, self.values.len())?;
 	let sorted_keys = self.values.keys()
 	    .sorted_unstable_by_key(|a| (a.1, a.0)); 
 	for key in sorted_keys {
-	    println!("({}, {}) = {:?}", key.0, key.1, self.values[key]);
+	    writeln!(f, "({}, {}) = {:?}", key.0, key.1, self.values[key])?;
 	}
+	Ok(())
     }
 }
+

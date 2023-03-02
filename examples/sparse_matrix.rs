@@ -29,6 +29,7 @@ fn main() {
     
     println!("{a}");
     println!("{}x{}: {}", a.num_rows(), a.num_cols(), a.num_non_zeros());
+    println!("{:?}", a.values());
     
     let ccf = a.compressed_column_format();
     ccf.print("CCF");

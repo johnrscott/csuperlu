@@ -83,7 +83,10 @@ impl<P: ValueType<P>> SparseMatrix<P> {
     pub fn num_non_zeros(&self) -> usize {
 	self.values.len()
     }
-    
+
+    pub fn values(&self) -> &HashMap<(usize, usize), P> {
+	&self.values
+    }
 }
 
 impl<P: ValueType<P>> fmt::Display for SparseMatrix<P> {

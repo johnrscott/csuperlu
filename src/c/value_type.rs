@@ -1,7 +1,17 @@
+//! Contains a trait with SuperLU functions that depend on precision
+//!
 //! Contains a trait for supported numerical value types in the
 //! C SuperLU library. The supported values types are float (f32),
 //! double (f64), complex float (num::Complex<f32>), and complex
 //! double (num::Complex<f64>).
+//!
+//! To change:
+//! - Remove the mtype argument from all functions
+//! - Change simple_driver to return output arguments (including
+//!   the perm_r argument).
+//! - Change simple_driver to use the SimpleDriverOptions argument.
+//! - Consider removing the c_ prefix from these functions (and from
+//!   related functions.
 
 use std::{ffi::CString, str::FromStr};
 

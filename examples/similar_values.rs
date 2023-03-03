@@ -13,7 +13,7 @@ fn main() {
     let num_rows = 5usize;
     let num_columns = 5usize;
     
-    let mut a = SparseMatrix::new(num_rows, num_columns);
+    let mut a = SparseMatrix::new();
 
     // Matrix elements
     let s: f64 = 19.0;

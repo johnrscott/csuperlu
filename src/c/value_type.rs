@@ -6,10 +6,6 @@
 //! double (num::Complex<f64>).
 //!
 //! To change:
-//! - Remove the mtype argument from all functions
-//! - Change simple_driver to return output arguments (including
-//!   the perm_r argument).
-//! - Change simple_driver to use the SimpleDriverOptions argument.
 //! - Consider removing the c_ prefix from these functions (and from
 //!   related functions.
 
@@ -25,11 +21,13 @@ use csuperlu_sys::{
     sCreate_Dense_Matrix, sPrint_Dense_Matrix, zCreate_Dense_Matrix, zPrint_Dense_Matrix,
     superlu_options_t, cgssv, dgssv, sgssv, zgssv, SuperMatrix,
     cPrint_SuperNode_Matrix, dPrint_SuperNode_Matrix, sPrint_SuperNode_Matrix,
-    zPrint_SuperNode_Matrix, Stype_t_SLU_NC, Dtype_t_SLU_S, Mtype_t, complex, doublecomplex,
-    Dtype_t_SLU_D, Dtype_t_SLU_Z, Dtype_t_SLU_C, Stype_t_SLU_DN,
+    zPrint_SuperNode_Matrix, Stype_t_SLU_NC, Dtype_t_SLU_S, complex, doublecomplex,
+    Dtype_t_SLU_D, Dtype_t_SLU_Z, Dtype_t_SLU_C, Stype_t_SLU_DN, Mtype_t_SLU_GE,
 };
 
-use crate::{Error, c::options::CSuperluOptions, c::stat::CSuperluStat, c::super_matrix::CSuperMatrix};
+use crate::{Error, c::stat::CSuperluStat, c::super_matrix::CSuperMatrix};
+
+use super::options::SimpleDriverOptions;
 
 /// Check necessary conditions for creating a compressed
 /// column matrix
@@ -80,9 +78,50 @@ fn c_string(string: &str) -> CString {
     std::ffi::CString::new(string).unwrap()
 }
 
+/// Make the permutation vectors for the simple driver. Pass
+/// the size of the matrix (square, num_rows or num_cols),
+/// the (optional) column permutation, and the options. If
+/// the column permutation is already specified, the options
+/// are modified to make SuperLU use the user columns
+fn make_simple_perms<P: ValueType<P>>(
+    size: usize,
+    perm_c: Option<Vec<i32>>,
+    mut options: SimpleDriverOptions,
+) -> (Vec<i32>, Vec<i32>, SimpleDriverOptions) {
+    let perm_c = match perm_c {
+	Some(perm) => {
+	    options.set_user_column_perm();
+	    perm
+	},
+	None => {
+	    let mut perm = Vec::<i32>::with_capacity(size);
+	    unsafe { perm.set_len(size); }
+	    perm
+	},
+    };
+
+    let mut perm_r = Vec::<i32>::with_capacity(size);
+    unsafe { perm_r.set_len(size); }
+
+    (perm_c, perm_r, options)
+}
+
+/// The items returned by the c_simple_driver functions
+///
+pub struct CSimpleSolution {
+    pub x: CSuperMatrix,
+    pub info: i32,
+    pub perm_c: Vec<i32>,
+    pub perm_r: Vec<i32>,
+    pub l: CSuperMatrix,
+    pub u: CSuperMatrix,
+}
+
+    
 /// Valid numerical value types for the C SuperLU library
 ///
 pub trait ValueType<P>: Num + Copy + FromStr + std::fmt::Debug {
+    
     /// Create a compressed-column matrix from raw vectors
     ///
     /// # Errors
@@ -110,7 +149,6 @@ pub trait ValueType<P>: Num + Copy + FromStr + std::fmt::Debug {
         non_zero_values: &mut Vec<P>,
         row_indices: &mut Vec<i32>,
         column_offsets: &mut Vec<i32>,
-        mtype: Mtype_t,
     ) -> Result<CSuperMatrix, Error>;
 
     /// Print a compressed-column matrix (using the print
@@ -139,7 +177,6 @@ pub trait ValueType<P>: Num + Copy + FromStr + std::fmt::Debug {
         num_rows: usize,
         num_columns: usize,
         column_major_values: &mut Vec<P>,
-        mtype: Mtype_t,
     ) -> Result<CSuperMatrix, Error>;
 
     /// Print a dense matrix (using the print
@@ -196,28 +233,24 @@ pub trait ValueType<P>: Num + Copy + FromStr + std::fmt::Debug {
     /// allocated structures (SuperMatrix::alloc).
     ///
     unsafe fn c_simple_driver(
-        options: &CSuperluOptions,
+        options: SimpleDriverOptions,
         a: &CSuperMatrix,
-        perm_c: &mut Vec<i32>,
-        perm_r: &mut Vec<i32>,
-        l: &mut CSuperMatrix,
-        u: &mut CSuperMatrix,
-        b: &mut CSuperMatrix,
+        perm_c: Option<Vec<i32>>,
+        b: CSuperMatrix,
         stat: &mut CSuperluStat,
-        info: &mut i32,
-    );
+    ) -> CSimpleSolution;
 }
 
 impl ValueType<f32> for f32 {
+ 
     unsafe fn c_create_comp_col_matrix(
         num_rows: usize,
         non_zero_values: &mut Vec<f32>,
         row_indices: &mut Vec<i32>,
         column_offsets: &mut Vec<i32>,
-        mtype: Mtype_t,
     ) -> Result<CSuperMatrix, Error> {
         check_comp_col_conditions(non_zero_values, row_indices, column_offsets)?;
-        let mut a = CSuperMatrix::alloc();
+        let a = CSuperMatrix::alloc();
         sCreate_CompCol_Matrix(
             a.super_matrix() as *const SuperMatrix as *mut SuperMatrix,
             i32::try_from(num_rows).unwrap(),
@@ -228,7 +261,7 @@ impl ValueType<f32> for f32 {
             column_offsets.as_mut_ptr(),
             Stype_t_SLU_NC,
             Dtype_t_SLU_S,
-            mtype,
+            Mtype_t_SLU_GE,
         );
         Ok(a)
     }
@@ -244,11 +277,10 @@ impl ValueType<f32> for f32 {
         num_rows: usize,
         num_columns: usize,
         column_major_values: &mut Vec<f32>,
-        mtype: Mtype_t,
     ) -> Result<CSuperMatrix, Error> {
         check_dense_conditions(num_rows, num_columns, column_major_values)?;
         unsafe {
-            let mut x = CSuperMatrix::alloc();
+            let x = CSuperMatrix::alloc();
             sCreate_Dense_Matrix(
                 x.super_matrix() as *const SuperMatrix as *mut SuperMatrix,
                 num_rows as i32,
@@ -257,7 +289,7 @@ impl ValueType<f32> for f32 {
                 num_rows as i32,
                 Stype_t_SLU_DN,
                 Dtype_t_SLU_S,
-                mtype,
+                Mtype_t_SLU_GE,
             );
             Ok(x)
         }
@@ -278,16 +310,18 @@ impl ValueType<f32> for f32 {
     }
 
     unsafe fn c_simple_driver(
-        options: &CSuperluOptions,
+        options: SimpleDriverOptions,
         a: &CSuperMatrix,
-        perm_c: &mut Vec<i32>,
-        perm_r: &mut Vec<i32>,
-        l: &mut CSuperMatrix,
-        u: &mut CSuperMatrix,
-        b: &mut CSuperMatrix,
+        perm_c: Option<Vec<i32>>,
+        b: CSuperMatrix,
         stat: &mut CSuperluStat,
-        info: &mut i32,
-    ) {
+    ) -> CSimpleSolution {
+	let mut info = 0i32;
+	let l = CSuperMatrix::alloc();
+        let u = CSuperMatrix::alloc();
+	let (mut perm_c, mut perm_r, options)
+	    = make_simple_perms::<f32>(a.num_columns(), perm_c, options);
+		
         sgssv(
             options.get_options() as *const superlu_options_t as *mut superlu_options_t,
             a.super_matrix() as *const SuperMatrix as *mut SuperMatrix,
@@ -297,8 +331,17 @@ impl ValueType<f32> for f32 {
             u.super_matrix() as *const SuperMatrix as *mut SuperMatrix,
             b.super_matrix() as *const SuperMatrix as *mut SuperMatrix,
             stat.get_stat(),
-            info,
+            &mut info,
         );
+
+	CSimpleSolution {
+	    x: b,
+	    info,
+	    perm_c,
+	    perm_r,
+	    l,
+	    u,
+	}
     }
 }
 
@@ -308,10 +351,9 @@ impl ValueType<f64> for f64 {
         non_zero_values: &mut Vec<f64>,
         row_indices: &mut Vec<i32>,
         column_offsets: &mut Vec<i32>,
-        mtype: Mtype_t,
     ) -> Result<CSuperMatrix, Error> {
         check_comp_col_conditions(non_zero_values, row_indices, column_offsets)?;
-        let mut a = CSuperMatrix::alloc();
+        let a = CSuperMatrix::alloc();
         dCreate_CompCol_Matrix(
             a.super_matrix() as *const SuperMatrix as *mut SuperMatrix,
             i32::try_from(num_rows).unwrap(),
@@ -322,7 +364,7 @@ impl ValueType<f64> for f64 {
             column_offsets.as_mut_ptr(),
             Stype_t_SLU_NC,
             Dtype_t_SLU_D,
-            mtype,
+            Mtype_t_SLU_GE,
         );
         Ok(a)
     }
@@ -338,11 +380,10 @@ impl ValueType<f64> for f64 {
         num_rows: usize,
         num_columns: usize,
         column_major_values: &mut Vec<f64>,
-        mtype: Mtype_t,
     ) -> Result<CSuperMatrix, Error> {
         check_dense_conditions(num_rows, num_columns, column_major_values)?;
         unsafe {
-            let mut x = CSuperMatrix::alloc();
+            let x = CSuperMatrix::alloc();
             dCreate_Dense_Matrix(
                 x.super_matrix() as *const SuperMatrix as *mut SuperMatrix,
                 num_rows as i32,
@@ -351,7 +392,7 @@ impl ValueType<f64> for f64 {
                 num_rows as i32,
                 Stype_t_SLU_DN,
                 Dtype_t_SLU_D,
-                mtype,
+		Mtype_t_SLU_GE,
             );
             Ok(x)
         }
@@ -372,16 +413,19 @@ impl ValueType<f64> for f64 {
     }
 
     unsafe fn c_simple_driver(
-        options: &CSuperluOptions,
+        options: SimpleDriverOptions,
         a: &CSuperMatrix,
-        perm_c: &mut Vec<i32>,
-        perm_r: &mut Vec<i32>,
-        l: &mut CSuperMatrix,
-        u: &mut CSuperMatrix,
-        b: &mut CSuperMatrix,
+        perm_c: Option<Vec<i32>>,
+        b: CSuperMatrix,
         stat: &mut CSuperluStat,
-        info: &mut i32,
-    ) {
+    ) -> CSimpleSolution {
+
+	let mut info = 0i32;
+	let l = CSuperMatrix::alloc();
+        let u = CSuperMatrix::alloc();
+	let (mut perm_c, mut perm_r, options)
+	    = make_simple_perms::<f64>(a.num_columns(), perm_c, options);
+
         dgssv(
             options.get_options() as *const superlu_options_t as *mut superlu_options_t,
             a.super_matrix() as *const SuperMatrix as *mut SuperMatrix,
@@ -391,8 +435,17 @@ impl ValueType<f64> for f64 {
             u.super_matrix() as *const SuperMatrix as *mut SuperMatrix,
             b.super_matrix() as *const SuperMatrix as *mut SuperMatrix,
             stat.get_stat(),
-            info,
+            &mut info,
         );
+
+	CSimpleSolution {
+	    x: b,
+	    info,
+	    perm_c,
+	    perm_r,
+	    l,
+	    u,
+	}
     }
 }
 
@@ -402,10 +455,9 @@ impl ValueType<num::Complex<f32>> for num::Complex<f32> {
         non_zero_values: &mut Vec<num::Complex<f32>>,
         row_indices: &mut Vec<i32>,
         column_offsets: &mut Vec<i32>,
-        mtype: Mtype_t,
     ) -> Result<CSuperMatrix, Error> {
         check_comp_col_conditions(non_zero_values, row_indices, column_offsets)?;
-        let mut a = CSuperMatrix::alloc();
+        let a = CSuperMatrix::alloc();
         cCreate_CompCol_Matrix(
             a.super_matrix() as *const SuperMatrix as *mut SuperMatrix,
             i32::try_from(num_rows).unwrap(),
@@ -416,7 +468,7 @@ impl ValueType<num::Complex<f32>> for num::Complex<f32> {
             column_offsets.as_mut_ptr(),
             Stype_t_SLU_NC,
             Dtype_t_SLU_C,
-            mtype,
+            Mtype_t_SLU_GE,
         );
         Ok(a)
     }
@@ -432,11 +484,10 @@ impl ValueType<num::Complex<f32>> for num::Complex<f32> {
         num_rows: usize,
         num_columns: usize,
         column_major_values: &mut Vec<num::Complex<f32>>,
-        mtype: Mtype_t,
     ) -> Result<CSuperMatrix, Error> {
         check_dense_conditions(num_rows, num_columns, column_major_values)?;
         unsafe {
-            let mut x = CSuperMatrix::alloc();
+            let x = CSuperMatrix::alloc();
             cCreate_Dense_Matrix(
                 x.super_matrix() as *const SuperMatrix as *mut SuperMatrix,
                 num_rows as i32,
@@ -445,7 +496,7 @@ impl ValueType<num::Complex<f32>> for num::Complex<f32> {
                 num_rows as i32,
                 Stype_t_SLU_DN,
                 Dtype_t_SLU_C,
-                mtype,
+                Mtype_t_SLU_GE,
             );
             Ok(x)
         }
@@ -466,17 +517,19 @@ impl ValueType<num::Complex<f32>> for num::Complex<f32> {
     }
 
     unsafe fn c_simple_driver(
-        options: &CSuperluOptions,
+        options: SimpleDriverOptions,
         a: &CSuperMatrix,
-        perm_c: &mut Vec<i32>,
-        perm_r: &mut Vec<i32>,
-        l: &mut CSuperMatrix,
-        u: &mut CSuperMatrix,
-        b: &mut CSuperMatrix,
+        perm_c: Option<Vec<i32>>,
+        b: CSuperMatrix,
         stat: &mut CSuperluStat,
-        info: &mut i32,
-    ) {
-        cgssv(
+    ) -> CSimpleSolution {
+	let mut info = 0i32;
+	let l = CSuperMatrix::alloc();
+        let u = CSuperMatrix::alloc();
+	let (mut perm_c, mut perm_r, options)
+	    = make_simple_perms::<num::Complex<f32>>(a.num_columns(), perm_c, options);
+
+	cgssv(
             options.get_options() as *const superlu_options_t as *mut superlu_options_t,
             a.super_matrix() as *const SuperMatrix as *mut SuperMatrix,
             perm_c.as_mut_ptr(),
@@ -485,8 +538,18 @@ impl ValueType<num::Complex<f32>> for num::Complex<f32> {
             u.super_matrix() as *const SuperMatrix as *mut SuperMatrix,
             b.super_matrix() as *const SuperMatrix as *mut SuperMatrix,
             stat.get_stat(),
-            info,
+            &mut info,
         );
+
+	CSimpleSolution {
+	    x: b,
+	    info,
+	    perm_c,
+	    perm_r,
+	    l,
+	    u,
+	}
+
     }
 }
 
@@ -496,10 +559,9 @@ impl ValueType<num::Complex<f64>> for num::Complex<f64> {
         non_zero_values: &mut Vec<num::Complex<f64>>,
         row_indices: &mut Vec<i32>,
         column_offsets: &mut Vec<i32>,
-        mtype: Mtype_t,
     ) -> Result<CSuperMatrix, Error> {
         check_comp_col_conditions(non_zero_values, row_indices, column_offsets)?;
-        let mut a = CSuperMatrix::alloc();
+        let a = CSuperMatrix::alloc();
         zCreate_CompCol_Matrix(
             a.super_matrix() as *const SuperMatrix as *mut SuperMatrix,
             i32::try_from(num_rows).unwrap(),
@@ -510,7 +572,7 @@ impl ValueType<num::Complex<f64>> for num::Complex<f64> {
             column_offsets.as_mut_ptr(),
             Stype_t_SLU_NC,
             Dtype_t_SLU_Z,
-            mtype,
+            Mtype_t_SLU_GE,
         );
         Ok(a)
     }
@@ -526,11 +588,10 @@ impl ValueType<num::Complex<f64>> for num::Complex<f64> {
         num_rows: usize,
         num_columns: usize,
         column_major_values: &mut Vec<num::Complex<f64>>,
-        mtype: Mtype_t,
     ) -> Result<CSuperMatrix, Error> {
         check_dense_conditions(num_rows, num_columns, column_major_values)?;
         unsafe {
-            let mut x = CSuperMatrix::alloc();
+            let x = CSuperMatrix::alloc();
             zCreate_Dense_Matrix(
                 x.super_matrix() as *const SuperMatrix as *mut SuperMatrix,
                 num_rows as i32,
@@ -539,7 +600,7 @@ impl ValueType<num::Complex<f64>> for num::Complex<f64> {
                 num_rows as i32,
                 Stype_t_SLU_DN,
                 Dtype_t_SLU_Z,
-                mtype,
+                Mtype_t_SLU_GE,
             );
             Ok(x)
         }
@@ -560,17 +621,19 @@ impl ValueType<num::Complex<f64>> for num::Complex<f64> {
     }
 
     unsafe fn c_simple_driver(
-        options: &CSuperluOptions,
+        options: SimpleDriverOptions,
         a: &CSuperMatrix,
-        perm_c: &mut Vec<i32>,
-        perm_r: &mut Vec<i32>,
-        l: &mut CSuperMatrix,
-        u: &mut CSuperMatrix,
-        b: &mut CSuperMatrix,
+        perm_c: Option<Vec<i32>>,
+        b: CSuperMatrix,
         stat: &mut CSuperluStat,
-        info: &mut i32,
-    ) {
-        zgssv(
+    ) -> CSimpleSolution {
+	let mut info = 0i32;
+	let l = CSuperMatrix::alloc();
+        let u = CSuperMatrix::alloc();
+	let (mut perm_c, mut perm_r, options)
+	    = make_simple_perms::<num::Complex<f64>>(a.num_columns(), perm_c, options);
+
+	zgssv(
             options.get_options() as *const superlu_options_t as *mut superlu_options_t,
             a.super_matrix() as *const SuperMatrix as *mut SuperMatrix,
             perm_c.as_mut_ptr(),
@@ -579,7 +642,16 @@ impl ValueType<num::Complex<f64>> for num::Complex<f64> {
             u.super_matrix() as *const SuperMatrix as *mut SuperMatrix,
             b.super_matrix() as *const SuperMatrix as *mut SuperMatrix,
             stat.get_stat(),
-            info,
+            &mut info,
         );
+
+	CSimpleSolution {
+	    x: b,
+	    info,
+	    perm_c,
+	    perm_r,
+	    l,
+	    u,
+	}
     }
 }

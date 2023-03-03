@@ -20,10 +20,9 @@
 
 use crate::comp_col::CompColMatrix;
 use crate::dense::DenseMatrix;
-use crate::c::options::{CSuperluOptions, ColumnPermPolicy};
+use crate::c::options::{ColumnPermPolicy, SimpleDriverOptions};
 use crate::c::stat::CSuperluStat;
-use crate::c::super_matrix::CSuperMatrix;
-use crate::c::value_type::ValueType;
+use crate::c::value_type::{ValueType, CSimpleSolution};
 
 use crate::lu_decomp::LUDecomp;
 use crate::super_node::SuperNodeMatrix;
@@ -106,86 +105,6 @@ pub struct SamePattern<P: ValueType<P>> {
     pub column_perm: ColumnPerm,
 }
 
-/// Defines a sparse linear system $AX = B$ and predefined
-/// column and row permutations for use during the solution
-pub struct SimilarValues<P: ValueType<P>> {
-    /// The (sparse) matrix $A$
-    pub a: CompColMatrix<P>,
-    /// The right-hand side(s) matrix $B$
-    pub b: DenseMatrix<P>,
-    /// The column permutation to use for the solution
-    pub column_perm: ColumnPerm,
-    /// The row permutation to use for the solution
-    pub row_perm: RowPerm,
-}
-
-impl<P: ValueType<P>> SimilarValues<P> {
-    pub fn solve(
-	self,
-	stat: &mut CSuperluStat,
-    ) -> Result<SimpleSolution<P>, SolverError> {
-
-	let SimilarValues {
-	    a,
-	    b,
-	    column_perm: ColumnPerm {
-		mut column_perm,
-	    },
-	    row_perm: RowPerm {
-		mut row_perm,
-	    }
-
-	} = self;
-
-	// TODO: Check for invalid dimensions
-
-	let mut options = CSuperluOptions::new();
-
-	// Use the same column permutation. In the dgssv
-	// (simple driver) source code, the options.Fact
-	// value must be set to DOFACT (it is not allowed
-	// to use SamePattern). The use of a user supplied
-	// column permutation is controlled by MY_PERMC,
-	// which, if specified, means that get_perm_c
-	// (computing the column permutation) is not called
-	// (line 192-193, dgssv.c).
-	options.set_user_column_perm();
-	options.set_user_row_perm();
-	
-	let mut info = 0;
-	unsafe {
-	    let mut l = CSuperMatrix::alloc();
-            let mut u = CSuperMatrix::alloc();
-
-            let mut b_super_matrix = b.into_super_matrix();
-
-            P::c_simple_driver(
-		&mut options,
-		&mut a.super_matrix(),
-		&mut column_perm,
-		&mut row_perm,
-		&mut l,
-		&mut u,
-		&mut b_super_matrix,
-		stat,
-		&mut info,
-            );
-            let l = SuperNodeMatrix::from_super_matrix(l);
-            let u = CompColMatrix::from_super_matrix(u);
-            let lu = LUDecomp::from_matrices(l, u);
-            let x = DenseMatrix::<P>::from_super_matrix(b_super_matrix);
-	    let column_perm = ColumnPerm::from_raw(column_perm);
-	    let row_perm = RowPerm::from_raw(row_perm);
-	    
-            if info != 0 {
-		Err(SolverError { info })
-            } else {
-		Ok(SimpleSolution { a, x, lu, column_perm, row_perm })
-            }
-	}
-    }
-}
-
 impl<P: ValueType<P>> SamePattern<P> {
     pub fn solve(
 	self,
@@ -196,50 +115,38 @@ impl<P: ValueType<P>> SamePattern<P> {
 	    a,
 	    b,
 	    column_perm: ColumnPerm {
-		mut column_perm,
+		column_perm,
 	    }
 	} = self;
 
 	// TODO: Check for invalid dimensions
 
-	let mut options = CSuperluOptions::new();
+	let options = SimpleDriverOptions::new();
 
-	// Use the same column permutation. In the dgssv
-	// (simple driver) source code, the options.Fact
-	// value must be set to DOFACT (it is not allowed
-	// to use SamePattern). The use of a user supplied
-	// column permutation is controlled by MY_PERMC,
-	// which, if specified, means that get_perm_c
-	// (computing the column permutation) is not called
-	// (line 192-193, dgssv.c).
-	options.set_user_column_perm();
-	
-	let mut row_perm = Vec::<i32>::with_capacity(a.num_rows());
-
-	let mut info = 0;
 	unsafe {
-	    let mut l = CSuperMatrix::alloc();
-            let mut u = CSuperMatrix::alloc();
+            let b_super_matrix = b.into_super_matrix();
 
-            let mut b_super_matrix = b.into_super_matrix();
-
-            P::c_simple_driver(
-		&mut options,
+            let CSimpleSolution {
+		x,
+		info,
+		perm_c,
+		perm_r,
+		l,
+		u,
+	    } = P::c_simple_driver(
+		options,
 		&mut a.super_matrix(),
-		&mut column_perm,
-		&mut row_perm,
-		&mut l,
-		&mut u,
-		&mut b_super_matrix,
+		Some(column_perm),
+		b_super_matrix,
 		stat,
-		&mut info,
             );
+	    
             let l = SuperNodeMatrix::from_super_matrix(l);
             let u = CompColMatrix::from_super_matrix(u);
             let lu = LUDecomp::from_matrices(l, u);
-            let x = DenseMatrix::<P>::from_super_matrix(b_super_matrix);
-	    let column_perm = ColumnPerm::from_raw(column_perm);
-	    let row_perm = RowPerm::from_raw(row_perm);
+            let x = DenseMatrix::<P>::from_super_matrix(x);
+	    let column_perm = ColumnPerm::from_raw(perm_c);
+	    let row_perm = RowPerm::from_raw(perm_r);
 	    
             if info != 0 {
 		Err(SolverError { info })
@@ -275,42 +182,32 @@ impl<P: ValueType<P>> SimpleSystem<P> {
 
 	// TODO: Check for invalid dimensions
 
-	let mut options = CSuperluOptions::new();
-	options.set_column_perm_policy(column_perm_policy);
+	let mut options = SimpleDriverOptions::new();
+	options.set_superlu_column_perm(column_perm_policy);
 	
-	let mut column_perm = Vec::<i32>::with_capacity(a.num_columns());
-	let mut row_perm = Vec::<i32>::with_capacity(a.num_rows());
 	unsafe {
-	    column_perm.set_len(a.num_columns());
-	    row_perm.set_len(a.num_rows());
-	}
+            let b_super_matrix = b.into_super_matrix();
 
-	b.print("B");
-	
-	let mut info = 0;
-	unsafe {
-	    let mut l = CSuperMatrix::alloc();
-            let mut u = CSuperMatrix::alloc();
-	    
-            let mut b_super_matrix = b.into_super_matrix();
-
-            P::c_simple_driver(
-		&mut options,
+	    let CSimpleSolution {
+		x,
+		info,
+		perm_c,
+		perm_r,
+		l,
+		u,
+	    } = P::c_simple_driver(
+		options,
 		&mut a.super_matrix(),
-		&mut column_perm,
-		&mut row_perm,
-		&mut l,
-		&mut u,
-		&mut b_super_matrix,
+		None,
+		b_super_matrix,
 		stat,
-		&mut info,
             );
             let l = SuperNodeMatrix::from_super_matrix(l);
             let u = CompColMatrix::from_super_matrix(u);
             let lu = LUDecomp::from_matrices(l, u);
-            let x = DenseMatrix::<P>::from_super_matrix(b_super_matrix);
-	    let column_perm = ColumnPerm::from_raw(column_perm);
-	    let row_perm = RowPerm::from_raw(row_perm);
+            let x = DenseMatrix::<P>::from_super_matrix(x);
+	    let column_perm = ColumnPerm::from_raw(perm_c);
+	    let row_perm = RowPerm::from_raw(perm_r);
 	    
             if info != 0 {
 		Err(SolverError { info })

@@ -1,7 +1,7 @@
 use csuperlu::sparse_matrix::SparseMatrix;
 
 fn main() {
-    let mut a = SparseMatrix::new(5, 5);
+    let mut a = SparseMatrix::new();
     // Matrix elements
     let s: f64 = 19.0;
     let u: f64 = 21.0;

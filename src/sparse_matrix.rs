@@ -12,20 +12,24 @@ pub struct SparseMatrix<P: ValueType<P>> {
 }
 
 impl<P: ValueType<P>> SparseMatrix<P> {
-    pub fn new(num_rows: usize, num_cols: usize) -> Self {
+    pub fn new() -> Self {
         Self {
-            num_rows,
-            num_cols,
+            num_rows: 0,
+            num_cols: 0,
             values: HashMap::new(),
         }
     }
 
     // TODO: Can we overload something to make the input nicer, e.g a[row, col] = value
     pub fn set_value(&mut self, row: usize, col: usize, value: P) {
-        if row >= self.num_rows || col >= self.num_cols {
-            panic!("Index out of range");
-        }
-
+	// Keep track of new size
+	if row >= self.num_rows {
+	    self.num_rows = row + 1;
+	}
+	if col >= self.num_cols {
+	    self.num_cols = col + 1;
+	}	
+	
 	if value == P::zero() {
 	    if self.values.contains_key(&(row, col)) {
 		self.values.remove(&(row, col));

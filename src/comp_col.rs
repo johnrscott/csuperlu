@@ -15,7 +15,7 @@
 use crate::c::free::c_destroy_comp_col_matrix;
 use crate::harwell_boeing::HarwellBoeingMatrix;
 use crate::c::super_matrix::CSuperMatrix;
-use csuperlu_sys::{Mtype_t_SLU_GE, NCformat};
+use csuperlu_sys::NCformat;
 use crate::c::value_type::ValueType;
 use std::fs;
 use std::ops::Mul;
@@ -85,7 +85,6 @@ impl<P: ValueType<P>> CompColMatrix<P> {
                 &mut non_zero_values,
                 &mut row_indices,
                 &mut column_offsets,
-                Mtype_t_SLU_GE,
             )
             .expect("Error creating comp col -- replace with error handling");
             // The freeing of the input vectors is handed over

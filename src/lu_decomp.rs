@@ -27,7 +27,7 @@ impl<P: ValueType<P>> LUDecomp<P> {
     }
     pub fn value(&mut self, row: usize, col: usize) -> P {
         let l_c_super_matrix = self.l.super_matrix();
-        let u_c_super_matrix = self.u.super_matrix();
+        let _u_c_super_matrix = self.u.super_matrix();
         assert!(
             row < l_c_super_matrix.num_rows(),
             "Row index out of range"

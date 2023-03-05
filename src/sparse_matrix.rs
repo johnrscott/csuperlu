@@ -20,6 +20,16 @@ impl<P: ValueType<P>> SparseMatrix<P> {
         }
     }
 
+    pub fn from_dict_of_keys(values: HashMap<(usize, usize), P>) -> Self {
+	let num_rows = values.iter().max_by_key(|entry| entry.0.0).unwrap().0.0 + 1;
+	let num_cols = values.iter().max_by_key(|entry| entry.0.1).unwrap().0.1 + 1;
+	Self {
+	    num_rows,
+	    num_cols,
+	    values
+	}
+    }
+
     // TODO: Can we overload something to make the input nicer, e.g a[row, col] = value
     pub fn set_value(&mut self, row: usize, col: usize, value: P) {
 	// Keep track of new size
@@ -91,6 +101,43 @@ impl<P: ValueType<P>> SparseMatrix<P> {
     pub fn values(&self) -> &HashMap<(usize, usize), P> {
 	&self.values
     }
+
+    pub fn print_structure(&self) {
+	for r in 0..self.num_rows {
+	    for c in 0..self.num_cols {
+		let res = self.values.get(&(r, c));
+		match res {
+		    None => print!("  "),
+		    Some(_) => print!("x "),
+		}
+	    }
+	    print!("\n");
+	}
+    }
+
+    /// Allow resizing (shrinking and expanding) as long as contents are preserved
+    /// Pads with additional rows and columns to fit new size
+    pub fn resize(&mut self, num_rows: usize, num_cols: usize) {
+	self.resize_rows(num_rows);
+	self.resize_cols(num_cols);
+    }
+
+    pub fn resize_rows(&mut self, num_rows: usize) {
+	let num_rows_actual = self.values.iter().max_by_key(|entry| entry.0.0).unwrap().0.0 + 1;
+	if num_rows < num_rows_actual {
+	    panic!("Cannot resize matrix (rows) to be smaller than its contents");
+	}
+	self.num_rows = num_rows;
+    }
+
+    pub fn resize_cols(&mut self, num_cols: usize) {
+	let num_cols_actual = self.values.iter().max_by_key(|entry| entry.0.1).unwrap().0.1 + 1;
+	if num_cols < num_cols_actual {
+	    panic!("Cannot resize matrix (cols) to be smaller than its contents");
+	}
+	self.num_cols = num_cols;
+    }
+
 }
 
 impl<P: ValueType<P>> fmt::Display for SparseMatrix<P> {

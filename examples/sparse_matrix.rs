@@ -30,8 +30,12 @@ fn main() {
     println!("{a}");
     println!("{}x{}: {}", a.num_rows(), a.num_cols(), a.num_non_zeros());
     println!("{:?}", a.values());
+    a.print_structure();
     
     let ccf = a.compressed_column_format();
     ccf.print("CCF");
 
+    let b = SparseMatrix::from_dict_of_keys(a.values().clone());
+    println!("{b}");
+    
 }

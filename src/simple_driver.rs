@@ -22,36 +22,77 @@ use crate::comp_col::CompColMatrix;
 use crate::dense::DenseMatrix;
 use crate::c::options::{ColumnPermPolicy, SimpleDriverOptions};
 use crate::c::stat::CSuperluStat;
-use crate::c::value_type::{ValueType, CSimpleSolution};
+use crate::c::value_type::{ValueType, CSimpleResult, Error};
 
 use crate::lu_decomp::LUDecomp;
 use crate::super_node::SuperNodeMatrix;
 
-use std::{error::Error, fmt};
-
-/// Errors from the solver
-#[derive(Debug)]
-pub struct SolverError {
-    /// info != 0 indicates solver error. See e.g. dgssv documentation
-    /// for the meaning of info.
-    info: i32,
-}
-
-impl Error for SolverError {}
-
-impl fmt::Display for SolverError {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "Failed to solve the linear system; info = {}", self.info)
-    }
-}
-
 /// Contains the solution corresponding to a SimpleSystem
-pub struct SimpleSolution<P: ValueType<P>> {
-    pub a: CompColMatrix<P>,
-    pub x: DenseMatrix<P>,
-    pub lu: LUDecomp<P>,
-    pub column_perm: ColumnPerm,
-    pub row_perm: RowPerm,
+pub enum SimpleResult<P: ValueType<P>> {
+    /// The solution was computed without any errors
+    Solution {
+	a: CompColMatrix<P>,
+	x: DenseMatrix<P>,
+	lu: LUDecomp<P>,
+	column_perm: ColumnPerm,
+	row_perm: RowPerm,
+    },
+    /// The $LU$-factorisation was computed, but the
+    /// $A$ is singular (the factor $U$ contains a 0 at
+    /// index singular_col), and the solution was not
+    /// computed
+    SingularFactorisation {
+	a: CompColMatrix<P>,
+	singular_column: usize,
+	lu: LUDecomp<P>,
+	column_perm: ColumnPerm,
+	row_perm: RowPerm,
+    },
+    /// A different kind of error occured
+    Err(Error)
+}
+
+impl<P: ValueType<P>> SimpleResult<P> {
+
+    /// This function turns the result type from c_simple_driver into
+    /// whatever we want to serve up to users of the solve function
+    unsafe fn from_c_result(
+	a: CompColMatrix<P>,
+	result: CSimpleResult
+    ) -> Self {
+	match result {
+	    CSimpleResult::Solution {
+		x,
+		perm_c,
+		perm_r,
+		l,
+		u
+	    } => {
+		let l = SuperNodeMatrix::from_super_matrix(l);
+		let u = CompColMatrix::from_super_matrix(u);
+		let lu = LUDecomp::from_matrices(l, u);
+		let x = DenseMatrix::<P>::from_super_matrix(x);
+		let column_perm = ColumnPerm::from_raw(perm_c);
+		let row_perm = RowPerm::from_raw(perm_r);
+		Self::Solution { a, x, lu, column_perm, row_perm }
+	    },
+	    CSimpleResult::SingularFact {
+		singular_column,
+		perm_c,
+		perm_r,
+		l,
+		u
+	    } => {
+		let l = SuperNodeMatrix::from_super_matrix(l);
+		let u = CompColMatrix::from_super_matrix(u);
+		let lu = LUDecomp::from_matrices(l, u);
+		let column_perm = ColumnPerm::from_raw(perm_c);
+		let row_perm = RowPerm::from_raw(perm_r);
+		Self::SingularFactorisation { a, lu, singular_column, column_perm, row_perm }
+	    },
+	    CSimpleResult::Err(err) => Self::Err(err),
+	}
+    }
 }
 
 /// Stores a column permutation vector
@@ -109,7 +150,7 @@ impl<P: ValueType<P>> SamePattern<P> {
     pub fn solve(
 	self,
 	stat: &mut CSuperluStat,
-    ) -> Result<SimpleSolution<P>, SolverError> {
+    ) -> SimpleResult<P> {
 
 	let SamePattern {
 	    a,
@@ -126,14 +167,7 @@ impl<P: ValueType<P>> SamePattern<P> {
 	unsafe {
             let b_super_matrix = b.into_super_matrix();
 
-            let CSimpleSolution {
-		x,
-		info,
-		perm_c,
-		perm_r,
-		l,
-		u,
-	    } = P::c_simple_driver(
+	    let result = P::c_simple_driver(
 		options,
 		&mut a.super_matrix(),
 		Some(column_perm),
@@ -141,18 +175,7 @@ impl<P: ValueType<P>> SamePattern<P> {
 		stat,
             );
 	    
-            let l = SuperNodeMatrix::from_super_matrix(l);
-            let u = CompColMatrix::from_super_matrix(u);
-            let lu = LUDecomp::from_matrices(l, u);
-            let x = DenseMatrix::<P>::from_super_matrix(x);
-	    let column_perm = ColumnPerm::from_raw(perm_c);
-	    let row_perm = RowPerm::from_raw(perm_r);
-	    
-            if info != 0 {
-		Err(SolverError { info })
-            } else {
-		Ok(SimpleSolution { a, x, lu, column_perm, row_perm })
-            }
+	    SimpleResult::<P>::from_c_result(a, result)
 	}
     }
 }
@@ -176,7 +199,7 @@ impl<P: ValueType<P>> SimpleSystem<P> {
 	self,
 	stat: &mut CSuperluStat,
 	column_perm_policy: ColumnPermPolicy,
-    ) -> Result<SimpleSolution<P>, SolverError> {
+    ) -> SimpleResult<P> {
 
 	let SimpleSystem {a, b} = self;
 
@@ -188,32 +211,15 @@ impl<P: ValueType<P>> SimpleSystem<P> {
 	unsafe {
             let b_super_matrix = b.into_super_matrix();
 
-	    let CSimpleSolution {
-		x,
-		info,
-		perm_c,
-		perm_r,
-		l,
-		u,
-	    } = P::c_simple_driver(
+	    let result = P::c_simple_driver(
 		options,
 		&mut a.super_matrix(),
 		None,
 		b_super_matrix,
 		stat,
             );
-            let l = SuperNodeMatrix::from_super_matrix(l);
-            let u = CompColMatrix::from_super_matrix(u);
-            let lu = LUDecomp::from_matrices(l, u);
-            let x = DenseMatrix::<P>::from_super_matrix(x);
-	    let column_perm = ColumnPerm::from_raw(perm_c);
-	    let row_perm = RowPerm::from_raw(perm_r);
-	    
-            if info != 0 {
-		Err(SolverError { info })
-            } else {
-		Ok(SimpleSolution { a, x, lu, column_perm, row_perm })
-            }
+
+	    SimpleResult::<P>::from_c_result(a, result)
 	}
     }
 }

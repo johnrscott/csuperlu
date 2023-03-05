@@ -5,7 +5,7 @@ use csuperlu::comp_col::CompColMatrix;
 use csuperlu::dense::DenseMatrix;
 use csuperlu::c::options::ColumnPermPolicy;
 use csuperlu::simple_driver::SimpleSystem;
-use csuperlu::simple_driver::SimpleSolution;
+use csuperlu::simple_driver::SimpleResult;
 use csuperlu::c::stat::CSuperluStat;
 use csuperlu::utils::distance;
 
@@ -20,7 +20,6 @@ fn main() {
 
     let mut a = CompColMatrix::<f64>::from_harwell_boeing(file_path);
     let num_rows = a.num_rows();
-    let num_columns = a.num_columns();
     a.print("a");
 
     // Make the true solution vector
@@ -35,14 +34,17 @@ fn main() {
 
     let mut stat = CSuperluStat::new();
 
-    let SimpleSolution {
-	mut x,
-	..
-    } = SimpleSystem {
+    let result = SimpleSystem {
 	a,
 	b,
-    }.solve(&mut stat, ColumnPermPolicy::Natural)
-	.expect("Failed to solve linear system");
+    }.solve(&mut stat, ColumnPermPolicy::Natural);
+
+    let mut x = match result {
+	SimpleResult::Solution { x, .. } => x,
+	SimpleResult::SingularFactorisation { singular_column, ..} =>
+	    panic!("A is singular at column {singular_column}"),
+	SimpleResult::Err(err) => panic!("Got solver error {:?}", err),
+    };
 
     x.print("X");
 

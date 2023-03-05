@@ -25,7 +25,31 @@ use csuperlu_sys::{
     Dtype_t_SLU_D, Dtype_t_SLU_Z, Dtype_t_SLU_C, Stype_t_SLU_DN, Mtype_t_SLU_GE,
 };
 
-use crate::{Error, c::stat::CSuperluStat, c::super_matrix::CSuperMatrix};
+use crate::{c::stat::CSuperluStat, c::super_matrix::CSuperMatrix};
+
+use std::fmt;
+
+#[derive(Debug)]
+pub enum Error {
+    CompColError,
+    DenseMatrixError,
+    OutOfMemory { mem_alloc_at_failure: usize },
+    UnknownError,
+}
+
+impl std::error::Error for Error {}
+
+impl fmt::Display for Error {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+	match self {
+	    Self::UnknownError => write!(f, "An unknown error occured"),
+	    Self::CompColError => write!(f, "An error occured creating a compressed column matrix"),
+	    Self::DenseMatrixError => write!(f, "An error occured creating a dense matrix"),
+	    Self::OutOfMemory { mem_alloc_at_failure } =>
+		write!(f, "Simple driver ran out of memory ({mem_alloc_at_failure} B allocated at failure)"),
+	}
+    }
+}
 
 use super::options::SimpleDriverOptions;
 
@@ -42,14 +66,14 @@ fn check_comp_col_conditions<T>(
     column_offsets: &mut Vec<i32>,
 ) -> Result<(), Error> {
     if column_offsets.len() == 0 {
-        return Err(Error {});
+        return Err(Error::CompColError);
     }
     if non_zero_values.len() != row_indices.len() {
-        return Err(Error {});
+        return Err(Error::CompColError);
     }
     let num_non_zeros = *column_offsets.last().unwrap();
     if row_indices.len() != num_non_zeros.try_into().unwrap() {
-        return Err(Error {});
+        return Err(Error::CompColError);
     }
     Ok(())
 }
@@ -68,7 +92,7 @@ fn check_dense_conditions<T>(
     column_major_values: &mut Vec<T>,
 ) -> Result<(), Error> {
     if column_major_values.len() != num_rows * num_columns {
-        return Err(Error {});
+        return Err(Error::DenseMatrixError);
     }
     Ok(())
 }
@@ -83,7 +107,7 @@ fn c_string(string: &str) -> CString {
 /// the (optional) column permutation, and the options. If
 /// the column permutation is already specified, the options
 /// are modified to make SuperLU use the user columns
-fn make_simple_perms<P: ValueType<P>>(
+fn make_simple_perms(
     size: usize,
     perm_c: Option<Vec<i32>>,
     mut options: SimpleDriverOptions,
@@ -108,17 +132,83 @@ fn make_simple_perms<P: ValueType<P>>(
 
 /// The items returned by the c_simple_driver functions
 ///
-pub struct CSimpleSolution {
-    pub x: CSuperMatrix,
-    pub info: i32,
-    pub perm_c: Vec<i32>,
-    pub perm_r: Vec<i32>,
-    pub l: CSuperMatrix,
-    pub u: CSuperMatrix,
+pub enum CSimpleResult {
+    /// The solution completed successfully (A was not
+    /// singular, and no memory errors occured)
+    Solution {
+	x: CSuperMatrix,
+	perm_c: Vec<i32>,
+	perm_r: Vec<i32>,
+	l: CSuperMatrix,
+	u: CSuperMatrix,
+    },
+    /// The factorisatio completed successfully, but A
+    /// was singular so no solution was returned
+    SingularFact {
+	singular_column: usize,
+	perm_c: Vec<i32>,
+	perm_r: Vec<i32>,
+	l: CSuperMatrix,
+	u: CSuperMatrix,	
+    },
+    /// An out-of-memory error or another (unknown) error
+    /// occured.
+    Err(Error),
 }
 
-    
-/// Valid numerical value types for the C SuperLU library
+impl CSimpleResult {
+
+    /// Find the return type from a *gssv routine
+    ///
+    /// The success or failure of the *gssv routines is
+    /// indicated by the info argument, which is expected
+    /// to be non-negative. 0 indicates success (factorisation
+    /// and solution have been found). 0 < info < num_cols_a
+    /// means that A was singular, then U is exactly singular,
+    /// due to U(i,i) == 0 (here, the matrix diagonal is indexed
+    /// from 1). If info > num_cols_a, then a memory failure
+    /// occured. In that case, (info - num_cols_a) is the number
+    /// of bytes allocated when the failure occured. TODO check
+    /// the superlu source code that this is not out-by-one.
+    fn from_vectors(
+	info: i32,
+	num_cols_a: usize,
+	x: CSuperMatrix,
+	perm_c: Vec<i32>,
+	perm_r: Vec<i32>,
+	l: CSuperMatrix,
+	u: CSuperMatrix,
+    ) -> Self {
+	if info < 0 {
+	    // Check for invalid (negative) info
+	    Self::Err(Error::UnknownError)
+	} else if info == 0 {
+	    // Success -- system solved
+	    Self::Solution {
+		x,
+		perm_c,
+		perm_r,
+		l,
+		u,
+	    }
+	} else if info as usize <= num_cols_a {
+	    // A is singular, factorisation successful
+	    Self::SingularFact {
+		singular_column: info as usize - 1,
+		perm_c,
+		perm_r,
+		l,
+		u,
+	    }
+	} else {
+	    // Failed due to singular A -- factorisation complete
+	    let mem_alloc_at_failure = info as usize - num_cols_a;
+	    Self::Err(Error::OutOfMemory { mem_alloc_at_failure  })
+	}
+    }
+}
+
+// Valid numerical value types for the C SuperLU library
 ///
 pub trait ValueType<P>: Num + Copy + FromStr + std::fmt::Debug {
     
@@ -238,7 +328,7 @@ pub trait ValueType<P>: Num + Copy + FromStr + std::fmt::Debug {
         perm_c: Option<Vec<i32>>,
         b: CSuperMatrix,
         stat: &mut CSuperluStat,
-    ) -> CSimpleSolution;
+    ) -> CSimpleResult;
 }
 
 impl ValueType<f32> for f32 {
@@ -315,12 +405,12 @@ impl ValueType<f32> for f32 {
         perm_c: Option<Vec<i32>>,
         b: CSuperMatrix,
         stat: &mut CSuperluStat,
-    ) -> CSimpleSolution {
+    ) -> CSimpleResult {
 	let mut info = 0i32;
 	let l = CSuperMatrix::alloc();
         let u = CSuperMatrix::alloc();
 	let (mut perm_c, mut perm_r, options)
-	    = make_simple_perms::<f32>(a.num_columns(), perm_c, options);
+	    = make_simple_perms(a.num_columns(), perm_c, options);
 		
         sgssv(
             options.get_options() as *const superlu_options_t as *mut superlu_options_t,
@@ -334,14 +424,7 @@ impl ValueType<f32> for f32 {
             &mut info,
         );
 
-	CSimpleSolution {
-	    x: b,
-	    info,
-	    perm_c,
-	    perm_r,
-	    l,
-	    u,
-	}
+	CSimpleResult::from_vectors(info, a.num_columns(), b, perm_c, perm_r, l, u,)
     }
 }
 
@@ -418,13 +501,13 @@ impl ValueType<f64> for f64 {
         perm_c: Option<Vec<i32>>,
         b: CSuperMatrix,
         stat: &mut CSuperluStat,
-    ) -> CSimpleSolution {
+    ) -> CSimpleResult {
 
 	let mut info = 0i32;
 	let l = CSuperMatrix::alloc();
         let u = CSuperMatrix::alloc();
 	let (mut perm_c, mut perm_r, options)
-	    = make_simple_perms::<f64>(a.num_columns(), perm_c, options);
+	    = make_simple_perms(a.num_columns(), perm_c, options);
 
         dgssv(
             options.get_options() as *const superlu_options_t as *mut superlu_options_t,
@@ -438,14 +521,7 @@ impl ValueType<f64> for f64 {
             &mut info,
         );
 
-	CSimpleSolution {
-	    x: b,
-	    info,
-	    perm_c,
-	    perm_r,
-	    l,
-	    u,
-	}
+	CSimpleResult::from_vectors(info, a.num_columns(), b, perm_c, perm_r, l, u,)
     }
 }
 
@@ -522,12 +598,12 @@ impl ValueType<num::Complex<f32>> for num::Complex<f32> {
         perm_c: Option<Vec<i32>>,
         b: CSuperMatrix,
         stat: &mut CSuperluStat,
-    ) -> CSimpleSolution {
+    ) -> CSimpleResult {
 	let mut info = 0i32;
 	let l = CSuperMatrix::alloc();
         let u = CSuperMatrix::alloc();
 	let (mut perm_c, mut perm_r, options)
-	    = make_simple_perms::<num::Complex<f32>>(a.num_columns(), perm_c, options);
+	    = make_simple_perms(a.num_columns(), perm_c, options);
 
 	cgssv(
             options.get_options() as *const superlu_options_t as *mut superlu_options_t,
@@ -541,15 +617,7 @@ impl ValueType<num::Complex<f32>> for num::Complex<f32> {
             &mut info,
         );
 
-	CSimpleSolution {
-	    x: b,
-	    info,
-	    perm_c,
-	    perm_r,
-	    l,
-	    u,
-	}
-
+	CSimpleResult::from_vectors(info, a.num_columns(), b, perm_c, perm_r, l, u,)
     }
 }
 
@@ -626,12 +694,12 @@ impl ValueType<num::Complex<f64>> for num::Complex<f64> {
         perm_c: Option<Vec<i32>>,
         b: CSuperMatrix,
         stat: &mut CSuperluStat,
-    ) -> CSimpleSolution {
+    ) -> CSimpleResult {
 	let mut info = 0i32;
 	let l = CSuperMatrix::alloc();
         let u = CSuperMatrix::alloc();
 	let (mut perm_c, mut perm_r, options)
-	    = make_simple_perms::<num::Complex<f64>>(a.num_columns(), perm_c, options);
+	    = make_simple_perms(a.num_columns(), perm_c, options);
 
 	zgssv(
             options.get_options() as *const superlu_options_t as *mut superlu_options_t,
@@ -645,13 +713,6 @@ impl ValueType<num::Complex<f64>> for num::Complex<f64> {
             &mut info,
         );
 
-	CSimpleSolution {
-	    x: b,
-	    info,
-	    perm_c,
-	    perm_r,
-	    l,
-	    u,
-	}
+	CSimpleResult::from_vectors(info, a.num_columns(), b, perm_c, perm_r, l, u,)
     }
 }

@@ -10,14 +10,13 @@
 
 use csuperlu::dense::DenseMatrix;
 use csuperlu::c::options::ColumnPermPolicy;
-use csuperlu::simple_driver::{SimpleSolution, SimpleSystem};
+use csuperlu::simple_driver::{SimpleResult, SimpleSystem};
 use csuperlu::c::stat::CSuperluStat;
 use csuperlu::sparse_matrix::SparseMatrix;
 
 fn main() {
 
     let num_rows = 5usize;
-    let num_columns = 5usize;
     
     let mut a = SparseMatrix::new();
 
@@ -45,7 +44,7 @@ fn main() {
     a.set_value(3, 4, u);
     
     // Make the left-hand side matrix
-    let mut a = a.compressed_column_format();
+    let a = a.compressed_column_format();
 
     // Make the RHS vector
     let nrhs = 1;
@@ -54,17 +53,18 @@ fn main() {
 
     let mut stat = CSuperluStat::new();
 
-    let SimpleSolution {
-	mut a,
-	mut x,
-	mut lu,
-	..
-    } = SimpleSystem {
+    let result = SimpleSystem {
 	a,
 	b,
-    }.solve(&mut stat, ColumnPermPolicy::Natural)
-	.expect("Failed to solve linear system");
-
+    }.solve(&mut stat, ColumnPermPolicy::Natural);
+    
+    let (mut x, mut a, mut lu) = match result {
+	SimpleResult::Solution { x, lu, a, .. } => (x, a, lu),
+	SimpleResult::SingularFactorisation { singular_column, ..} =>
+	    panic!("A is singular at column {singular_column}"),
+	SimpleResult::Err(err) => panic!("Got solver error {:?}", err),
+    };
+    
     // Print the performance statistics
     stat.print();
 

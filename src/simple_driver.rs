@@ -28,20 +28,37 @@ use crate::lu_decomp::LUDecomp;
 use crate::super_node::SuperNodeMatrix;
 
 /// Contains the solution corresponding to a SimpleSystem
-pub enum SimpleResult<P: ValueType<P>> {
-    /// The solution was computed without any errors
-    Solution {
-	a: CompColMatrix<P>,
-	x: DenseMatrix<P>,
-	lu: LUDecomp<P>,
-	column_perm: ColumnPerm,
-	row_perm: RowPerm,
-    },
+// pub enum SimpleResult<P: ValueType<P>> {
+//     /// The solution was computed without any errors
+//     Solution {
+// 	a: CompColMatrix<P>,
+// 	x: DenseMatrix<P>,
+// 	lu: LUDecomp<P>,
+// 	column_perm: ColumnPerm,
+// 	row_perm: RowPerm,
+//     },
+//     /// The $LU$-factorisation was computed, but the
+//     /// $A$ is singular (the factor $U$ contains a 0 at
+//     /// index singular_col), and the solution was not
+//     /// computed
+//     SingularFactorisation {
+// 	a: CompColMatrix<P>,
+// 	singular_column: usize,
+// 	lu: LUDecomp<P>,
+// 	column_perm: ColumnPerm,
+// 	row_perm: RowPerm,
+//     },
+//     /// A different kind of error occured
+//     Err(Error)
+// }
+
+#[derive(Debug)]
+pub enum SimpleError<P: ValueType<P>> {
     /// The $LU$-factorisation was computed, but the
     /// $A$ is singular (the factor $U$ contains a 0 at
     /// index singular_col), and the solution was not
     /// computed
-    SingularFactorisation {
+    Singular {
 	a: CompColMatrix<P>,
 	singular_column: usize,
 	lu: LUDecomp<P>,
@@ -49,49 +66,55 @@ pub enum SimpleResult<P: ValueType<P>> {
 	row_perm: RowPerm,
     },
     /// A different kind of error occured
-    Err(Error)
+    Other(Error)
 }
 
-impl<P: ValueType<P>> SimpleResult<P> {
+/// The solution was computed without any errors
+pub struct SimpleSolution<P: ValueType<P>> {
+    pub a: CompColMatrix<P>,
+    pub x: DenseMatrix<P>,
+    pub lu: LUDecomp<P>,
+    pub column_perm: ColumnPerm,
+    pub row_perm: RowPerm,
+}
 
-    /// This function turns the result type from c_simple_driver into
-    /// whatever we want to serve up to users of the solve function
-    unsafe fn from_c_result(
-	a: CompColMatrix<P>,
-	result: CSimpleResult
-    ) -> Self {
-	match result {
-	    CSimpleResult::Solution {
-		x,
-		perm_c,
-		perm_r,
-		l,
-		u
-	    } => {
-		let l = SuperNodeMatrix::from_super_matrix(l);
-		let u = CompColMatrix::from_super_matrix(u);
-		let lu = LUDecomp::from_matrices(l, u);
-		let x = DenseMatrix::<P>::from_super_matrix(x);
-		let column_perm = ColumnPerm::from_raw(perm_c);
-		let row_perm = RowPerm::from_raw(perm_r);
-		Self::Solution { a, x, lu, column_perm, row_perm }
-	    },
-	    CSimpleResult::SingularFact {
-		singular_column,
-		perm_c,
-		perm_r,
-		l,
-		u
-	    } => {
-		let l = SuperNodeMatrix::from_super_matrix(l);
-		let u = CompColMatrix::from_super_matrix(u);
-		let lu = LUDecomp::from_matrices(l, u);
-		let column_perm = ColumnPerm::from_raw(perm_c);
-		let row_perm = RowPerm::from_raw(perm_r);
-		Self::SingularFactorisation { a, lu, singular_column, column_perm, row_perm }
-	    },
-	    CSimpleResult::Err(err) => Self::Err(err),
-	}
+/// This function turns the result type from c_simple_driver into
+/// whatever we want to serve up to users of the solve function
+unsafe fn from_c_result<P: ValueType<P>>(
+    a: CompColMatrix<P>,
+    result: CSimpleResult
+) -> Result<SimpleSolution<P>, SimpleError<P>> {
+    match result {
+	CSimpleResult::Solution {
+	    x,
+	    perm_c,
+	    perm_r,
+	    l,
+	    u
+	} => {
+	    let l = SuperNodeMatrix::from_super_matrix(l);
+	    let u = CompColMatrix::from_super_matrix(u);
+	    let lu = LUDecomp::from_matrices(l, u);
+	    let x = DenseMatrix::<P>::from_super_matrix(x);
+	    let column_perm = ColumnPerm::from_raw(perm_c);
+	    let row_perm = RowPerm::from_raw(perm_r);
+	    Ok(SimpleSolution { a, x, lu, column_perm, row_perm })
+	},
+	CSimpleResult::SingularFact {
+	    singular_column,
+	    perm_c,
+	    perm_r,
+	    l,
+	    u
+	} => {
+	    let l = SuperNodeMatrix::from_super_matrix(l);
+	    let u = CompColMatrix::from_super_matrix(u);
+	    let lu = LUDecomp::from_matrices(l, u);
+	    let column_perm = ColumnPerm::from_raw(perm_c);
+	    let row_perm = RowPerm::from_raw(perm_r);
+	    Err(SimpleError::Singular { a, lu, singular_column, column_perm, row_perm })
+	},
+	CSimpleResult::Err(err) => Err(SimpleError::Other(err)),
     }
 }
 
@@ -150,7 +173,7 @@ impl<P: ValueType<P>> SamePattern<P> {
     pub fn solve(
 	self,
 	stat: &mut CSuperluStat,
-    ) -> SimpleResult<P> {
+    ) -> Result<SimpleSolution<P>, SimpleError<P>> {
 
 	let SamePattern {
 	    a,
@@ -175,7 +198,7 @@ impl<P: ValueType<P>> SamePattern<P> {
 		stat,
             );
 	    
-	    SimpleResult::<P>::from_c_result(a, result)
+	    from_c_result::<P>(a, result)
 	}
     }
 }
@@ -199,7 +222,7 @@ impl<P: ValueType<P>> SimpleSystem<P> {
 	self,
 	stat: &mut CSuperluStat,
 	column_perm_policy: ColumnPermPolicy,
-    ) -> SimpleResult<P> {
+    ) -> Result<SimpleSolution<P>, SimpleError<P>> {
 
 	let SimpleSystem {a, b} = self;
 
@@ -219,7 +242,7 @@ impl<P: ValueType<P>> SimpleSystem<P> {
 		stat,
             );
 
-	    SimpleResult::<P>::from_c_result(a, result)
+	    from_c_result::<P>(a, result)
 	}
     }
 }

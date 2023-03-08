@@ -2,6 +2,7 @@ use crate::comp_col::CompColMatrix;
 use crate::super_node::SuperNodeMatrix;
 use crate::c::value_type::ValueType;
 
+#[derive(Debug)]
 pub struct LUDecomp<P: ValueType<P>> {
     l: SuperNodeMatrix<P>,
     u: CompColMatrix<P>,

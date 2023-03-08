@@ -1,6 +1,6 @@
 use csuperlu_sys::{SuperMatrix, Stype_t_SLU_DN, Dtype_t_SLU_S, Mtype_t_SLU_GE};
 
-
+#[derive(Debug)]
 pub struct CSuperMatrix {
     super_matrix: SuperMatrix,
 }

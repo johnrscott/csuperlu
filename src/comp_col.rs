@@ -24,6 +24,7 @@ use std::process;
 /// Compressed-column matrix
 ///
 ///
+#[derive(Debug)]
 pub struct CompColMatrix<P: ValueType<P>> {
     super_matrix: CSuperMatrix,
     marker: std::marker::PhantomData<P>,

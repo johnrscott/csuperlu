@@ -47,7 +47,7 @@ mod tests {
     use crate::comp_col::CompColMatrix;
     use crate::dense::DenseMatrix;
     use crate::c::options::ColumnPermPolicy;
-    use crate::simple_driver::{SimpleResult, SimpleSystem};
+    use crate::simple_driver::{SimpleSystem, SimpleSolution};
     use crate::c::stat::CSuperluStat;
     use crate::utils::distance;
 
@@ -140,17 +140,13 @@ mod tests {
 
 	let mut stat = CSuperluStat::new();
 
-	let result = SimpleSystem {
+	let SimpleSolution {
+	    mut x, ..
+	} = SimpleSystem {
 	    a,
 	    b,
-	}.solve(&mut stat, ColumnPermPolicy::Natural);
-
-	let mut x = match result {
-	    SimpleResult::Solution { x, .. } => x,
-	    SimpleResult::SingularFactorisation { singular_column, ..} =>
-		panic!("A is singular at column {singular_column}"),
-	    SimpleResult::Err(err) => panic!("Got solver error {:?}", err),
-	};
+	}.solve(&mut stat, ColumnPermPolicy::Natural)
+	    .expect("Failed to solve system");
 	    
         let x_vals = x.column_major_values();
 

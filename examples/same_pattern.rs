@@ -4,7 +4,7 @@
 
 use csuperlu::dense::DenseMatrix;
 use csuperlu::c::options::ColumnPermPolicy;
-use csuperlu::simple_driver::{SimpleSystem, SamePattern, SimpleResult};
+use csuperlu::simple_driver::{SimpleSystem, SamePattern, SimpleSolution};
 use csuperlu::c::stat::CSuperluStat;
 use csuperlu::sparse_matrix::SparseMatrix;
 
@@ -46,18 +46,16 @@ fn main() {
 
     let mut stat = CSuperluStat::new();
 
-    let result = SimpleSystem {
+    let SimpleSolution {
+	a,
+	column_perm,
+	..
+    } = SimpleSystem {
 	a,
 	b,
-    }.solve(&mut stat, ColumnPermPolicy::ColAMD);
-    
-    let (a, column_perm) = match result {
-	SimpleResult::Solution { a, column_perm, .. } => (a, column_perm),
-	SimpleResult::SingularFactorisation { singular_column, ..} =>
-	    panic!("A is singular at column {singular_column}"),
-	SimpleResult::Err(err) => panic!("Got solver error {:?}", err),
-    };
-    
+    }.solve(&mut stat, ColumnPermPolicy::ColAMD)
+	.expect("Failed to solve the system");
+
     // Print the column permutation
     println!("First solution gave: {:?}", column_perm);
 
@@ -67,18 +65,18 @@ fn main() {
     let b = DenseMatrix::from_vectors(num_rows, nrhs, rhs);
     
     // Now solve again with the same pattern
-    let result = SamePattern {
+    let SimpleSolution {
+	mut x,
+	mut a,
+	mut lu,
+	column_perm,
+	..
+    } = SamePattern {
 	a,
 	b,
 	column_perm,
-    }.solve(&mut stat);
-
-    let (mut x, mut a, mut lu, column_perm) = match result {
-	SimpleResult::Solution { x, lu, a, column_perm, .. } => (x, a, lu, column_perm),
-	SimpleResult::SingularFactorisation { singular_column, ..} =>
-	    panic!("A is singular at column {singular_column}"),
-	SimpleResult::Err(err) => panic!("Got solver error {:?}", err),
-    };
+    }.solve(&mut stat)
+	.expect("Failed to solve the system");
     
     // Print the column permutation
     println!("Second solution gave: {:?}", column_perm);

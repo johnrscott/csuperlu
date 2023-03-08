@@ -7,6 +7,7 @@ use csuperlu_sys::SCformat;
 
 /// Super-node matrix
 ///
+#[derive(Debug)]
 pub struct SuperNodeMatrix<P: ValueType<P>> {
     super_matrix: CSuperMatrix,
     marker: std::marker::PhantomData<P>,

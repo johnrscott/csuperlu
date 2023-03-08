@@ -10,7 +10,7 @@
 
 use csuperlu::dense::DenseMatrix;
 use csuperlu::c::options::ColumnPermPolicy;
-use csuperlu::simple_driver::{SimpleResult, SimpleSystem};
+use csuperlu::simple_driver::{SimpleSystem, SimpleSolution};
 use csuperlu::c::stat::CSuperluStat;
 use csuperlu::sparse_matrix::SparseMatrix;
 
@@ -53,17 +53,16 @@ fn main() {
 
     let mut stat = CSuperluStat::new();
 
-    let result = SimpleSystem {
+    let SimpleSolution {
+	mut a,
+	mut x,
+	mut lu,
+	..
+    } = SimpleSystem {
 	a,
 	b,
-    }.solve(&mut stat, ColumnPermPolicy::Natural);
-    
-    let (mut x, mut a, mut lu) = match result {
-	SimpleResult::Solution { x, lu, a, .. } => (x, a, lu),
-	SimpleResult::SingularFactorisation { singular_column, ..} =>
-	    panic!("A is singular at column {singular_column}"),
-	SimpleResult::Err(err) => panic!("Got solver error {:?}", err),
-    };
+    }.solve(&mut stat, ColumnPermPolicy::Natural)
+	.expect("Failed to solve system");
     
     // Print the performance statistics
     stat.print();

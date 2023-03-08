@@ -31,7 +31,7 @@ impl<P: ValueType<P>> SparseMatrix<P> {
     }
 
     /// Input a triplet into the sparse matrix, checking the row and column against the matrix size
-    pub fn set(&mut self, row: usize, col: usize, val: P) {
+    pub fn insert(&mut self, row: usize, col: usize, val: P) {
 	if row >= self.nrows || col >= self.ncols {
 	    panic!("Triplet index ({}, {}) out of range for matrix size {}x{}",
 		   row, col, self.nrows, self.ncols);
@@ -47,9 +47,17 @@ impl<P: ValueType<P>> SparseMatrix<P> {
 	}
     }
 
+    pub fn get(&self, row: usize, col: usize) -> P {
+	if row >= self.nrows || col >= self.ncols {
+	    panic!("Triplet index ({}, {}) out of range for matrix size {}x{}",
+		   row, col, self.nrows, self.ncols);
+        }
+        self.values.get(&(row, col)).copied().unwrap_or(P::zero())
+    }
+    
     /// Input a triplet into the sparse matrix, allowing the matrix to automatically
     /// resize to fit the new element
-    pub fn set_with_resize(&mut self, row: usize, col: usize, val: P) {
+    pub fn insert_with_resize(&mut self, row: usize, col: usize, val: P) {
 	if val == P::zero() {
 	    if self.values.contains_key(&(row, col)) {
 		self.values.remove(&(row, col));

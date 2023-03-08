@@ -332,7 +332,6 @@ pub trait ValueType<P>: Num + Copy + FromStr + std::fmt::Debug {
 }
 
 impl ValueType<f32> for f32 {
- 
     unsafe fn c_create_comp_col_matrix(
         num_rows: usize,
         non_zero_values: &mut Vec<f32>,

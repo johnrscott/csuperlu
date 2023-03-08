@@ -27,31 +27,6 @@ use crate::c::value_type::{ValueType, CSimpleResult, Error};
 use crate::lu_decomp::LUDecomp;
 use crate::super_node::SuperNodeMatrix;
 
-/// Contains the solution corresponding to a SimpleSystem
-// pub enum SimpleResult<P: ValueType<P>> {
-//     /// The solution was computed without any errors
-//     Solution {
-// 	a: CompColMatrix<P>,
-// 	x: DenseMatrix<P>,
-// 	lu: LUDecomp<P>,
-// 	column_perm: ColumnPerm,
-// 	row_perm: RowPerm,
-//     },
-//     /// The $LU$-factorisation was computed, but the
-//     /// $A$ is singular (the factor $U$ contains a 0 at
-//     /// index singular_col), and the solution was not
-//     /// computed
-//     SingularFactorisation {
-// 	a: CompColMatrix<P>,
-// 	singular_column: usize,
-// 	lu: LUDecomp<P>,
-// 	column_perm: ColumnPerm,
-// 	row_perm: RowPerm,
-//     },
-//     /// A different kind of error occured
-//     Err(Error)
-// }
-
 #[derive(Debug)]
 pub enum SimpleError<P: ValueType<P>> {
     /// The $LU$-factorisation was computed, but the

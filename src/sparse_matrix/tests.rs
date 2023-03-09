@@ -146,3 +146,4 @@ fn invalid_resize_cols() {
     a.insert_unbounded(0, 1, 1.3);
     a.resize_cols(2);
 }
+

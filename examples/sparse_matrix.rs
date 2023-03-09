@@ -1,7 +1,7 @@
-use csuperlu::sparse_matrix::SparseMatrix;
+use csuperlu::sparse_matrix::SparseMat;
 
 fn main() {
-    let mut a = SparseMatrix::new();
+    let mut a = SparseMat::new(5, 5);
     // Matrix elements
     let s: f64 = 19.0;
     let u: f64 = 21.0;
@@ -10,32 +10,29 @@ fn main() {
     let r: f64 = 18.0;
     let l: f64 = 12.0;
     // Set values
-    a.set_value(0, 0, s);
-    a.set_value(1, 1, u);
-    a.set_value(2, 2, p);
-    a.set_value(3, 3, e);
-    a.set_value(4, 4, r);
+    a.insert(0, 0, s);
+    a.insert(1, 1, u);
+    a.insert(2, 2, p);
+    a.insert(3, 3, e);
+    a.insert(4, 4, r);
 
-    a.set_value(1, 0, l);
-    a.set_value(2, 1, l);
-    a.set_value(4, 0, l);
-    a.set_value(4, 1, l);
+    a.insert(1, 0, l);
+    a.insert(2, 1, l);
+    a.insert(4, 0, l);
+    a.insert(4, 1, l);
 
-    a.set_value(0, 2, u);
-    a.set_value(0, 3, u);
-    a.set_value(3, 4, u);
-    a.set_value(4, 3, 1.0);
-    a.set_value(4, 3, 0.0);
+    a.insert(0, 2, u);
+    a.insert(0, 3, u);
+    a.insert(3, 4, u);
+    a.insert(4, 3, 1.0);
+    a.insert(4, 3, 0.0);
     
     println!("{a}");
     println!("{}x{}: {}", a.num_rows(), a.num_cols(), a.num_non_zeros());
-    println!("{:?}", a.values());
-    a.print_structure();
+    println!("{:?}", a.non_zero_vals());
+    a.print_structure(3);
     
     let ccf = a.compressed_column_format();
     ccf.print("CCF");
-
-    let b = SparseMatrix::from_dict_of_keys(a.values().clone());
-    println!("{b}");
     
 }

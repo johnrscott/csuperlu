@@ -12,13 +12,13 @@ use csuperlu::dense::DenseMatrix;
 use csuperlu::c::options::ColumnPermPolicy;
 use csuperlu::simple_driver::{SimpleSystem, SimpleSolution};
 use csuperlu::c::stat::CSuperluStat;
-use csuperlu::sparse_matrix::SparseMatrix;
+use csuperlu::sparse_matrix::SparseMat;
 
 fn main() {
 
     let num_rows = 5usize;
     
-    let mut a = SparseMatrix::new();
+    let mut a = SparseMat::new(5, 5);
 
     // Matrix elements
     let s: f64 = 19.0;
@@ -28,20 +28,20 @@ fn main() {
     let r: f64 = 18.0;
     let l: f64 = 12.0;
     // Set values
-    a.set_value(0, 0, s);
-    a.set_value(1, 1, u);
-    a.set_value(2, 2, p);
-    a.set_value(3, 3, e);
-    a.set_value(4, 4, r);
+    a.insert(0, 0, s);
+    a.insert(1, 1, u);
+    a.insert(2, 2, p);
+    a.insert(3, 3, e);
+    a.insert(4, 4, r);
 
-    a.set_value(1, 0, l);
-    a.set_value(2, 1, l);
-    a.set_value(4, 0, l);
-    a.set_value(4, 1, l);
+    a.insert(1, 0, l);
+    a.insert(2, 1, l);
+    a.insert(4, 0, l);
+    a.insert(4, 1, l);
 
-    a.set_value(0, 2, u);
-    a.set_value(0, 3, u);
-    a.set_value(3, 4, u);
+    a.insert(0, 2, u);
+    a.insert(0, 3, u);
+    a.insert(3, 4, u);
     
     // Make the left-hand side matrix
     let a = a.compressed_column_format();

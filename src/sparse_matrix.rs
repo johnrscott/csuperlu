@@ -5,6 +5,7 @@ use std::fmt;
 use std::collections::HashMap;
 
 use crate::c::value_type::ValueType;
+use crate::comp_col::CompColMatrix;
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct SparseMat<P: ValueType> {
@@ -111,6 +112,8 @@ impl<P: ValueType> SparseMat<P> {
 	self.resize_cols(num_cols);
     }
 
+    /// Allow resizing (shrinking and expanding) as long as contents are preserved
+    /// Pads with additional rows to fit new size
     pub fn resize_rows(&mut self, num_rows: usize) {
 	let num_rows_actual = match self.non_zero_vals.keys().max_by_key(|k| k.0) {
 	    Some(max_index) => max_index.0 + 1,
@@ -122,6 +125,8 @@ impl<P: ValueType> SparseMat<P> {
 	self.num_rows = num_rows;
     }
 
+    /// Allow resizing (shrinking and expanding) as long as contents are preserved
+    /// Pads with additional columns to fit new size
     pub fn resize_cols(&mut self, num_cols: usize) {
 	let num_cols_actual = match self.non_zero_vals.keys().max_by_key(|k| k.1) {
 	    Some(max_index) => max_index.1 + 1,
@@ -131,6 +136,90 @@ impl<P: ValueType> SparseMat<P> {
 	    panic!("Contents of matrix fit into {num_cols_actual} cols, cannot resize to {num_cols} cols.");
 	}
 	self.num_cols = num_cols;
+    }
+
+    /// TODO: Change this to new compressed column format, could use 'from' trait
+    pub fn compressed_column_format(&self) -> CompColMatrix<P> {	
+	// Sort in column order
+	let sorted_keys = self.non_zero_vals.keys()
+	    .sorted_unstable_by_key(|a| (a.1, a.0)); 
+
+	let num_non_zeros = self.num_non_zeros();
+	let mut non_zero_values = Vec::<P>::with_capacity(num_non_zeros);
+	let mut column_offsets = Vec::<i32>::with_capacity(self.num_cols + 1);
+	let mut row_indices = Vec::<i32>::with_capacity(num_non_zeros);
+
+	column_offsets.push(0);
+	let mut current_col = 0usize;
+	
+	for key in sorted_keys {
+	    if key.1 > current_col {
+		// Handle empty columns with this range
+		for _ in 0..(key.1 - current_col) {
+		    column_offsets.push(non_zero_values.len() as i32);
+		}
+		current_col = key.1;
+	    }
+	    non_zero_values.push(self.non_zero_vals[key]);
+	    row_indices.push(key.0 as i32);
+	}
+	column_offsets.push(num_non_zeros as i32);
+
+	CompColMatrix::from_vectors(self.num_rows, non_zero_values, row_indices, column_offsets)
+    }
+
+    /// Lots of janky stuff going on here, look away...
+    pub fn print_structure(&self, division: usize) {
+	let mut row_divider = String::new();
+	print!("   ");
+	for i in 0..division {
+	    row_divider.push_str("──");
+	    if i / 10 == 0 {
+		print!("  ");
+	    } else {
+		print!("{} ", i / 10);
+	    }
+	}
+	row_divider.push('┼');
+	print!("  ");
+	for i in 0..(self.num_cols-division) {
+	    row_divider.push_str("──");
+	    if i / 10 == 0 {
+		print!("  ");
+	    } else {
+		print!("{} ", i / 10);
+	    }
+	}
+	print!("\n   ");
+	for i in 0..division {
+	    print!("{} ", i % 10);
+	}
+	print!("  ");
+	for i in 0..(self.num_cols-division) {
+	    print!("{} ", i % 10);
+	}
+	print!("\n");
+
+	let mut current_row = 0;
+	for r in 0..self.num_rows {
+	    if r == division {
+		current_row = 0;
+		println!("   {row_divider}");
+	    } 
+	    print!("{:2} ", current_row);
+	    current_row += 1;
+	    for c in 0..self.num_cols {
+		if c == division {
+		    print!("│ ");
+		}
+		let res = self.non_zero_vals.get(&(r, c));
+		match res {
+		    None => print!("  "),
+		    Some(_) => print!("x "),
+		}
+	    }
+	    print!("\n");
+	}
     }
 }
 

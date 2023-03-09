@@ -210,7 +210,7 @@ impl CSimpleResult {
 
 // Valid numerical value types for the C SuperLU library
 ///
-pub trait ValueType<P>: Num + Copy + FromStr + std::fmt::Debug {
+pub trait ValueType: Num + Copy + FromStr + std::fmt::Debug {
     
     /// Create a compressed-column matrix from raw vectors
     ///
@@ -236,7 +236,7 @@ pub trait ValueType<P>: Num + Copy + FromStr + std::fmt::Debug {
     ///
     unsafe fn c_create_comp_col_matrix(
         num_rows: usize,
-        non_zero_values: &mut Vec<P>,
+        non_zero_values: &mut Vec<Self>,
         row_indices: &mut Vec<i32>,
         column_offsets: &mut Vec<i32>,
     ) -> Result<CSuperMatrix, Error>;
@@ -266,7 +266,7 @@ pub trait ValueType<P>: Num + Copy + FromStr + std::fmt::Debug {
     fn c_create_dense_matrix(
         num_rows: usize,
         num_columns: usize,
-        column_major_values: &mut Vec<P>,
+        column_major_values: &mut Vec<Self>,
     ) -> Result<CSuperMatrix, Error>;
 
     /// Print a dense matrix (using the print
@@ -331,8 +331,7 @@ pub trait ValueType<P>: Num + Copy + FromStr + std::fmt::Debug {
     ) -> CSimpleResult;
 }
 
-impl ValueType<f32> for f32 {
- 
+impl ValueType for f32 {
     unsafe fn c_create_comp_col_matrix(
         num_rows: usize,
         non_zero_values: &mut Vec<f32>,
@@ -428,7 +427,7 @@ impl ValueType<f32> for f32 {
     }
 }
 
-impl ValueType<f64> for f64 {
+impl ValueType for f64 {
     unsafe fn c_create_comp_col_matrix(
         num_rows: usize,
         non_zero_values: &mut Vec<f64>,
@@ -525,7 +524,7 @@ impl ValueType<f64> for f64 {
     }
 }
 
-impl ValueType<num::Complex<f32>> for num::Complex<f32> {
+impl ValueType for num::Complex<f32> {
     unsafe fn c_create_comp_col_matrix(
         num_rows: usize,
         non_zero_values: &mut Vec<num::Complex<f32>>,
@@ -621,7 +620,7 @@ impl ValueType<num::Complex<f32>> for num::Complex<f32> {
     }
 }
 
-impl ValueType<num::Complex<f64>> for num::Complex<f64> {
+impl ValueType for num::Complex<f64> {
     unsafe fn c_create_comp_col_matrix(
         num_rows: usize,
         non_zero_values: &mut Vec<num::Complex<f64>>,

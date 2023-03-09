@@ -2,12 +2,13 @@ use crate::comp_col::CompColMatrix;
 use crate::super_node::SuperNodeMatrix;
 use crate::c::value_type::ValueType;
 
-pub struct LUDecomp<P: ValueType<P>> {
+#[derive(Debug)]
+pub struct LUDecomp<P: ValueType> {
     l: SuperNodeMatrix<P>,
     u: CompColMatrix<P>,
 }
 
-impl<P: ValueType<P>> LUDecomp<P> {
+impl<P: ValueType> LUDecomp<P> {
     pub fn from_matrices(l: SuperNodeMatrix<P>, u: CompColMatrix<P>) -> Self {
         let l_c_super_matrix = l.super_matrix();
         let u_c_super_matrix = u.super_matrix();

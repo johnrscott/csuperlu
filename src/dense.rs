@@ -6,12 +6,12 @@ use crate::c::super_matrix::CSuperMatrix;
 use crate::c::value_type::ValueType;
 use csuperlu_sys::DNformat;
 
-pub struct DenseMatrix<P: ValueType<P>> {
+pub struct DenseMatrix<P: ValueType> {
     super_matrix: CSuperMatrix,
     marker: std::marker::PhantomData<P>,
 }
 
-impl<P: ValueType<P>> DenseMatrix<P> {
+impl<P: ValueType> DenseMatrix<P> {
     /// Specify a dense matrix from an input vector.
     ///
     /// Use this function to make a dense SuperMatrix. The vector
@@ -97,7 +97,7 @@ impl<P: ValueType<P>> DenseMatrix<P> {
     }
 }
 
-impl<P: ValueType<P>> Drop for DenseMatrix<P> {
+impl<P: ValueType> Drop for DenseMatrix<P> {
     fn drop(&mut self) {
 	unsafe {
             c_destroy_dense_matrix(&mut self.super_matrix);

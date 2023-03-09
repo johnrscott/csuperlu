@@ -24,12 +24,13 @@ use std::process;
 /// Compressed-column matrix
 ///
 ///
-pub struct CompColMatrix<P: ValueType<P>> {
+#[derive(Debug)]
+pub struct CompColMatrix<P: ValueType> {
     super_matrix: CSuperMatrix,
     marker: std::marker::PhantomData<P>,
 }
 
-impl<P: ValueType<P>> CompColMatrix<P> {
+impl<P: ValueType> CompColMatrix<P> {
     /// Create a compressed-column matrix from a SuperMatrix structure
     ///
     pub fn from_super_matrix(super_matrix: CSuperMatrix) -> Self {
@@ -67,11 +68,6 @@ impl<P: ValueType<P>> CompColMatrix<P> {
     /// format, from the vector of non-zero values, row indices, and column
     /// offsets. Compressed column format is documented in Section
     /// 2.3 of the SuperLU manual.
-    ///
-    /// Need to check what Mtype_t is used for. The table in Section 2.3
-    /// shows SLU_GE for A, but SLU_TRLU for L and U; however, does the
-    /// user of the library ever need to pick a different value? If not,
-    /// the argument can be removed.
     ///
     pub fn from_vectors(
         num_rows: usize,
@@ -160,7 +156,7 @@ impl<P: ValueType<P>> CompColMatrix<P> {
     }
 }
 
-impl<'a, P: ValueType<P>> Mul<&Vec<P>> for &'a mut CompColMatrix<P> {
+impl<'a, P: ValueType> Mul<&Vec<P>> for &'a mut CompColMatrix<P> {
     type Output = Vec<P>;
 
     /// Naive matrix multiplication which loops over all
@@ -183,7 +179,7 @@ impl<'a, P: ValueType<P>> Mul<&Vec<P>> for &'a mut CompColMatrix<P> {
     }
 }
 
-impl<P: ValueType<P>> Drop for CompColMatrix<P> {
+impl<P: ValueType> Drop for CompColMatrix<P> {
     fn drop(&mut self) {
         unsafe {
 	    c_destroy_comp_col_matrix(&mut self.super_matrix);

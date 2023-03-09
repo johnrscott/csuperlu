@@ -85,7 +85,7 @@ impl<P: ValueType> CCompColMat<P> {
 impl<P: ValueType> Drop for CCompColMat<P> {
     fn drop(&mut self) {
 	unsafe {
-	    c_destroy_super_matrix_store(&mut self.super_matrix);
+	    //c_destroy_super_matrix_store(&mut self.super_matrix);
 	}
     }
 }

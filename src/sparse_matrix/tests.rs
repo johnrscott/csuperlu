@@ -84,11 +84,65 @@ fn matrix_from_hashmap() {
     a.insert((2, 2), 0.5);
     a.insert((3, 1), 1.5);
     a.insert((0, 1), 1.3);
-    let b = SparseMat::from(a);
+    let b = SparseMat::from(a.clone());
     assert_eq!(b.num_rows(), 4);
     assert_eq!(b.num_cols(), 3);
     assert_eq!(b.num_non_zeros(), 3);
     assert_eq!(b.get(2, 2), 0.5);
     assert_eq!(b.get(3, 1), 1.5);
     assert_eq!(b.get(0, 1), 1.3);
+
+    assert_eq!(a, b.non_zero_vals().clone());
+}
+
+#[test]
+fn resize_empty_matrix() {
+    let mut a = SparseMat::<f64>::empty();
+    a.resize(5, 6);
+    assert_eq!(a.num_rows(), 5);
+    assert_eq!(a.num_cols(), 6);
+
+    a.resize(3, 4);
+    assert_eq!(a.num_rows(), 3);
+    assert_eq!(a.num_cols(), 4);
+
+    a.resize(0, 0);
+    assert_eq!(a.num_rows(), 0);
+    assert_eq!(a.num_cols(), 0);
+}
+
+#[test]
+fn resize_populated_matrix() {
+    let mut a = SparseMat::<f64>::empty();
+    a.insert_unbounded(2, 2, 0.5);
+    a.insert_unbounded(3, 1, 1.5);
+    a.insert_unbounded(0, 1, 1.3);
+
+    a.resize(5, 6);
+    assert_eq!(a.num_rows(), 5);
+    assert_eq!(a.num_cols(), 6);
+
+    a.resize(4, 3);
+    assert_eq!(a.num_rows(), 4);
+    assert_eq!(a.num_cols(), 3);
+}
+
+#[test]
+#[should_panic]
+fn invalid_resize_rows() {
+    let mut a = SparseMat::<f64>::empty();
+    a.insert_unbounded(2, 2, 0.5);
+    a.insert_unbounded(3, 1, 1.5);
+    a.insert_unbounded(0, 1, 1.3);
+    a.resize_rows(1);
+}
+
+#[test]
+#[should_panic]
+fn invalid_resize_cols() {
+    let mut a = SparseMat::<f64>::empty();
+    a.insert_unbounded(2, 2, 0.5);
+    a.insert_unbounded(3, 1, 1.5);
+    a.insert_unbounded(0, 1, 1.3);
+    a.resize_cols(2);
 }

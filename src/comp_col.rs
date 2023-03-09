@@ -15,7 +15,7 @@
 use crate::c::free::c_destroy_comp_col_matrix;
 use crate::harwell_boeing::HarwellBoeingMatrix;
 use crate::c::super_matrix::CSuperMatrix;
-use csuperlu_sys::{Mtype_t_SLU_GE, NCformat};
+use csuperlu_sys::NCformat;
 use crate::c::value_type::ValueType;
 use std::fs;
 use std::ops::Mul;
@@ -24,12 +24,13 @@ use std::process;
 /// Compressed-column matrix
 ///
 ///
-pub struct CompColMatrix<P: ValueType<P>> {
+#[derive(Debug)]
+pub struct CompColMatrix<P: ValueType> {
     super_matrix: CSuperMatrix,
     marker: std::marker::PhantomData<P>,
 }
 
-impl<P: ValueType<P>> CompColMatrix<P> {
+impl<P: ValueType> CompColMatrix<P> {
     /// Create a compressed-column matrix from a SuperMatrix structure
     ///
     pub fn from_super_matrix(super_matrix: CSuperMatrix) -> Self {
@@ -68,11 +69,6 @@ impl<P: ValueType<P>> CompColMatrix<P> {
     /// offsets. Compressed column format is documented in Section
     /// 2.3 of the SuperLU manual.
     ///
-    /// Need to check what Mtype_t is used for. The table in Section 2.3
-    /// shows SLU_GE for A, but SLU_TRLU for L and U; however, does the
-    /// user of the library ever need to pick a different value? If not,
-    /// the argument can be removed.
-    ///
     pub fn from_vectors(
         num_rows: usize,
         mut non_zero_values: Vec<P>,
@@ -85,7 +81,6 @@ impl<P: ValueType<P>> CompColMatrix<P> {
                 &mut non_zero_values,
                 &mut row_indices,
                 &mut column_offsets,
-                Mtype_t_SLU_GE,
             )
             .expect("Error creating comp col -- replace with error handling");
             // The freeing of the input vectors is handed over
@@ -161,7 +156,7 @@ impl<P: ValueType<P>> CompColMatrix<P> {
     }
 }
 
-impl<'a, P: ValueType<P>> Mul<&Vec<P>> for &'a mut CompColMatrix<P> {
+impl<'a, P: ValueType> Mul<&Vec<P>> for &'a mut CompColMatrix<P> {
     type Output = Vec<P>;
 
     /// Naive matrix multiplication which loops over all
@@ -184,7 +179,7 @@ impl<'a, P: ValueType<P>> Mul<&Vec<P>> for &'a mut CompColMatrix<P> {
     }
 }
 
-impl<P: ValueType<P>> Drop for CompColMatrix<P> {
+impl<P: ValueType> Drop for CompColMatrix<P> {
     fn drop(&mut self) {
         unsafe {
 	    c_destroy_comp_col_matrix(&mut self.super_matrix);

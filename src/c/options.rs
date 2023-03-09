@@ -180,6 +180,11 @@ impl SimpleDriverOptions {
 	}
 	self.options.set_diagonal_pivot_threshold(u);
     }
+
+    /// Get the underlying superlu_options_t 
+    pub fn get_options(&self) -> &superlu_options_t {
+	&self.options.get_options()
+    }
 }
 
 /// SuperLU implements several policies for re-ordering the

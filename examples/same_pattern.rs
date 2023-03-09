@@ -4,13 +4,12 @@
 
 use csuperlu::dense::DenseMatrix;
 use csuperlu::c::options::ColumnPermPolicy;
-use csuperlu::simple_driver::{SimpleSolution, SimpleSystem, SamePattern};
+use csuperlu::simple_driver::{SimpleSystem, SamePattern, SimpleSolution};
 use csuperlu::c::stat::CSuperluStat;
 use csuperlu::sparse_matrix::SparseMatrix;
 
 fn main() {
     let num_rows = 5usize;
-    let num_columns = 5usize;
     
     let mut a = SparseMatrix::new();
 
@@ -38,7 +37,7 @@ fn main() {
     a.set_value(3, 4, u);
     
     // Make the left-hand side matrix
-    let mut a = a.compressed_column_format();
+    let a = a.compressed_column_format();
     
     // Make the RHS vector
     let nrhs = 1;
@@ -48,16 +47,14 @@ fn main() {
     let mut stat = CSuperluStat::new();
 
     let SimpleSolution {
-	mut a,
-	mut x,
-	mut lu,
+	a,
 	column_perm,
 	..
     } = SimpleSystem {
 	a,
 	b,
     }.solve(&mut stat, ColumnPermPolicy::ColAMD)
-	.expect("Failed to solve linear system");
+	.expect("Failed to solve the system");
 
     // Print the column permutation
     println!("First solution gave: {:?}", column_perm);
@@ -69,8 +66,8 @@ fn main() {
     
     // Now solve again with the same pattern
     let SimpleSolution {
-	mut a,
 	mut x,
+	mut a,
 	mut lu,
 	column_perm,
 	..
@@ -79,8 +76,8 @@ fn main() {
 	b,
 	column_perm,
     }.solve(&mut stat)
-	.expect("Failed to solve linear system");
-
+	.expect("Failed to solve the system");
+    
     // Print the column permutation
     println!("Second solution gave: {:?}", column_perm);
     

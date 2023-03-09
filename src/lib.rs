@@ -31,7 +31,6 @@
 //#![warn(missing_docs)]
 pub mod comp_col;
 pub mod dense;
-pub mod error;
 pub mod harwell_boeing;
 pub mod lu_decomp;
 pub mod simple_driver;
@@ -40,7 +39,7 @@ pub mod utils;
 pub mod c;
 pub mod sparse_matrix;
     
-pub use error::Error;
+//pub use error::Error;
 
 #[cfg(test)]
 mod tests {
@@ -48,7 +47,7 @@ mod tests {
     use crate::comp_col::CompColMatrix;
     use crate::dense::DenseMatrix;
     use crate::c::options::ColumnPermPolicy;
-    use crate::simple_driver::{SimpleSolution, SimpleSystem};
+    use crate::simple_driver::{SimpleSystem, SimpleSolution};
     use crate::c::stat::CSuperluStat;
     use crate::utils::distance;
 
@@ -112,7 +111,6 @@ mod tests {
     fn user_guide_example() {
         // Matrix dimensions
         let num_rows = 5usize;
-        let num_columns = 5usize;
 
         // Matrix elements
         let s: f64 = 19.0;
@@ -132,7 +130,7 @@ mod tests {
         let column_offsets = vec![0, 3, 6, 8, 10, 12];
 
         // Make the left-hand side matrix
-        let mut a =
+        let a =
             CompColMatrix::from_vectors(num_rows, non_zero_values, row_indices, column_offsets);
 
         // Make the RHS vector
@@ -143,14 +141,12 @@ mod tests {
 	let mut stat = CSuperluStat::new();
 
 	let SimpleSolution {
-	    mut x,
-	    ..
+	    mut x, ..
 	} = SimpleSystem {
 	    a,
 	    b,
 	}.solve(&mut stat, ColumnPermPolicy::Natural)
-	    .expect("Failed to solve linear system");
-
+	    .expect("Failed to solve system");
 	    
         let x_vals = x.column_major_values();
 

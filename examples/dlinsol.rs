@@ -4,8 +4,8 @@ use std::process;
 use csuperlu::comp_col::CompColMatrix;
 use csuperlu::dense::DenseMatrix;
 use csuperlu::c::options::ColumnPermPolicy;
-use csuperlu::simple_driver::SimpleSystem;
 use csuperlu::simple_driver::SimpleSolution;
+use csuperlu::simple_driver::SimpleSystem;
 use csuperlu::c::stat::CSuperluStat;
 use csuperlu::utils::distance;
 
@@ -20,7 +20,6 @@ fn main() {
 
     let mut a = CompColMatrix::<f64>::from_harwell_boeing(file_path);
     let num_rows = a.num_rows();
-    let num_columns = a.num_columns();
     a.print("a");
 
     // Make the true solution vector
@@ -36,13 +35,12 @@ fn main() {
     let mut stat = CSuperluStat::new();
 
     let SimpleSolution {
-	mut x,
-	..
+	mut x, ..
     } = SimpleSystem {
 	a,
 	b,
     }.solve(&mut stat, ColumnPermPolicy::Natural)
-	.expect("Failed to solve linear system");
+	.expect("Failed to solve system");
 
     x.print("X");
 

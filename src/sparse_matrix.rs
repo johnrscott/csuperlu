@@ -7,13 +7,13 @@ use std::collections::HashMap;
 use crate::c::value_type::ValueType;
 
 #[derive(Debug)]
-pub struct SparseMatrix<P: ValueType<P>> {
+pub struct SparseMatrix<P: ValueType> {
     nrows: usize,
     ncols: usize,
     values: HashMap<(usize, usize), P>,
 }
 
-impl<P: ValueType<P>> SparseMatrix<P> {
+impl<P: ValueType> SparseMatrix<P> {
     /// Create an empty sparse matrix with zero rows and columns.
     pub fn empty() -> Self {
         Self {
@@ -100,7 +100,7 @@ impl<P: ValueType<P>> SparseMatrix<P> {
     }
 }
 
-impl<P: ValueType<P>> fmt::Display for SparseMatrix<P> {
+impl<P: ValueType> fmt::Display for SparseMatrix<P> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
 	writeln!(f, "{} x {} matrix, {} non-zero values", self.nrows, self.ncols, self.values.len())?;
 	let sorted_keys = self.values.keys()
@@ -112,7 +112,7 @@ impl<P: ValueType<P>> fmt::Display for SparseMatrix<P> {
     }
 }
 
-impl<P: ValueType<P>> From<HashMap<(usize, usize), P>> for SparseMatrix<P> {
+impl<P: ValueType> From<HashMap<(usize, usize), P>> for SparseMatrix<P> {
     fn from(values: HashMap<(usize, usize), P>) -> Self {
 	let nrows = values.keys().max_by_key(|k| k.0).unwrap().0 + 1;
 	let ncols = values.keys().max_by_key(|k| k.1).unwrap().1 + 1;

@@ -28,7 +28,7 @@ use crate::lu_decomp::LUDecomp;
 use crate::super_node::SuperNodeMatrix;
 
 #[derive(Debug)]
-pub enum SimpleError<P: ValueType<P>> {
+pub enum SimpleError<P: ValueType> {
     /// The $LU$-factorisation was computed, but the
     /// $A$ is singular (the factor $U$ contains a 0 at
     /// index singular_col), and the solution was not
@@ -45,7 +45,7 @@ pub enum SimpleError<P: ValueType<P>> {
 }
 
 /// The solution was computed without any errors
-pub struct SimpleSolution<P: ValueType<P>> {
+pub struct SimpleSolution<P: ValueType> {
     pub a: CompColMatrix<P>,
     pub x: DenseMatrix<P>,
     pub lu: LUDecomp<P>,
@@ -55,7 +55,7 @@ pub struct SimpleSolution<P: ValueType<P>> {
 
 /// This function turns the result type from c_simple_driver into
 /// whatever we want to serve up to users of the solve function
-unsafe fn from_c_result<P: ValueType<P>>(
+unsafe fn from_c_result<P: ValueType>(
     a: CompColMatrix<P>,
     result: CSimpleResult
 ) -> Result<SimpleSolution<P>, SimpleError<P>> {
@@ -126,7 +126,7 @@ impl RowPerm {
 }
 
 /// Defines a simple sparse linear system $AX = B$
-pub struct SimpleSystem<P: ValueType<P>> {
+pub struct SimpleSystem<P: ValueType> {
     /// The (sparse) matrix $A$
     pub a: CompColMatrix<P>,
     /// The right-hand side(s) matrix $B$
@@ -135,7 +135,7 @@ pub struct SimpleSystem<P: ValueType<P>> {
 
 /// Defines a sparse linear system $AX = B$ and a predefined
 /// column permutation for use during the solution.
-pub struct SamePattern<P: ValueType<P>> {
+pub struct SamePattern<P: ValueType> {
     /// The (sparse) matrix $A$
     pub a: CompColMatrix<P>,
     /// The right-hand side(s) matrix $B$
@@ -144,7 +144,7 @@ pub struct SamePattern<P: ValueType<P>> {
     pub column_perm: ColumnPerm,
 }
 
-impl<P: ValueType<P>> SamePattern<P> {
+impl<P: ValueType> SamePattern<P> {
     pub fn solve(
 	self,
 	stat: &mut CSuperluStat,
@@ -178,7 +178,7 @@ impl<P: ValueType<P>> SamePattern<P> {
     }
 }
 
-impl<P: ValueType<P>> SimpleSystem<P> {
+impl<P: ValueType> SimpleSystem<P> {
 
     /// Solve a simple linear system AX = B with default solver
     /// options

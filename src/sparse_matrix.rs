@@ -5,13 +5,13 @@ use std::collections::HashMap;
 use crate::{comp_col::CompColMatrix, c::value_type::ValueType};
 
 #[derive(Debug)]
-pub struct SparseMatrix<P: ValueType<P>> {
+pub struct SparseMatrix<P: ValueType> {
     num_rows: usize,
     num_cols: usize,
     values: HashMap<(usize, usize), P>,
 }
 
-impl<P: ValueType<P>> SparseMatrix<P> {
+impl<P: ValueType> SparseMatrix<P> {
     pub fn new() -> Self {
         Self {
             num_rows: 0,
@@ -140,7 +140,7 @@ impl<P: ValueType<P>> SparseMatrix<P> {
 
 }
 
-impl<P: ValueType<P>> fmt::Display for SparseMatrix<P> {
+impl<P: ValueType> fmt::Display for SparseMatrix<P> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
 	writeln!(f, "{} x {} matrix, {} non-zero values", self.num_rows, self.num_cols, self.values.len())?;
 	let sorted_keys = self.values.keys()

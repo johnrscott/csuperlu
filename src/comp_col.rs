@@ -25,12 +25,12 @@ use std::process;
 ///
 ///
 #[derive(Debug)]
-pub struct CompColMatrix<P: ValueType<P>> {
+pub struct CompColMatrix<P: ValueType> {
     super_matrix: CSuperMatrix,
     marker: std::marker::PhantomData<P>,
 }
 
-impl<P: ValueType<P>> CompColMatrix<P> {
+impl<P: ValueType> CompColMatrix<P> {
     /// Create a compressed-column matrix from a SuperMatrix structure
     ///
     pub fn from_super_matrix(super_matrix: CSuperMatrix) -> Self {
@@ -156,7 +156,7 @@ impl<P: ValueType<P>> CompColMatrix<P> {
     }
 }
 
-impl<'a, P: ValueType<P>> Mul<&Vec<P>> for &'a mut CompColMatrix<P> {
+impl<'a, P: ValueType> Mul<&Vec<P>> for &'a mut CompColMatrix<P> {
     type Output = Vec<P>;
 
     /// Naive matrix multiplication which loops over all
@@ -179,7 +179,7 @@ impl<'a, P: ValueType<P>> Mul<&Vec<P>> for &'a mut CompColMatrix<P> {
     }
 }
 
-impl<P: ValueType<P>> Drop for CompColMatrix<P> {
+impl<P: ValueType> Drop for CompColMatrix<P> {
     fn drop(&mut self) {
         unsafe {
 	    c_destroy_comp_col_matrix(&mut self.super_matrix);

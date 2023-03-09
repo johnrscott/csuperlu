@@ -8,12 +8,12 @@ use csuperlu_sys::SCformat;
 /// Super-node matrix
 ///
 #[derive(Debug)]
-pub struct SuperNodeMatrix<P: ValueType<P>> {
+pub struct SuperNodeMatrix<P: ValueType> {
     super_matrix: CSuperMatrix,
     marker: std::marker::PhantomData<P>,
 }
 
-impl<P: ValueType<P>> SuperNodeMatrix<P> {
+impl<P: ValueType> SuperNodeMatrix<P> {
     /// Create a super-node matrix from a SuperMatrix structure
     ///
     pub fn from_super_matrix(super_matrix: CSuperMatrix) -> Self {
@@ -39,7 +39,7 @@ impl<P: ValueType<P>> SuperNodeMatrix<P> {
     }
 }
 
-impl<P: ValueType<P>> Drop for SuperNodeMatrix<P> {
+impl<P: ValueType> Drop for SuperNodeMatrix<P> {
     fn drop(&mut self) {
 	unsafe {
             c_destroy_super_node_matrix(&mut self.super_matrix);

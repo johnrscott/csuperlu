@@ -29,14 +29,5 @@
 //!
 
 //#![warn(missing_docs)]
-// pub mod comp_col;
-// pub mod dense;
-// pub mod harwell_boeing;
-// pub mod lu_decomp;
-// pub mod simple_driver;
-// pub mod super_node;
-// pub mod utils;
 pub mod c;
 pub mod sparse_matrix;
-    
-//pub use error::Error;

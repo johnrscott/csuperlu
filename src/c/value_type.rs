@@ -5,9 +5,6 @@
 //! double (f64), complex float (num::Complex<f32>), and complex
 //! double (num::Complex<f64>).
 //!
-//! To change:
-//! - Consider removing the c_ prefix from these functions (and from
-//!   related functions.
 
 use std::{ffi::CString, str::FromStr};
 
@@ -61,17 +58,17 @@ use super::options::SimpleDriverOptions;
 /// As described in documentation for c_create_comp_col_matrix.
 ///
 fn check_comp_col_conditions<T>(
-    non_zero_values: &mut Vec<T>,
-    row_indices: &mut Vec<i32>,
-    column_offsets: &mut Vec<i32>,
+    non_zero_vals: &Vec<T>,
+    row_indices: &Vec<i32>,
+    col_offsets: &Vec<i32>,
 ) -> Result<(), Error> {
-    if column_offsets.len() == 0 {
+    if col_offsets.len() == 0 {
         return Err(Error::CompColError);
     }
-    if non_zero_values.len() != row_indices.len() {
+    if non_zero_vals.len() != row_indices.len() {
         return Err(Error::CompColError);
     }
-    let num_non_zeros = *column_offsets.last().unwrap();
+    let num_non_zeros = *col_offsets.last().unwrap();
     if row_indices.len() != num_non_zeros.try_into().unwrap() {
         return Err(Error::CompColError);
     }
@@ -82,16 +79,16 @@ fn check_comp_col_conditions<T>(
 ///
 /// # Error
 ///
-/// If the length of column_offsets is not at least 1,
+/// If the length of col_offsets is not at least 1,
 /// an error is returned. If the lengths of row_indices and
 /// non_zeros_indices do not match, an error is returned.
 ///
 fn check_dense_conditions<T>(
     num_rows: usize,
-    num_columns: usize,
-    column_major_values: &mut Vec<T>,
+    num_cols: usize,
+    column_major_values: &Vec<T>,
 ) -> Result<(), Error> {
-    if column_major_values.len() != num_rows * num_columns {
+    if column_major_values.len() != num_rows * num_cols {
         return Err(Error::DenseMatrixError);
     }
     Ok(())
@@ -130,18 +127,16 @@ fn make_simple_perms(
     (perm_c, perm_r, options)
 }
 
-/// The items returned by the c_simple_driver functions
-///
-pub enum CSimpleResult {
-    /// The solution completed successfully (A was not
-    /// singular, and no memory errors occured)
-    Solution {
-	x: CSuperMatrix,
-	perm_c: Vec<i32>,
-	perm_r: Vec<i32>,
-	l: CSuperMatrix,
-	u: CSuperMatrix,
-    },
+/// Solution from the simple driver
+pub struct CSimpleSolution {
+    x: CSuperMatrix,
+    perm_c: Vec<i32>,
+    perm_r: Vec<i32>,
+    l: CSuperMatrix,
+    u: CSuperMatrix,    
+}
+
+pub enum CSimpleError {
     /// The factorisatio completed successfully, but A
     /// was singular so no solution was returned
     SingularFact {
@@ -156,55 +151,52 @@ pub enum CSimpleResult {
     Err(Error),
 }
 
-impl CSimpleResult {
-
-    /// Find the return type from a *gssv routine
-    ///
-    /// The success or failure of the *gssv routines is
-    /// indicated by the info argument, which is expected
-    /// to be non-negative. 0 indicates success (factorisation
-    /// and solution have been found). 0 < info < num_cols_a
-    /// means that A was singular, then U is exactly singular,
-    /// due to U(i,i) == 0 (here, the matrix diagonal is indexed
-    /// from 1). If info > num_cols_a, then a memory failure
-    /// occured. In that case, (info - num_cols_a) is the number
-    /// of bytes allocated when the failure occured. TODO check
-    /// the superlu source code that this is not out-by-one.
-    fn from_vectors(
-	info: i32,
-	num_cols_a: usize,
-	x: CSuperMatrix,
-	perm_c: Vec<i32>,
-	perm_r: Vec<i32>,
-	l: CSuperMatrix,
-	u: CSuperMatrix,
-    ) -> Self {
-	if info < 0 {
-	    // Check for invalid (negative) info
-	    Self::Err(Error::UnknownError)
-	} else if info == 0 {
-	    // Success -- system solved
-	    Self::Solution {
-		x,
-		perm_c,
-		perm_r,
-		l,
-		u,
-	    }
-	} else if info as usize <= num_cols_a {
-	    // A is singular, factorisation successful
-	    Self::SingularFact {
-		singular_column: info as usize - 1,
-		perm_c,
-		perm_r,
-		l,
-		u,
-	    }
-	} else {
-	    // Failed due to singular A -- factorisation complete
-	    let mem_alloc_at_failure = info as usize - num_cols_a;
-	    Self::Err(Error::OutOfMemory { mem_alloc_at_failure  })
-	}
+/// Find the return type from a *gssv routine
+///
+/// The success or failure of the *gssv routines is
+/// indicated by the info argument, which is expected
+/// to be non-negative. 0 indicates success (factorisation
+/// and solution have been found). 0 < info < num_cols_a
+/// means that A was singular, then U is exactly singular,
+/// due to U(i,i) == 0 (here, the matrix diagonal is indexed
+/// from 1). If info > num_cols_a, then a memory failure
+/// occured. In that case, (info - num_cols_a) is the number
+/// of bytes allocated when the failure occured. TODO check
+/// the superlu source code that this is not out-by-one.
+fn simple_result_from_vectors(
+    info: i32,
+    num_cols_a: usize,
+    x: CSuperMatrix,
+    perm_c: Vec<i32>,
+    perm_r: Vec<i32>,
+    l: CSuperMatrix,
+    u: CSuperMatrix,
+) -> Result<CSimpleSolution, CSimpleError> {
+    if info < 0 {
+	// Check for invalid (negative) info
+	Err(CSimpleError::Err(Error::UnknownError))
+    } else if info == 0 {
+	// Success -- system solved
+	Ok(CSimpleSolution {
+	    x,
+	    perm_c,
+	    perm_r,
+	    l,
+	    u,
+	})
+    } else if info as usize <= num_cols_a {
+	// A is singular, factorisation successful
+	Err(CSimpleError::SingularFact {
+	    singular_column: info as usize - 1,
+	    perm_c,
+	    perm_r,
+	    l,
+	    u,
+	})
+    } else {
+	// Failed due to singular A -- factorisation complete
+	let mem_alloc_at_failure = info as usize - num_cols_a;
+	Err(CSimpleError::Err(Error::OutOfMemory { mem_alloc_at_failure  }))
     }
 }
 
@@ -216,11 +208,11 @@ pub trait ValueType: Num + Copy + FromStr + std::fmt::Debug {
     ///
     /// # Errors
     ///
-    /// If the length of column_offsets is not equal to num_columns \+ 1
+    /// If the length of col_offsets is not equal to num_cols \+ 1
     /// then an error variant is returned. If the lengths of
-    /// non_zero_values and row_indices are not the same, an error is
-    /// returned. The last element of column_offsets must be equal to the
-    /// length of non_zero_values, else error is returned. Other ways to
+    /// non_zero_vals and row_indices are not the same, an error is
+    /// returned. The last element of col_offsets must be equal to the
+    /// length of non_zero_vals, else error is returned. Other ways to
     /// pass invalid arguments are described in the safety section below.
     ///
     /// # Safety
@@ -229,16 +221,16 @@ pub trait ValueType: Num + Copy + FromStr + std::fmt::Debug {
     /// vectors passed to the function (the non-zero values,
     /// row indices, and columns pointers) must be a valid representation
     /// of a sparse matrix in compressed-column format. For example,
-    /// no numbers in the row_indices or column_offsets can be out of range
-    /// (all values in column_offsets must be valid indexes into row_indices,
-    /// apart from column_offsets\[last\]; and all values in row_indices must
+    /// no numbers in the row_indices or col_offsets can be out of range
+    /// (all values in col_offsets must be valid indexes into row_indices,
+    /// apart from col_offsets\[last\]; and all values in row_indices must
     /// be < num_rows).
     ///
     unsafe fn c_create_comp_col_matrix(
         num_rows: usize,
-        non_zero_values: &mut Vec<Self>,
-        row_indices: &mut Vec<i32>,
-        column_offsets: &mut Vec<i32>,
+        non_zero_vals: &Vec<Self>,
+        row_indices: &Vec<i32>,
+        col_offsets: &Vec<i32>,
     ) -> Result<CSuperMatrix, Error>;
 
     /// Print a compressed-column matrix (using the print
@@ -261,12 +253,12 @@ pub trait ValueType: Num + Copy + FromStr + std::fmt::Debug {
     /// # Errors
     ///
     /// If the length of column_major_values is not equal to
-    /// num_rows * num_columns, an error variant is returned.
+    /// num_rows * num_cols, an error variant is returned.
     ///    
     fn c_create_dense_matrix(
         num_rows: usize,
-        num_columns: usize,
-        column_major_values: &mut Vec<Self>,
+        num_cols: usize,
+        column_major_values: &Vec<Self>,
     ) -> Result<CSuperMatrix, Error>;
 
     /// Print a dense matrix (using the print
@@ -328,26 +320,26 @@ pub trait ValueType: Num + Copy + FromStr + std::fmt::Debug {
         perm_c: Option<Vec<i32>>,
         b: CSuperMatrix,
         stat: &mut CSuperluStat,
-    ) -> CSimpleResult;
+    ) -> Result<CSimpleSolution, CSimpleError>;
 }
 
 impl ValueType for f32 {
     unsafe fn c_create_comp_col_matrix(
         num_rows: usize,
-        non_zero_values: &mut Vec<f32>,
-        row_indices: &mut Vec<i32>,
-        column_offsets: &mut Vec<i32>,
+        non_zero_vals: &Vec<f32>,
+        row_indices: &Vec<i32>,
+        col_offsets: &Vec<i32>,
     ) -> Result<CSuperMatrix, Error> {
-        check_comp_col_conditions(non_zero_values, row_indices, column_offsets)?;
+        check_comp_col_conditions(non_zero_vals, row_indices, col_offsets)?;
         let a = CSuperMatrix::alloc();
         sCreate_CompCol_Matrix(
             a.super_matrix() as *const SuperMatrix as *mut SuperMatrix,
             i32::try_from(num_rows).unwrap(),
-            (column_offsets.len() - 1) as i32,
-            non_zero_values.len() as i32,
-            non_zero_values.as_mut_ptr(),
-            row_indices.as_mut_ptr(),
-            column_offsets.as_mut_ptr(),
+            (col_offsets.len() - 1) as i32,
+            non_zero_vals.len() as i32,
+            non_zero_vals.as_ptr() as *mut Self,
+            row_indices.as_ptr() as *mut i32,
+            col_offsets.as_ptr() as *mut i32,
             Stype_t_SLU_NC,
             Dtype_t_SLU_S,
             Mtype_t_SLU_GE,
@@ -364,17 +356,17 @@ impl ValueType for f32 {
 
     fn c_create_dense_matrix(
         num_rows: usize,
-        num_columns: usize,
-        column_major_values: &mut Vec<f32>,
+        num_cols: usize,
+        column_major_values: &Vec<f32>,
     ) -> Result<CSuperMatrix, Error> {
-        check_dense_conditions(num_rows, num_columns, column_major_values)?;
+        check_dense_conditions(num_rows, num_cols, column_major_values)?;
         unsafe {
             let x = CSuperMatrix::alloc();
             sCreate_Dense_Matrix(
                 x.super_matrix() as *const SuperMatrix as *mut SuperMatrix,
                 num_rows as i32,
-                num_columns as i32,
-                column_major_values.as_mut_ptr(),
+                num_cols as i32,
+                column_major_values.as_ptr() as *mut Self,
                 num_rows as i32,
                 Stype_t_SLU_DN,
                 Dtype_t_SLU_S,
@@ -404,12 +396,12 @@ impl ValueType for f32 {
         perm_c: Option<Vec<i32>>,
         b: CSuperMatrix,
         stat: &mut CSuperluStat,
-    ) -> CSimpleResult {
+    ) -> Result<CSimpleSolution, CSimpleError> {
 	let mut info = 0i32;
 	let l = CSuperMatrix::alloc();
         let u = CSuperMatrix::alloc();
 	let (mut perm_c, mut perm_r, options)
-	    = make_simple_perms(a.num_columns(), perm_c, options);
+	    = make_simple_perms(a.num_cols(), perm_c, options);
 		
         sgssv(
             options.get_options() as *const superlu_options_t as *mut superlu_options_t,
@@ -423,27 +415,27 @@ impl ValueType for f32 {
             &mut info,
         );
 
-	CSimpleResult::from_vectors(info, a.num_columns(), b, perm_c, perm_r, l, u,)
+	simple_result_from_vectors(info, a.num_cols(), b, perm_c, perm_r, l, u,)
     }
 }
 
 impl ValueType for f64 {
     unsafe fn c_create_comp_col_matrix(
         num_rows: usize,
-        non_zero_values: &mut Vec<f64>,
-        row_indices: &mut Vec<i32>,
-        column_offsets: &mut Vec<i32>,
+        non_zero_vals: &Vec<f64>,
+        row_indices: &Vec<i32>,
+        col_offsets: &Vec<i32>,
     ) -> Result<CSuperMatrix, Error> {
-        check_comp_col_conditions(non_zero_values, row_indices, column_offsets)?;
+        check_comp_col_conditions(non_zero_vals, row_indices, col_offsets)?;
         let a = CSuperMatrix::alloc();
         dCreate_CompCol_Matrix(
             a.super_matrix() as *const SuperMatrix as *mut SuperMatrix,
             i32::try_from(num_rows).unwrap(),
-            (column_offsets.len() - 1) as i32,
-            non_zero_values.len() as i32,
-            non_zero_values.as_mut_ptr(),
-            row_indices.as_mut_ptr(),
-            column_offsets.as_mut_ptr(),
+            (col_offsets.len() - 1) as i32,
+            non_zero_vals.len() as i32,
+            non_zero_vals.as_ptr() as *mut Self,
+            row_indices.as_ptr() as *mut i32,
+            col_offsets.as_ptr() as *mut i32,
             Stype_t_SLU_NC,
             Dtype_t_SLU_D,
             Mtype_t_SLU_GE,
@@ -460,17 +452,17 @@ impl ValueType for f64 {
 
     fn c_create_dense_matrix(
         num_rows: usize,
-        num_columns: usize,
-        column_major_values: &mut Vec<f64>,
+        num_cols: usize,
+        column_major_values: &Vec<f64>,
     ) -> Result<CSuperMatrix, Error> {
-        check_dense_conditions(num_rows, num_columns, column_major_values)?;
+        check_dense_conditions(num_rows, num_cols, column_major_values)?;
         unsafe {
             let x = CSuperMatrix::alloc();
             dCreate_Dense_Matrix(
                 x.super_matrix() as *const SuperMatrix as *mut SuperMatrix,
                 num_rows as i32,
-                num_columns as i32,
-                column_major_values.as_mut_ptr(),
+                num_cols as i32,
+                column_major_values.as_ptr() as *mut Self,
                 num_rows as i32,
                 Stype_t_SLU_DN,
                 Dtype_t_SLU_D,
@@ -500,13 +492,13 @@ impl ValueType for f64 {
         perm_c: Option<Vec<i32>>,
         b: CSuperMatrix,
         stat: &mut CSuperluStat,
-    ) -> CSimpleResult {
+    ) -> Result<CSimpleSolution, CSimpleError> {
 
 	let mut info = 0i32;
 	let l = CSuperMatrix::alloc();
         let u = CSuperMatrix::alloc();
 	let (mut perm_c, mut perm_r, options)
-	    = make_simple_perms(a.num_columns(), perm_c, options);
+	    = make_simple_perms(a.num_cols(), perm_c, options);
 
         dgssv(
             options.get_options() as *const superlu_options_t as *mut superlu_options_t,
@@ -520,27 +512,27 @@ impl ValueType for f64 {
             &mut info,
         );
 
-	CSimpleResult::from_vectors(info, a.num_columns(), b, perm_c, perm_r, l, u,)
+	simple_result_from_vectors(info, a.num_cols(), b, perm_c, perm_r, l, u,)
     }
 }
 
 impl ValueType for num::Complex<f32> {
     unsafe fn c_create_comp_col_matrix(
         num_rows: usize,
-        non_zero_values: &mut Vec<num::Complex<f32>>,
-        row_indices: &mut Vec<i32>,
-        column_offsets: &mut Vec<i32>,
+        non_zero_vals: &Vec<num::Complex<f32>>,
+        row_indices: &Vec<i32>,
+        col_offsets: &Vec<i32>,
     ) -> Result<CSuperMatrix, Error> {
-        check_comp_col_conditions(non_zero_values, row_indices, column_offsets)?;
+        check_comp_col_conditions(non_zero_vals, row_indices, col_offsets)?;
         let a = CSuperMatrix::alloc();
         cCreate_CompCol_Matrix(
             a.super_matrix() as *const SuperMatrix as *mut SuperMatrix,
             i32::try_from(num_rows).unwrap(),
-            (column_offsets.len() - 1) as i32,
-            non_zero_values.len() as i32,
-            non_zero_values.as_mut_ptr() as *mut complex,
-            row_indices.as_mut_ptr(),
-            column_offsets.as_mut_ptr(),
+            (col_offsets.len() - 1) as i32,
+            non_zero_vals.len() as i32,
+	    non_zero_vals.as_ptr() as *mut complex,
+            row_indices.as_ptr() as *mut i32,
+            col_offsets.as_ptr() as *mut i32,
             Stype_t_SLU_NC,
             Dtype_t_SLU_C,
             Mtype_t_SLU_GE,
@@ -557,17 +549,17 @@ impl ValueType for num::Complex<f32> {
 
     fn c_create_dense_matrix(
         num_rows: usize,
-        num_columns: usize,
-        column_major_values: &mut Vec<num::Complex<f32>>,
+        num_cols: usize,
+        column_major_values: &Vec<num::Complex<f32>>,
     ) -> Result<CSuperMatrix, Error> {
-        check_dense_conditions(num_rows, num_columns, column_major_values)?;
+        check_dense_conditions(num_rows, num_cols, column_major_values)?;
         unsafe {
             let x = CSuperMatrix::alloc();
             cCreate_Dense_Matrix(
                 x.super_matrix() as *const SuperMatrix as *mut SuperMatrix,
                 num_rows as i32,
-                num_columns as i32,
-                column_major_values.as_mut_ptr() as *mut complex,
+                num_cols as i32,
+                column_major_values.as_ptr() as *mut complex,
                 num_rows as i32,
                 Stype_t_SLU_DN,
                 Dtype_t_SLU_C,
@@ -597,12 +589,12 @@ impl ValueType for num::Complex<f32> {
         perm_c: Option<Vec<i32>>,
         b: CSuperMatrix,
         stat: &mut CSuperluStat,
-    ) -> CSimpleResult {
+    ) -> Result<CSimpleSolution, CSimpleError> {
 	let mut info = 0i32;
 	let l = CSuperMatrix::alloc();
         let u = CSuperMatrix::alloc();
 	let (mut perm_c, mut perm_r, options)
-	    = make_simple_perms(a.num_columns(), perm_c, options);
+	    = make_simple_perms(a.num_cols(), perm_c, options);
 
 	cgssv(
             options.get_options() as *const superlu_options_t as *mut superlu_options_t,
@@ -616,27 +608,27 @@ impl ValueType for num::Complex<f32> {
             &mut info,
         );
 
-	CSimpleResult::from_vectors(info, a.num_columns(), b, perm_c, perm_r, l, u,)
+	simple_result_from_vectors(info, a.num_cols(), b, perm_c, perm_r, l, u,)
     }
 }
 
 impl ValueType for num::Complex<f64> {
     unsafe fn c_create_comp_col_matrix(
         num_rows: usize,
-        non_zero_values: &mut Vec<num::Complex<f64>>,
-        row_indices: &mut Vec<i32>,
-        column_offsets: &mut Vec<i32>,
+        non_zero_vals: &Vec<num::Complex<f64>>,
+        row_indices: &Vec<i32>,
+        col_offsets: &Vec<i32>,
     ) -> Result<CSuperMatrix, Error> {
-        check_comp_col_conditions(non_zero_values, row_indices, column_offsets)?;
+        check_comp_col_conditions(non_zero_vals, row_indices, col_offsets)?;
         let a = CSuperMatrix::alloc();
         zCreate_CompCol_Matrix(
             a.super_matrix() as *const SuperMatrix as *mut SuperMatrix,
             i32::try_from(num_rows).unwrap(),
-            (column_offsets.len() - 1) as i32,
-            non_zero_values.len() as i32,
-            non_zero_values.as_mut_ptr() as *mut doublecomplex,
-            row_indices.as_mut_ptr(),
-            column_offsets.as_mut_ptr(),
+            (col_offsets.len() - 1) as i32,
+            non_zero_vals.len() as i32,
+	    non_zero_vals.as_ptr() as *mut doublecomplex,
+            row_indices.as_ptr() as *mut i32,
+            col_offsets.as_ptr() as *mut i32,
             Stype_t_SLU_NC,
             Dtype_t_SLU_Z,
             Mtype_t_SLU_GE,
@@ -653,17 +645,17 @@ impl ValueType for num::Complex<f64> {
 
     fn c_create_dense_matrix(
         num_rows: usize,
-        num_columns: usize,
-        column_major_values: &mut Vec<num::Complex<f64>>,
+        num_cols: usize,
+        column_major_values: &Vec<num::Complex<f64>>,
     ) -> Result<CSuperMatrix, Error> {
-        check_dense_conditions(num_rows, num_columns, column_major_values)?;
+        check_dense_conditions(num_rows, num_cols, column_major_values)?;
         unsafe {
             let x = CSuperMatrix::alloc();
             zCreate_Dense_Matrix(
                 x.super_matrix() as *const SuperMatrix as *mut SuperMatrix,
                 num_rows as i32,
-                num_columns as i32,
-                column_major_values.as_mut_ptr() as *mut doublecomplex,
+                num_cols as i32,
+                column_major_values.as_ptr() as *mut doublecomplex,
                 num_rows as i32,
                 Stype_t_SLU_DN,
                 Dtype_t_SLU_Z,
@@ -693,12 +685,12 @@ impl ValueType for num::Complex<f64> {
         perm_c: Option<Vec<i32>>,
         b: CSuperMatrix,
         stat: &mut CSuperluStat,
-    ) -> CSimpleResult {
+    ) -> Result<CSimpleSolution, CSimpleError> {
 	let mut info = 0i32;
 	let l = CSuperMatrix::alloc();
         let u = CSuperMatrix::alloc();
 	let (mut perm_c, mut perm_r, options)
-	    = make_simple_perms(a.num_columns(), perm_c, options);
+	    = make_simple_perms(a.num_cols(), perm_c, options);
 
 	zgssv(
             options.get_options() as *const superlu_options_t as *mut superlu_options_t,
@@ -712,6 +704,6 @@ impl ValueType for num::Complex<f64> {
             &mut info,
         );
 
-	CSimpleResult::from_vectors(info, a.num_columns(), b, perm_c, perm_r, l, u,)
+	simple_result_from_vectors(info, a.num_cols(), b, perm_c, perm_r, l, u,)
     }
 }

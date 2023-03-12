@@ -12,6 +12,5 @@ pub mod free;
 pub mod options;
 pub mod stat;
 pub mod super_matrix;
-
-#[cfg(test)]
-mod tests;
+pub mod comp_col;
+pub mod dense;

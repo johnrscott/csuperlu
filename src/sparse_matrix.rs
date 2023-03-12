@@ -137,6 +137,23 @@ impl<P: ValueType> SparseMat<P> {
 	self.num_cols = num_cols;
     }
 
+    pub fn concat_cols(mut matrices: Vec<SparseMat<P>>) -> Self {
+	let mut combined = matrices.remove(0);
+	let nrows = combined.num_rows();
+	
+	for mut m in matrices {
+	    if nrows != m.num_rows() {
+		panic!("All matrices to be concatenated must have the same number of rows.");
+	    }
+	    let col_offset = combined.num_cols();
+	    for ((row, col), val) in m.non_zero_vals.drain() {
+		combined.insert_unbounded(row, col + col_offset, val);
+	    }
+	    combined.resize_cols(col_offset + m.num_cols());
+	}
+	combined
+    }
+
     /// Lots of janky stuff going on here, look away...
     pub fn print_structure(&self, division: usize) {
 	let mut row_divider = String::new();

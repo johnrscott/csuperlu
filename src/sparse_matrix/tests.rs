@@ -145,3 +145,23 @@ fn invalid_resize_cols() {
     a.insert_unbounded(0, 1, 1.3);
     a.resize_cols(2);
 }
+
+#[test]
+fn stuff() {
+    let mut a = SparseMat::<f64>::empty();
+    a.insert_unbounded(2, 2, 0.5);
+    a.insert_unbounded(3, 1, 1.5);
+    a.insert_unbounded(0, 1, 1.3);
+    a.print_structure(0);
+
+    let mut b = SparseMat::<f64>::empty();
+    b.insert_unbounded(2, 5, 0.5);
+    b.insert_unbounded(3, 1, 1.5);
+    b.insert_unbounded(2, 1, 1.3);
+    b.resize_cols(8);
+    b.print_structure(0);
+
+    let comb = SparseMat::concat_cols(vec![a, b]);
+    print!("{}", comb);
+    comb.print_structure(3);
+}

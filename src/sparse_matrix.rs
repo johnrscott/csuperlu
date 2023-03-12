@@ -6,7 +6,7 @@ use std::collections::HashMap;
 
 use crate::c::value_type::ValueType;
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct SparseMat<P: ValueType> {
     num_rows: usize,
     num_cols: usize,
@@ -99,8 +99,96 @@ impl<P: ValueType> SparseMat<P> {
 	self.non_zero_vals.len()
     }
 
+    /// Return the non-zero values in a hashmap.
     pub fn non_zero_vals(&self) -> &HashMap<(usize, usize), P> {
 	&self.non_zero_vals
+    }
+
+    /// Allow resizing (shrinking and expanding) as long as contents are preserved
+    /// Pads with additional rows and columns to fit new size
+    pub fn resize(&mut self, num_rows: usize, num_cols: usize) {
+	self.resize_rows(num_rows);
+	self.resize_cols(num_cols);
+    }
+
+    /// Allow resizing (shrinking and expanding) as long as contents are preserved
+    /// Pads with additional rows to fit new size
+    pub fn resize_rows(&mut self, num_rows: usize) {
+	let num_rows_actual = match self.non_zero_vals.keys().max_by_key(|k| k.0) {
+	    Some(max_index) => max_index.0 + 1,
+	    None => 0,
+	};
+	if num_rows < num_rows_actual {
+	    panic!("Contents of matrix fit into {num_rows_actual} rows, cannot resize to {num_rows} rows.");
+	}
+	self.num_rows = num_rows;
+    }
+
+    /// Allow resizing (shrinking and expanding) as long as contents are preserved
+    /// Pads with additional columns to fit new size
+    pub fn resize_cols(&mut self, num_cols: usize) {
+	let num_cols_actual = match self.non_zero_vals.keys().max_by_key(|k| k.1) {
+	    Some(max_index) => max_index.1 + 1,
+	    None => 0,
+	};
+	if num_cols < num_cols_actual {
+	    panic!("Contents of matrix fit into {num_cols_actual} cols, cannot resize to {num_cols} cols.");
+	}
+	self.num_cols = num_cols;
+    }
+
+    /// Lots of janky stuff going on here, look away...
+    pub fn print_structure(&self, division: usize) {
+	let mut row_divider = String::new();
+	print!("   ");
+	for i in 0..division {
+	    row_divider.push_str("──");
+	    if i / 10 == 0 {
+		print!("  ");
+	    } else {
+		print!("{} ", i / 10);
+	    }
+	}
+	row_divider.push('┼');
+	print!("  ");
+	for i in 0..(self.num_cols-division) {
+	    row_divider.push_str("──");
+	    if i / 10 == 0 {
+		print!("  ");
+	    } else {
+		print!("{} ", i / 10);
+	    }
+	}
+	print!("\n   ");
+	for i in 0..division {
+	    print!("{} ", i % 10);
+	}
+	print!("  ");
+	for i in 0..(self.num_cols-division) {
+	    print!("{} ", i % 10);
+	}
+	print!("\n");
+
+	let mut current_row = 0;
+	for r in 0..self.num_rows {
+	    if r == division {
+		current_row = 0;
+		println!("   {row_divider}");
+	    } 
+	    print!("{:2} ", current_row);
+	    current_row += 1;
+	    for c in 0..self.num_cols {
+		if c == division {
+		    print!("│ ");
+		}
+		let res = self.non_zero_vals.get(&(r, c));
+		match res {
+		    None => print!("  "),
+		    Some(_) => print!("x "),
+		}
+	    }
+	    print!("\n");
+	}
     }
 }
 

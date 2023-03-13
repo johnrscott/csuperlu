@@ -104,14 +104,14 @@ impl<P: ValueType> SparseMat<P> {
 	&self.non_zero_vals
     }
 
-    /// Allow resizing (shrinking and expanding) as long as contents are preserved
+    /// Allow resizing (shrinking and expanding) as long as contents are preserved.
     /// Pads with additional rows and columns to fit new size
     pub fn resize(&mut self, num_rows: usize, num_cols: usize) {
 	self.resize_rows(num_rows);
 	self.resize_cols(num_cols);
     }
 
-    /// Allow resizing (shrinking and expanding) as long as contents are preserved
+    /// Allow resizing (shrinking and expanding) as long as contents are preserved.
     /// Pads with additional rows to fit new size
     pub fn resize_rows(&mut self, num_rows: usize) {
 	let num_rows_actual = match self.non_zero_vals.keys().max_by_key(|k| k.0) {
@@ -124,7 +124,7 @@ impl<P: ValueType> SparseMat<P> {
 	self.num_rows = num_rows;
     }
 
-    /// Allow resizing (shrinking and expanding) as long as contents are preserved
+    /// Allow resizing (shrinking and expanding) as long as contents are preserved.
     /// Pads with additional columns to fit new size
     pub fn resize_cols(&mut self, num_cols: usize) {
 	let num_cols_actual = match self.non_zero_vals.keys().max_by_key(|k| k.1) {
@@ -137,6 +137,8 @@ impl<P: ValueType> SparseMat<P> {
 	self.num_cols = num_cols;
     }
 
+    /// Concatenate a list of sparse matrices column-wise (horizontally).
+    /// TODO: Could change to concat_horiz
     pub fn concat_cols(mut matrices: Vec<SparseMat<P>>) -> Self {
 	let mut combined = matrices.remove(0);
 	let nrows = combined.num_rows();
@@ -154,10 +156,40 @@ impl<P: ValueType> SparseMat<P> {
 	combined
     }
 
+    /// Concatenate a list of sparse matrices row-wise (vertically).
+    /// TODO: Could change to concat_vert
+    pub fn concat_rows(mut matrices: Vec<SparseMat<P>>) -> Self {
+	let mut combined = matrices.remove(0);
+	let ncols = combined.num_cols();
+	
+	for mut m in matrices {
+	    if ncols != m.num_cols() {
+		panic!("All matrices to be concatenated must have the same number of columns.");
+	    }
+	    let row_offset = combined.num_rows();
+	    for ((row, col), val) in m.non_zero_vals.drain() {
+		combined.insert_unbounded(row + row_offset, col, val);
+	    }
+	    combined.resize_rows(row_offset + m.num_rows());
+	}
+	combined
+    }
+
+    /// Concatenate sparse matrices together. TODO: Mention how the vector in a vector works 
+    pub fn concat(matrices: Vec<Vec<SparseMat<P>>>) -> Self {
+	let mut combined_rows = Vec::<SparseMat<P>>::new();
+	for row in matrices {
+	    let a = SparseMat::concat_cols(row);
+	    combined_rows.push(a);
+	}
+	let combined = SparseMat::concat_rows(combined_rows);
+	combined
+    }
+    
     /// Lots of janky stuff going on here, look away...
     pub fn print_structure(&self, division: usize) {
 	let mut row_divider = String::new();
-	print!("   ");
+	print!("  ");
 	for i in 0..division {
 	    row_divider.push_str("──");
 	    if i / 10 == 0 {

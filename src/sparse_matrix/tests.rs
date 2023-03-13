@@ -147,21 +147,116 @@ fn invalid_resize_cols() {
 }
 
 #[test]
-fn stuff() {
-    let mut a = SparseMat::<f64>::empty();
+fn concatenate_columns() {
+    let mut a = SparseMat::empty();
     a.insert_unbounded(2, 2, 0.5);
     a.insert_unbounded(3, 1, 1.5);
     a.insert_unbounded(0, 1, 1.3);
-    a.print_structure(0);
 
-    let mut b = SparseMat::<f64>::empty();
-    b.insert_unbounded(2, 5, 0.5);
-    b.insert_unbounded(3, 1, 1.5);
-    b.insert_unbounded(2, 1, 1.3);
+    let mut b = SparseMat::empty();
+    b.insert_unbounded(2, 5, 0.2);
+    b.insert_unbounded(1, 1, 1.2);
+    b.insert_unbounded(3, 1, 2.3);
     b.resize_cols(8);
-    b.print_structure(0);
 
-    let comb = SparseMat::concat_cols(vec![a, b]);
-    print!("{}", comb);
-    comb.print_structure(3);
+    let mut c = SparseMat::new(4, 2);
+    c.insert(0, 0, 3.6);
+    c.insert(1, 1, 11.6);
+    c.insert(2, 1, 4.2);
+    
+    let comb = SparseMat::concat_cols(vec![a, b, c]);
+    assert_eq!(comb.get(2, 2), 0.5);
+    assert_eq!(comb.get(3, 1), 1.5);
+    assert_eq!(comb.get(0, 1), 1.3);
+    assert_eq!(comb.get(2, 8), 0.2);
+    assert_eq!(comb.get(1, 4), 1.2);
+    assert_eq!(comb.get(3, 4), 2.3);
+    assert_eq!(comb.get(0, 11), 3.6);
+    assert_eq!(comb.get(1, 12), 11.6);
+    assert_eq!(comb.get(2, 12), 4.2);
+    assert_eq!(comb.num_rows(), 4);
+    assert_eq!(comb.num_cols(), 13);
+}
+
+#[test]
+#[should_panic]
+fn invalid_concatenate_columns() {
+    let a = SparseMat::<f64>::new(5, 6);
+    let b = SparseMat::<f64>::new(10, 6);
+    let _comb = SparseMat::concat_cols(vec![a, b]);
+}
+
+#[test]
+fn concatenate_rows() {
+    let mut a = SparseMat::new(2, 5);
+    a.insert(1, 1, 0.5);
+    a.insert(0, 2, 1.5);
+    a.insert(0, 4, 1.3);
+
+    let mut b = SparseMat::new(4, 5);
+    b.insert(0, 3, 0.2);
+    b.insert(0, 2, 1.2);
+    b.insert(0, 4, 2.3);
+
+    let mut c = SparseMat::new(10, 5);
+    c.insert(7, 0, 3.6);
+    c.insert(4, 1, 11.6);
+    c.insert(8, 2, 4.2);
+
+    let comb = SparseMat::concat_rows(vec![a, b, c]);
+    assert_eq!(comb.get(1, 1), 0.5);
+    assert_eq!(comb.get(0, 2), 1.5);
+    assert_eq!(comb.get(0, 4), 1.3);
+    assert_eq!(comb.get(2, 3), 0.2);
+    assert_eq!(comb.get(2, 2), 1.2);
+    assert_eq!(comb.get(2, 4), 2.3);
+    assert_eq!(comb.get(13, 0), 3.6);
+    assert_eq!(comb.get(10, 1), 11.6);
+    assert_eq!(comb.get(14, 2), 4.2);
+    assert_eq!(comb.num_rows(), 16);
+    assert_eq!(comb.num_cols(), 5);
+}
+
+#[test]
+#[should_panic]
+fn invalid_concatenate_rows() {
+    let a = SparseMat::<f64>::new(5, 6);
+    let b = SparseMat::<f64>::new(5, 10);
+    let _comb = SparseMat::concat_rows(vec![a, b]);
+}
+
+#[test]
+fn concatenate_both_dimensions() {
+    let mut a = SparseMat::<f64>::new(2, 2);
+    a.insert(0, 0, 1.0);
+    a.insert(1, 1, 2.0);
+
+    let mut b = SparseMat::<f64>::new(2, 3);
+    b.insert(0, 0, 1.0);
+    b.insert(1, 1, 2.0);
+
+    let mut c = SparseMat::<f64>::new(3, 2);
+    c.insert(0, 0, 1.0);
+    c.insert(1, 1, 2.0);
+
+    let mut d = SparseMat::<f64>::new(3, 3);
+    d.insert(0, 0, 1.0);
+    d.insert(1, 1, 2.0);
+    d.insert(2, 2, 3.0);
+
+    let comb = SparseMat::concat(vec![vec![a, b],
+				      vec![c, d]]);
+    assert_eq!(comb.get(0, 0), 1.0);
+    assert_eq!(comb.get(1, 1), 2.0);
+    assert_eq!(comb.get(0, 2), 1.0);
+    assert_eq!(comb.get(1, 3), 2.0);
+    assert_eq!(comb.get(2, 0), 1.0);
+    assert_eq!(comb.get(3, 1), 2.0);
+    assert_eq!(comb.get(2, 2), 1.0);
+    assert_eq!(comb.get(3, 3), 2.0);
+    assert_eq!(comb.get(4, 4), 3.0);
+    assert_eq!(comb.num_cols(), 5);
+    assert_eq!(comb.num_rows(), 5);
+
+    comb.print_structure(2);
 }

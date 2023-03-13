@@ -7,11 +7,11 @@ use super::{options::SimpleDriverOptions, comp_col::{CCompColMat, create_comp_co
 
 /// Solution from the simple driver
 pub struct CSimpleSolution<P: CSimpleDriver> {
-    x: CDenseMat<P>,
-    perm_c: Vec<i32>,
-    perm_r: Vec<i32>,
-    l: CSuperMatrix,
-    u: CSuperMatrix,    
+    pub x: CDenseMat<P>,
+    pub perm_c: Vec<i32>,
+    pub perm_r: Vec<i32>,
+    pub l: CSuperMatrix,
+    pub u: CSuperMatrix,    
 }
 
 /// Enum of errors that can arise during the solution

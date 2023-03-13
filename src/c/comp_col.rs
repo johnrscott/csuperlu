@@ -4,11 +4,16 @@
 
 use std::mem;
 
-use super::{super_matrix::CSuperMatrix, value_type::{ValueType, Error}, free::c_destroy_super_matrix_store};
+use csuperlu_sys::SuperMatrix;
 
-/// The collection of rust objects convertible to and from
-/// the CCompColMat
-pub struct CCompColRaw<P: ValueType> {
+use self::create_comp_col_mat::CCreateCompColMat;
+
+use super::{super_matrix::CSuperMatrix, error::Error, free::c_destroy_super_matrix_store};
+
+pub mod create_comp_col_mat;
+
+/// The rust vectors comprising the matrix
+pub struct CCompColRaw<P: CCreateCompColMat> {
     pub num_rows: usize,
     pub non_zero_vals: Vec<P>,
     pub row_indices: Vec<i32>,
@@ -25,14 +30,14 @@ pub struct CCompColRaw<P: ValueType> {
 /// SuperMatrix struct. You should not need to worry about memory
 /// when using this struct, apart from ensuring that the safety
 /// contract of the from_raw function is fulfilled.
-pub struct CCompColMat<P: ValueType> {
+pub struct CCompColMat<P: CCreateCompColMat> {
     non_zero_vals: Vec<P>,
     row_indices: Vec<i32>,
     col_offsets: Vec<i32>,
     super_matrix: CSuperMatrix,
 }
 
-impl<P: ValueType> CCompColMat<P> {
+impl<P: CCreateCompColMat> CCompColMat<P> {
 
     /// Create a new compressed column matrix from raw vectors
     ///
@@ -147,10 +152,14 @@ impl<P: ValueType> CCompColMat<P> {
 	    row_indices,
 	    col_offsets,
 	}
-    }	
+    }
+
+    pub fn super_matrix(&self) -> &SuperMatrix {
+	&self.super_matrix.super_matrix()
+    }
 }
 
-impl<P: ValueType> Drop for CCompColMat<P> {
+impl<P: CCreateCompColMat> Drop for CCompColMat<P> {
     fn drop(&mut self) {
 	unsafe {
 	    c_destroy_super_matrix_store(&mut self.super_matrix);

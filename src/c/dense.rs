@@ -4,23 +4,28 @@
 //! are used for the right-hand side matrix and the solution matrix.
 
 use std::mem;
-use super::{value_type::{ValueType, Error}, super_matrix::CSuperMatrix, free::c_destroy_super_matrix_store};
+use csuperlu_sys::SuperMatrix;
 
-/// The collection of rust objects convertible to and from
-/// the CDenseMat
-pub struct CDenseRaw<P: ValueType> {
+use self::create_dense_mat::CCreateDenseMat;
+
+use super::{error::Error, super_matrix::CSuperMatrix, free::c_destroy_super_matrix_store};
+
+pub mod create_dense_mat;
+
+/// The rust vectors comprising the matrix
+pub struct CDenseRaw<P: CCreateDenseMat> {
     pub num_rows: usize,
     pub num_cols: usize,
     pub col_maj_vals: Vec<P>,
 }
 
 /// Dense matrix
-pub struct CDenseMat<P: ValueType> {
+pub struct CDenseMat<P: CCreateDenseMat> {
     col_maj_vals: Vec<P>,
     super_matrix: CSuperMatrix, 
 }
 
-impl<P: ValueType> CDenseMat<P> {
+impl<P: CCreateDenseMat> CDenseMat<P> {
 
     /// Make a dense matrix from raw components
     ///
@@ -87,9 +92,13 @@ impl<P: ValueType> CDenseMat<P> {
 	    col_maj_vals,
 	}	
     }
+
+    pub fn super_matrix(&self) -> &SuperMatrix {
+	&self.super_matrix.super_matrix()
+    }
 }
 
-impl<P: ValueType> Drop for CDenseMat<P> {
+impl<P: CCreateDenseMat> Drop for CDenseMat<P> {
     fn drop(&mut self) {
 	unsafe {
 	    c_destroy_super_matrix_store(&mut self.super_matrix);

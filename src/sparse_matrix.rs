@@ -185,6 +185,19 @@ impl<P: ValueType> SparseMat<P> {
 	let combined = SparseMat::concat_rows(combined_rows);
 	combined
     }
+
+    // Transpose a matrix in place
+    pub fn transpose(&self) -> Self {
+	let mut non_zero_vals = HashMap::<(usize, usize), P>::new();
+	for ((row, col), val) in self.non_zero_vals.iter() {
+	    non_zero_vals.insert((*col, *row), *val);
+	}
+	Self {
+	    num_rows: self.num_cols,
+	    num_cols: self.num_rows,
+	    non_zero_vals,
+	}
+    }
     
     /// Lots of janky stuff going on here, look away...
     pub fn print_structure(&self, division: usize) {

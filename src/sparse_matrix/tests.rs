@@ -260,3 +260,19 @@ fn concatenate_both_dimensions() {
 
     comb.print_structure(2);
 }
+
+#[test]
+fn transpose_matrix() {
+    let mut a = SparseMat::new(4, 2);
+    a.insert(3, 0, 3.6);
+    a.insert(1, 1, 11.6);
+    a.insert(2, 1, 4.2);
+
+    let b = a.transpose();
+    assert_eq!(b.get(0, 3), 3.6);
+    assert_eq!(b.get(1, 1), 11.6);
+    assert_eq!(b.get(1, 2), 4.2);
+    assert_eq!(b.num_non_zeros(), 3);
+    assert_eq!(b.num_rows(), 2);
+    assert_eq!(b.num_cols(), 4);
+}

@@ -6,26 +6,26 @@
 use std::mem;
 use csuperlu_sys::SuperMatrix;
 
-use self::create_dense_mat::CCreateDenseMat;
+use self::create_dense_mat::CreateDenseMat;
 
-use super::{error::Error, super_matrix::CSuperMatrix, free::c_destroy_super_matrix_store};
+use super::{error::Error, super_matrix::CSuperMatrix, free::destroy_super_matrix_store};
 
 pub mod create_dense_mat;
 
 /// The rust vectors comprising the matrix
-pub struct CDenseRaw<P: CCreateDenseMat> {
+pub struct DenseRaw<P: CreateDenseMat> {
     pub num_rows: usize,
     pub num_cols: usize,
     pub col_maj_vals: Vec<P>,
 }
 
 /// Dense matrix
-pub struct CDenseMat<P: CCreateDenseMat> {
+pub struct DenseMat<P: CreateDenseMat> {
     col_maj_vals: Vec<P>,
     super_matrix: CSuperMatrix, 
 }
 
-impl<P: CCreateDenseMat> CDenseMat<P> {
+impl<P: CreateDenseMat> DenseMat<P> {
 
     /// Make a dense matrix from raw components
     ///
@@ -38,18 +38,18 @@ impl<P: CCreateDenseMat> CDenseMat<P> {
     ///
     /// Unlike the compressed-column matrix, this function is
     /// safe. This is because it is not possible to provide an
-    /// invalid CDenseRaw that is not caught by the error
+    /// invalid DenseRaw that is not caught by the error
     /// checking.
-    pub fn from_raw(raw: CDenseRaw<P>) -> Result<Self, Error> {
+    pub fn from_raw(raw: DenseRaw<P>) -> Result<Self, Error> {
 
-	let CDenseRaw {
+	let DenseRaw {
 	    num_rows,
 	    num_cols,
 	    col_maj_vals
 	} = raw;
 	
 	let super_matrix =
-	    P::c_create_dense_matrix(num_rows, num_cols, &col_maj_vals)?;
+	    P::create_dense_matrix(num_rows, num_cols, &col_maj_vals)?;
 
 	Ok(Self {
 	    col_maj_vals,
@@ -67,7 +67,7 @@ impl<P: CCreateDenseMat> CDenseMat<P> {
 	self.super_matrix.num_cols()
     }
 
-    pub fn to_raw(mut self) -> CDenseRaw<P> {
+    pub fn to_raw(mut self) -> DenseRaw<P> {
 	let col_maj_vals = unsafe {
 	    Vec::from_raw_parts(self.col_maj_vals.as_mut_ptr(),
 				self.col_maj_vals.len(),
@@ -80,13 +80,13 @@ impl<P: CCreateDenseMat> CDenseMat<P> {
 
 	// Call the destructor (to avoid the need for drop)
 	unsafe {
-	    c_destroy_super_matrix_store(&mut self.super_matrix);
+	    destroy_super_matrix_store(&mut self.super_matrix);
 	};
 	
 	// Treat self as deallocated already
 	mem::forget(self);
 	
-	CDenseRaw {
+	DenseRaw {
 	    num_rows,
 	    num_cols,
 	    col_maj_vals,
@@ -98,10 +98,10 @@ impl<P: CCreateDenseMat> CDenseMat<P> {
     }
 }
 
-impl<P: CCreateDenseMat> Drop for CDenseMat<P> {
+impl<P: CreateDenseMat> Drop for DenseMat<P> {
     fn drop(&mut self) {
 	unsafe {
-	    c_destroy_super_matrix_store(&mut self.super_matrix);
+	    destroy_super_matrix_store(&mut self.super_matrix);
 	}
     }
 }
@@ -118,14 +118,14 @@ fn test_drop_leaks() {
 			    4.0, 5.0, 6.0,
 			    7.0, 8.0, 9.0];
 
-    let raw = CDenseRaw {
+    let raw = DenseRaw {
 	num_rows,
 	num_cols,
 	col_maj_vals,
     };
     
     // Create the matrix wrapper
-    let a = CDenseMat::from_raw(raw)
+    let a = DenseMat::from_raw(raw)
 	.expect("Failed to create matrix");
 }
 
@@ -140,14 +140,14 @@ fn test_dense_matrix() {
 			    4.0, 5.0, 6.0,
 			    7.0, 8.0, 9.0];
 
-    let raw = CDenseRaw {
+    let raw = DenseRaw {
 	num_rows,
 	num_cols,
 	col_maj_vals,
     };
     
     // Create the matrix wrapper
-    let a = CDenseMat::from_raw(raw)
+    let a = DenseMat::from_raw(raw)
 	.expect("Failed to create matrix");
 
     // Check the size
@@ -157,7 +157,7 @@ fn test_dense_matrix() {
     // Check the values
 
     // Get the vectors back out
-    let CDenseRaw {
+    let DenseRaw {
     	num_rows,
     	num_cols,
     	col_maj_vals,

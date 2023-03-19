@@ -10,11 +10,11 @@ use std::{str, fmt};
 
 use num::Num;
 
-use super::simple_driver::CSimpleDriver;
+use super::simple_driver::SimpleDriver;
 
 /// Valid numerical value types for the C SuperLU library
 ///
-pub trait ValueType: Num + Copy + str::FromStr + fmt::Debug + CSimpleDriver {}
+pub trait ValueType: Num + Copy + str::FromStr + fmt::Debug + SimpleDriver {}
 
 impl ValueType for f32 {}
 impl ValueType for f64 {}

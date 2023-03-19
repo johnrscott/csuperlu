@@ -22,7 +22,7 @@ fn check_dense_conditions<T>(
 }
 
 
-pub trait CCreateDenseMat: Sized {
+pub trait CreateDenseMat: Sized {
     /// Create a dense matrix from a raw vector
     ///
     /// # Errors
@@ -30,15 +30,15 @@ pub trait CCreateDenseMat: Sized {
     /// If the length of column_major_values is not equal to
     /// num_rows * num_cols, an error variant is returned.
     ///    
-    fn c_create_dense_matrix(
+    fn create_dense_matrix(
         num_rows: usize,
         num_cols: usize,
         column_major_values: &Vec<Self>,
     ) -> Result<CSuperMatrix, Error>;
 }
 
-impl CCreateDenseMat for f32 {
-    fn c_create_dense_matrix(
+impl CreateDenseMat for f32 {
+    fn create_dense_matrix(
         num_rows: usize,
         num_cols: usize,
         column_major_values: &Vec<f32>,
@@ -61,8 +61,8 @@ impl CCreateDenseMat for f32 {
     }
 }
 
-impl CCreateDenseMat for f64 {
-    fn c_create_dense_matrix(
+impl CreateDenseMat for f64 {
+    fn create_dense_matrix(
         num_rows: usize,
         num_cols: usize,
         column_major_values: &Vec<f64>,
@@ -85,8 +85,8 @@ impl CCreateDenseMat for f64 {
     }
 }
 
-impl CCreateDenseMat for num::Complex<f32> {
-    fn c_create_dense_matrix(
+impl CreateDenseMat for num::Complex<f32> {
+    fn create_dense_matrix(
         num_rows: usize,
         num_cols: usize,
         column_major_values: &Vec<num::Complex<f32>>,
@@ -109,8 +109,8 @@ impl CCreateDenseMat for num::Complex<f32> {
     }
 }
 
-impl CCreateDenseMat for num::Complex<f64> {
-    fn c_create_dense_matrix(
+impl CreateDenseMat for num::Complex<f64> {
+    fn create_dense_matrix(
         num_rows: usize,
         num_cols: usize,
         column_major_values: &Vec<num::Complex<f64>>,

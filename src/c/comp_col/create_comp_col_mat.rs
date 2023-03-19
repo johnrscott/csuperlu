@@ -9,7 +9,7 @@ use crate::c::{error::Error, super_matrix::CSuperMatrix};
 ///
 /// # Errors
 ///
-/// As described in documentation for c_create_comp_col_matrix.
+/// As described in documentation for create_comp_col_matrix.
 ///
 fn check_comp_col_conditions<T>(
     non_zero_vals: &Vec<T>,
@@ -29,7 +29,7 @@ fn check_comp_col_conditions<T>(
     Ok(())
 }
 
-pub trait CCreateCompColMat: Sized {
+pub trait CreateCompColMat: Sized {
     /// Create a compressed-column matrix from raw vectors
     ///
     /// # Errors
@@ -52,7 +52,7 @@ pub trait CCreateCompColMat: Sized {
     /// apart from col_offsets\[last\]; and all values in row_indices must
     /// be < num_rows).
     ///
-    unsafe fn c_create_comp_col_matrix(
+    unsafe fn create_comp_col_matrix(
         num_rows: usize,
         non_zero_vals: &Vec<Self>,
         row_indices: &Vec<i32>,
@@ -60,8 +60,8 @@ pub trait CCreateCompColMat: Sized {
     ) -> Result<CSuperMatrix, Error>;
 }
 
-impl CCreateCompColMat for f32 {
-    unsafe fn c_create_comp_col_matrix(
+impl CreateCompColMat for f32 {
+    unsafe fn create_comp_col_matrix(
         num_rows: usize,
         non_zero_vals: &Vec<f32>,
         row_indices: &Vec<i32>,
@@ -85,8 +85,8 @@ impl CCreateCompColMat for f32 {
     }
 }
 
-impl CCreateCompColMat for f64 {
-    unsafe fn c_create_comp_col_matrix(
+impl CreateCompColMat for f64 {
+    unsafe fn create_comp_col_matrix(
         num_rows: usize,
         non_zero_vals: &Vec<f64>,
         row_indices: &Vec<i32>,
@@ -110,8 +110,8 @@ impl CCreateCompColMat for f64 {
     }
 }
 
-impl CCreateCompColMat for num::Complex<f32> {
-    unsafe fn c_create_comp_col_matrix(
+impl CreateCompColMat for num::Complex<f32> {
+    unsafe fn create_comp_col_matrix(
         num_rows: usize,
         non_zero_vals: &Vec<num::Complex<f32>>,
         row_indices: &Vec<i32>,
@@ -135,8 +135,8 @@ impl CCreateCompColMat for num::Complex<f32> {
     }
 }
 
-impl CCreateCompColMat for num::Complex<f64> {
-    unsafe fn c_create_comp_col_matrix(
+impl CreateCompColMat for num::Complex<f64> {
+    unsafe fn create_comp_col_matrix(
         num_rows: usize,
         non_zero_vals: &Vec<num::Complex<f64>>,
         row_indices: &Vec<i32>,

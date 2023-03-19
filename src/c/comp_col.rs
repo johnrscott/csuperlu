@@ -6,14 +6,14 @@ use std::mem;
 
 use csuperlu_sys::SuperMatrix;
 
-use self::create_comp_col_mat::CCreateCompColMat;
+use self::create_comp_col_mat::CreateCompColMat;
 
-use super::{super_matrix::CSuperMatrix, error::Error, free::c_destroy_super_matrix_store};
+use super::{super_matrix::CSuperMatrix, error::Error, free::destroy_super_matrix_store};
 
 pub mod create_comp_col_mat;
 
 /// The rust vectors comprising the matrix
-pub struct CCompColRaw<P: CCreateCompColMat> {
+pub struct CompColRaw<P: CreateCompColMat> {
     pub num_rows: usize,
     pub non_zero_vals: Vec<P>,
     pub row_indices: Vec<i32>,
@@ -30,14 +30,14 @@ pub struct CCompColRaw<P: CCreateCompColMat> {
 /// SuperMatrix struct. You should not need to worry about memory
 /// when using this struct, apart from ensuring that the safety
 /// contract of the from_raw function is fulfilled.
-pub struct CCompColMat<P: CCreateCompColMat> {
+pub struct CompColMat<P: CreateCompColMat> {
     non_zero_vals: Vec<P>,
     row_indices: Vec<i32>,
     col_offsets: Vec<i32>,
     super_matrix: CSuperMatrix,
 }
 
-impl<P: CCreateCompColMat> CCompColMat<P> {
+impl<P: CreateCompColMat> CompColMat<P> {
 
     /// Create a new compressed column matrix from raw vectors
     ///
@@ -68,17 +68,17 @@ impl<P: CCreateCompColMat> CCompColMat<P> {
     /// result in the SuperLU routines.
     ///
     pub unsafe fn from_raw(
-	raw: CCompColRaw<P>
+	raw: CompColRaw<P>
     ) -> Result<Self, Error> {
 
-	let CCompColRaw {
+	let CompColRaw {
 	    num_rows,
 	    non_zero_vals,
 	    row_indices,
 	    col_offsets,
 	} = raw;
 	
-	let super_matrix = P::c_create_comp_col_matrix(
+	let super_matrix = P::create_comp_col_matrix(
 	    num_rows,
 	    &non_zero_vals,
 	    &row_indices,
@@ -105,13 +105,13 @@ impl<P: CCreateCompColMat> CCompColMat<P> {
     /// Get the underlying vectors from the object.
     ///
     /// No copies are made; you get the vectors that were
-    /// inside the  CCompColMat object by move. The arguments
+    /// inside the  CompColMat object by move. The arguments
     /// in the returned tuple are the same as the from_raw
     /// function: (num_rows, non_zero_vals, row_indices,
     /// col_offsets)
     ///
     ///
-    pub fn to_raw(mut self) -> CCompColRaw<P> {
+    pub fn to_raw(mut self) -> CompColRaw<P> {
 	// You can't just move the vectors out of the matrix because
 	// of the drop trait. Instead, get raw pointers to the vectors
 	// and then reconstruct the Vecs to "trick" the compiler, then
@@ -140,13 +140,13 @@ impl<P: CCreateCompColMat> CCompColMat<P> {
 	
 	// Call the destructor (to avoid the need for drop)
 	unsafe {
-	    c_destroy_super_matrix_store(&mut self.super_matrix);
+	    destroy_super_matrix_store(&mut self.super_matrix);
 	};
 	
 	// Treat self as deallocated already
 	mem::forget(self);
 	
-	CCompColRaw {
+	CompColRaw {
 	    num_rows,
 	    non_zero_vals,
 	    row_indices,
@@ -159,10 +159,10 @@ impl<P: CCreateCompColMat> CCompColMat<P> {
     }
 }
 
-impl<P: CCreateCompColMat> Drop for CCompColMat<P> {
+impl<P: CreateCompColMat> Drop for CompColMat<P> {
     fn drop(&mut self) {
 	unsafe {
-	    c_destroy_super_matrix_store(&mut self.super_matrix);
+	    destroy_super_matrix_store(&mut self.super_matrix);
 	}
     }
 }
@@ -177,7 +177,7 @@ fn test_drop_leaks() {
     let row_indices = vec![1, 2];
     let col_offsets = vec![0, 1, 2];
 
-    let raw = CCompColRaw {
+    let raw = CompColRaw {
 	num_rows,
 	non_zero_vals,
 	row_indices,
@@ -186,7 +186,7 @@ fn test_drop_leaks() {
     
     // Create the matrix wrapper
     let a = unsafe {
-	CCompColMat::from_raw(raw)
+	CompColMat::from_raw(raw)
 	    .expect("Failed to create matrix")
     };
 }
@@ -202,7 +202,7 @@ fn test_comp_col_matrix() {
     let row_indices = vec![1, 2];
     let col_offsets = vec![0, 1, 2];
 
-    let raw = CCompColRaw {
+    let raw = CompColRaw {
 	num_rows,
 	non_zero_vals,
 	row_indices,
@@ -211,7 +211,7 @@ fn test_comp_col_matrix() {
     
     // Create the matrix wrapper
     let a = unsafe {
-	CCompColMat::from_raw(raw)
+	CompColMat::from_raw(raw)
 	    .expect("Failed to create matrix")
     };
 
@@ -222,7 +222,7 @@ fn test_comp_col_matrix() {
     // Check the values
 
     // Get the vectors back out
-    let CCompColRaw {
+    let CompColRaw {
 	num_rows,
 	non_zero_vals,
 	row_indices,

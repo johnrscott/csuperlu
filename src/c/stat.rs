@@ -9,11 +9,11 @@ use std::mem::MaybeUninit;
 
 use csuperlu_sys::{StatInit, StatFree, SuperLUStat_t, StatPrint};
 
-pub struct CSuperluStat {
+pub struct SuperluStat {
     stat: SuperLUStat_t,
 }
 
-impl CSuperluStat {
+impl SuperluStat {
     /// Create a new SuperLU stats struct
     ///
     pub fn new() -> Self {
@@ -48,7 +48,7 @@ impl CSuperluStat {
     
 }
 
-impl Drop for CSuperluStat {
+impl Drop for SuperluStat {
     fn drop(&mut self) {
 	unsafe {
             StatFree(&mut self.stat as *mut SuperLUStat_t);

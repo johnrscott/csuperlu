@@ -9,14 +9,25 @@
 //! To use the simple driver to solve a linear system, follow these
 //! steps:
 //!
-//! 1. Create the matrix $A$ as a CompColMat (see comp_col).
-//! 2. Create the right-hand side $B$ as a DenseMat (see dense).
-//! 3. Solve the system using the c_simple_driver function (simple_driver)
+//! 1. Create the matrix $A$ as a [CompColMat](comp_col::CompColMat).
+//! 2. Create the right-hand side $B$ as a [DenseMat](dense::DenseMat).
+//! 3. Solve the system using the [simple_driver](simple_driver::SimpleDriver::simple_driver)
+//! function.
 //!
-//! The matrices are created using two helper structs (named *Raw)
-//! that contain the rust vectors comprising each matrix. Memory
-//! management is handled automatically. Results can be obtained out
-//! of the matrix types by converting back to *Raw.
+//! The matrices are created using two helper structs [CompColRaw](comp_col::CompColRaw)
+//! and [DenseRaw](dense::DenseRaw) that contain the rust vectors comprising each matrix.
+//!
+//! The solution is stored in a [SimpleSolution](simple_driver::SimpleSolution)
+//! struct, which contains the the solution matrix $X$, the column and row permutation
+//! matrices that were used, and the $LU$-decomposition. The Vec stored inside
+//! the solution $X$ can be accessed by converting back to the DenseRaw type.
+//!
+//! Currently the wrapper to access the $LU$ factors is not implemented.
+//! Direct access to the contents of these matrices is possible using the
+//! [CSuperMatrix::store](super_matrix::CSuperMatrix::store) function, which
+//! returns a pointer to the raw data in the matrix.
+//!
+//!
 
 
 pub mod simple_driver;
@@ -24,7 +35,7 @@ pub mod value_type;
 mod free;
 pub mod options;
 pub mod stat;
-mod super_matrix;
+pub mod super_matrix;
 pub mod comp_col;
 pub mod dense;
 pub mod error;

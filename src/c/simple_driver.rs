@@ -3,11 +3,11 @@
 
 use csuperlu_sys::{sgssv, superlu_options_t, SuperMatrix, dgssv, cgssv, zgssv};
 
-use super::{options::SimpleDriverOptions, comp_col::{CCompColMat, create_comp_col_mat::CCreateCompColMat}, dense::{CDenseMat, create_dense_mat::CCreateDenseMat}, error::Error, stat::CSuperluStat, super_matrix::CSuperMatrix};
+use super::{options::SimpleDriverOptions, comp_col::{CompColMat, create_comp_col_mat::CreateCompColMat}, dense::{DenseMat, create_dense_mat::CreateDenseMat}, error::Error, stat::SuperluStat, super_matrix::CSuperMatrix};
 
 /// Solution from the simple driver
-pub struct CSimpleSolution<P: CSimpleDriver> {
-    pub x: CDenseMat<P>,
+pub struct SimpleSolution<P: SimpleDriver> {
+    pub x: DenseMat<P>,
     pub perm_c: Vec<i32>,
     pub perm_r: Vec<i32>,
     pub l: CSuperMatrix,
@@ -15,7 +15,7 @@ pub struct CSimpleSolution<P: CSimpleDriver> {
 }
 
 /// Enum of errors that can arise during the solution
-pub enum CSimpleError {
+pub enum SimpleError {
     /// The factorisatio completed successfully, but A
     /// was singular so no solution was returned
     SingularFact {
@@ -42,21 +42,21 @@ pub enum CSimpleError {
 /// occured. In that case, (info - num_cols_a) is the number
 /// of bytes allocated when the failure occured. TODO check
 /// the superlu source code that this is not out-by-one.
-fn simple_result_from_vectors<P: CSimpleDriver>(
+fn simple_result_from_vectors<P: SimpleDriver>(
     info: i32,
     num_cols_a: usize,
-    x: CDenseMat<P>,
+    x: DenseMat<P>,
     perm_c: Vec<i32>,
     perm_r: Vec<i32>,
     l: CSuperMatrix,
     u: CSuperMatrix,
-) -> Result<CSimpleSolution<P>, CSimpleError> {
+) -> Result<SimpleSolution<P>, SimpleError> {
     if info < 0 {
 	// Check for invalid (negative) info
-	Err(CSimpleError::Err(Error::UnknownError))
+	Err(SimpleError::Err(Error::UnknownError))
     } else if info == 0 {
 	// Success -- system solved
-	Ok(CSimpleSolution {
+	Ok(SimpleSolution {
 	    x,
 	    perm_c,
 	    perm_r,
@@ -65,7 +65,7 @@ fn simple_result_from_vectors<P: CSimpleDriver>(
 	})
     } else if info as usize <= num_cols_a {
 	// A is singular, factorisation successful
-	Err(CSimpleError::SingularFact {
+	Err(SimpleError::SingularFact {
 	    singular_column: info as usize - 1,
 	    perm_c,
 	    perm_r,
@@ -75,7 +75,7 @@ fn simple_result_from_vectors<P: CSimpleDriver>(
     } else {
 	// Failed due to singular A -- factorisation complete
 	let mem_alloc_at_failure = info as usize - num_cols_a;
-	Err(CSimpleError::Err(Error::OutOfMemory { mem_alloc_at_failure  }))
+	Err(SimpleError::Err(Error::OutOfMemory { mem_alloc_at_failure  }))
     }
 }
 
@@ -107,8 +107,8 @@ fn make_simple_perms(
     (perm_c, perm_r, options)
 }
 
-/// Trait implementing the solution function (c_simple_driver)
-pub trait CSimpleDriver: Sized + CCreateCompColMat + CCreateDenseMat {
+/// Trait implementing the solution function (simple_driver)
+pub trait SimpleDriver: Sized + CreateCompColMat + CreateDenseMat {
     /// Solve a sparse linear system using the simple driver
     ///
     /// Maybe this doesn't need to be unsafe? Although it may
@@ -132,23 +132,23 @@ pub trait CSimpleDriver: Sized + CCreateCompColMat + CCreateDenseMat {
     /// b must be a dense matrix. The matrices l and u must be
     /// allocated structures (SuperMatrix::alloc).
     ///
-    unsafe fn c_simple_driver(
+    unsafe fn simple_driver(
         options: SimpleDriverOptions,
-        a: &CCompColMat<Self>,
+        a: &CompColMat<Self>,
         perm_c: Option<Vec<i32>>,
-        b: CDenseMat<Self>,
-        stat: &mut CSuperluStat,
-    ) -> Result<CSimpleSolution<Self>, CSimpleError>;
+        b: DenseMat<Self>,
+        stat: &mut SuperluStat,
+    ) -> Result<SimpleSolution<Self>, SimpleError>;
 }
 
-impl CSimpleDriver for f32 {
-    unsafe fn c_simple_driver(
+impl SimpleDriver for f32 {
+    unsafe fn simple_driver(
         options: SimpleDriverOptions,
-        a: &CCompColMat<Self>,
+        a: &CompColMat<Self>,
         perm_c: Option<Vec<i32>>,
-        b: CDenseMat<Self>,
-        stat: &mut CSuperluStat,
-    ) -> Result<CSimpleSolution<Self>, CSimpleError> {
+        b: DenseMat<Self>,
+        stat: &mut SuperluStat,
+    ) -> Result<SimpleSolution<Self>, SimpleError> {
 	let mut info = 0i32;
 	let l = CSuperMatrix::alloc();
         let u = CSuperMatrix::alloc();
@@ -171,14 +171,14 @@ impl CSimpleDriver for f32 {
     }
 }
 
-impl CSimpleDriver for f64 {
-    unsafe fn c_simple_driver(
+impl SimpleDriver for f64 {
+    unsafe fn simple_driver(
         options: SimpleDriverOptions,
-        a: &CCompColMat<Self>,
+        a: &CompColMat<Self>,
         perm_c: Option<Vec<i32>>,
-        b: CDenseMat<Self>,
-        stat: &mut CSuperluStat,
-    ) -> Result<CSimpleSolution<Self>, CSimpleError> {
+        b: DenseMat<Self>,
+        stat: &mut SuperluStat,
+    ) -> Result<SimpleSolution<Self>, SimpleError> {
 
 	let mut info = 0i32;
 	let l = CSuperMatrix::alloc();
@@ -202,14 +202,14 @@ impl CSimpleDriver for f64 {
     }
 }
 
-impl CSimpleDriver for num::Complex<f32> {
-    unsafe fn c_simple_driver(
+impl SimpleDriver for num::Complex<f32> {
+    unsafe fn simple_driver(
         options: SimpleDriverOptions,
-        a: &CCompColMat<Self>,
+        a: &CompColMat<Self>,
         perm_c: Option<Vec<i32>>,
-        b: CDenseMat<Self>,
-        stat: &mut CSuperluStat,
-    ) -> Result<CSimpleSolution<Self>, CSimpleError> {
+        b: DenseMat<Self>,
+        stat: &mut SuperluStat,
+    ) -> Result<SimpleSolution<Self>, SimpleError> {
 	let mut info = 0i32;
 	let l = CSuperMatrix::alloc();
         let u = CSuperMatrix::alloc();
@@ -232,14 +232,14 @@ impl CSimpleDriver for num::Complex<f32> {
     }
 }
 
-impl CSimpleDriver for num::Complex<f64> {
-    unsafe fn c_simple_driver(
+impl SimpleDriver for num::Complex<f64> {
+    unsafe fn simple_driver(
         options: SimpleDriverOptions,
-        a: &CCompColMat<Self>,
+        a: &CompColMat<Self>,
         perm_c: Option<Vec<i32>>,
-        b: CDenseMat<Self>,
-        stat: &mut CSuperluStat,
-    ) -> Result<CSimpleSolution<Self>, CSimpleError> {
+        b: DenseMat<Self>,
+        stat: &mut SuperluStat,
+    ) -> Result<SimpleSolution<Self>, SimpleError> {
 	let mut info = 0i32;
 	let l = CSuperMatrix::alloc();
         let u = CSuperMatrix::alloc();

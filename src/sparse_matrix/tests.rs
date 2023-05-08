@@ -257,8 +257,6 @@ fn concatenate_both_dimensions() {
     assert_eq!(comb.get(4, 4), 3.0);
     assert_eq!(comb.num_cols(), 5);
     assert_eq!(comb.num_rows(), 5);
-
-    comb.print_structure(2);
 }
 
 #[test]
@@ -275,4 +273,32 @@ fn transpose_matrix() {
     assert_eq!(b.num_non_zeros(), 3);
     assert_eq!(b.num_rows(), 2);
     assert_eq!(b.num_cols(), 4);
+}
+
+#[test]
+fn fancy_print() {
+    let mut a = SparseMat::<f64>::new(2, 2);
+    a.insert(0, 0, 1.0);
+    a.insert(1, 1, 2.0);
+
+    let mut b = SparseMat::<f64>::new(2, 3);
+    b.insert(0, 0, 1.0);
+    b.insert(1, 1, 2.0);
+
+    let mut c = SparseMat::<f64>::new(3, 2);
+    c.insert(0, 0, 1.0);
+    c.insert(1, 1, 2.0);
+
+    let mut d = SparseMat::<f64>::new(3, 3);
+    d.insert(0, 0, 1.0);
+    d.insert(1, 1, 2.0);
+    d.insert(2, 2, 3.0);
+
+    let comb = SparseMat::concat(vec![vec![a, b],
+				      vec![c, d]]);
+
+    comb.print_structure_old(3);
+    let mut opts = PrintOptions::default();
+    opts.col_divisions.push(3);
+    comb.print_structure(&opts);
 }

@@ -182,8 +182,7 @@ impl<P: ValueType> SparseMat<P> {
 	    let a = SparseMat::concat_cols(row);
 	    combined_rows.push(a);
 	}
-	let combined = SparseMat::concat_rows(combined_rows);
-	combined
+	SparseMat::concat_rows(combined_rows)
     }
 
     // Transpose a matrix in place
@@ -200,7 +199,7 @@ impl<P: ValueType> SparseMat<P> {
     }
     
     /// Lots of janky stuff going on here, look away...
-    pub fn print_structure(&self, division: usize) {
+    pub fn print_structure_old(&self, division: usize) {
 	let mut row_divider = String::new();
 	print!("  ");
 	for i in 0..division {
@@ -252,6 +251,20 @@ impl<P: ValueType> SparseMat<P> {
 	    print!("\n");
 	}
     }
+
+    pub fn print_structure(&self, opts: &PrintOptions) {
+	println!("{:?}", opts);	
+	// Create the row that will act as a divider
+	let mut row_divider = String::new();
+	for i in 0..self.num_cols+1 {
+	    if opts.col_divisions.contains(&i) {
+		row_divider.push('┼');
+	    } else {
+		row_divider.push_str("──");
+	    }
+	}
+	println!("   {}", row_divider);
+    }
 }
 
 impl<P: ValueType> fmt::Display for SparseMat<P> {
@@ -277,6 +290,13 @@ impl<P: ValueType> From<HashMap<(usize, usize), P>> for SparseMat<P> {
 	    non_zero_vals,
 	}
     }
+}
+
+#[derive(Debug, Default)]
+pub struct PrintOptions {
+    pub row_divisions: Vec<usize>,
+    pub col_divisions: Vec<usize>,
+    // Later will add row/col labels
 }
 
 #[cfg(test)]

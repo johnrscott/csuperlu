@@ -256,9 +256,9 @@ impl<P: ValueType> SparseMat<P> {
 	println!("{:?}", opts);	
 	// Create the row that will act as a divider
 	let mut row_divider = String::new();
-	for i in 0..self.num_cols+1 {
+	for i in 0..self.num_cols  {
 	    if opts.col_divisions.contains(&i) {
-		row_divider.push('┼');
+		row_divider.push_str("┼──");
 	    } else {
 		row_divider.push_str("──");
 	    }

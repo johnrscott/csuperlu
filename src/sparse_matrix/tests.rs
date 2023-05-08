@@ -299,6 +299,10 @@ fn fancy_print() {
 
     comb.print_structure_old(3);
     let mut opts = PrintOptions::default();
+    opts.col_divisions.push(0);
+    opts.col_divisions.push(1);
+    opts.col_divisions.push(2);
     opts.col_divisions.push(3);
+    opts.col_divisions.push(4);
     comb.print_structure(&opts);
 }

@@ -297,12 +297,20 @@ fn fancy_print() {
     let comb = SparseMat::concat(vec![vec![a, b],
 				      vec![c, d]]);
 
-    comb.print_structure_old(3);
+    comb.print_structure_old(2);
     let mut opts = PrintOptions::default();
-    opts.col_divisions.push(0);
-    opts.col_divisions.push(1);
+
+    //opts.col_divisions.push(0);
+    //opts.col_divisions.push(1);
     opts.col_divisions.push(2);
-    opts.col_divisions.push(3);
+    //opts.col_divisions.push(3);
     opts.col_divisions.push(4);
+
+    //opts.row_divisions.push(0);
+    //opts.row_divisions.push(1);
+    opts.row_divisions.push(2);
+    //opts.row_divisions.push(3);
+    opts.row_divisions.push(4);
+    
     comb.print_structure(&opts);
 }

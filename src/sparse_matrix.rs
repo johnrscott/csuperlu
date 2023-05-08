@@ -258,12 +258,29 @@ impl<P: ValueType> SparseMat<P> {
 	let mut row_divider = String::new();
 	for i in 0..self.num_cols  {
 	    if opts.col_divisions.contains(&i) {
-		row_divider.push_str("┼──");
-	    } else {
-		row_divider.push_str("──");
-	    }
+		row_divider.push_str("┼─");
+	    } 
+	    row_divider.push_str("──");
 	}
-	println!("   {}", row_divider);
+
+	// Print the matrix
+	for r in 0..self.num_rows {
+	    if opts.row_divisions.contains(&r) {
+		println!("{row_divider}");
+	    } 
+	    for c in 0..self.num_cols {
+		if opts.col_divisions.contains(&c) {
+		    print!("│ ");
+		}
+		let res = self.non_zero_vals.get(&(r, c));
+		match res {
+		    None => print!("  "),
+		    Some(_) => print!("x "),
+		}
+	    }
+	    print!("\n");
+	}
+
     }
 }
 

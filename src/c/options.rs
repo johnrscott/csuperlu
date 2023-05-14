@@ -7,7 +7,11 @@
 
 use std::mem::MaybeUninit;
 
-use csuperlu_sys::{superlu_options_t, set_default_options, colperm_t_NATURAL, colperm_t_MMD_ATA, colperm_t_MMD_AT_PLUS_A, colperm_t_COLAMD, colperm_t_MY_PERMC, rowperm_t_MY_PERMR, yes_no_t_YES, yes_no_t_NO};
+use csuperlu_sys::{
+    colperm_t_COLAMD, colperm_t_MMD_ATA, colperm_t_MMD_AT_PLUS_A, colperm_t_MY_PERMC,
+    colperm_t_NATURAL, rowperm_t_MY_PERMR, set_default_options, superlu_options_t, yes_no_t_NO,
+    yes_no_t_YES,
+};
 
 /// Options for the simple driver routines
 ///
@@ -43,7 +47,6 @@ pub struct SimpleDriverOptions {
 }
 
 impl SimpleDriverOptions {
-
     /// Create a new options object with default settings.
     /// This will perform the $LU$ decomposition of $A$,
     /// with column permutations calculated using the
@@ -52,12 +55,12 @@ impl SimpleDriverOptions {
     /// pivoting. $A$ is not assumed to be diagonally
     /// dominant.
     pub fn new() -> Self {
-	Self {
-	    options: CSuperluOptions::new(),
-	    diagonally_dominant: false,
-	}
+        Self {
+            options: CSuperluOptions::new(),
+            diagonally_dominant: false,
+        }
     }
-    
+
     /// Instruct SuperLU to calculate the column permutation
     ///
     /// If this function is called, SuperLU will calculate the
@@ -72,10 +75,10 @@ impl SimpleDriverOptions {
     /// $(A^T + A)$-based column permutations, which would be overwritten
     /// here
     pub fn set_superlu_column_perm(&mut self, policy: ColumnPermPolicy) {
-	if self.diagonally_dominant {
-	    panic!("Invalid attempt to set permutation policy for diagonally dominant mode");
-	}
-	self.options.set_column_perm_policy(policy);
+        if self.diagonally_dominant {
+            panic!("Invalid attempt to set permutation policy for diagonally dominant mode");
+        }
+        self.options.set_column_perm_policy(policy);
     }
 
     /// Instruct SuperLU to use a user-specified column permutation
@@ -98,9 +101,9 @@ impl SimpleDriverOptions {
     /// double-check all this is right.
     ///
     pub fn set_user_column_perm(&mut self) {
-	self.options.set_user_column_perm();
+        self.options.set_user_column_perm();
     }
-    
+
     /// Factorise $AX = B$ under the assumption that $A$
     /// is diagonally dominant
     ///
@@ -126,13 +129,13 @@ impl SimpleDriverOptions {
     /// threshold.
     ///
     pub fn set_diagonally_dominant(&mut self, value: bool, u: f64) {
-	self.options.set_symmetric_mode(value);
-	if value {
-	    self.set_diagonal_pivot_threshold(u);
-	    self.set_superlu_column_perm(ColumnPermPolicy::MmdAtPlusA);
-	}
-	self.diagonally_dominant = value;
-    } 
+        self.options.set_symmetric_mode(value);
+        if value {
+            self.set_diagonal_pivot_threshold(u);
+            self.set_superlu_column_perm(ColumnPermPolicy::MmdAtPlusA);
+        }
+        self.diagonally_dominant = value;
+    }
 
     /// Set the diagonal pivot threshold
     ///
@@ -141,8 +144,8 @@ impl SimpleDriverOptions {
     /// partial pivoting, the largest magnitude value in the
     /// current column is selected as the pivot element
     /// (defining the row that will be used to eliminate other
-    /// non-zero values in this column). 
-    /// 
+    /// non-zero values in this column).
+    ///
     /// Instead of choosing the largest magnitude value, SuperLU
     /// computes a threshold $t \ge 0$ above which the diagonal
     /// element will be considered "large enough", and used as
@@ -175,15 +178,15 @@ impl SimpleDriverOptions {
     /// design.
     ///
     pub fn set_diagonal_pivot_threshold(&mut self, u: f64) {
-	if self.diagonally_dominant {
-	    panic!("You cannot call set_diagonal_pivot_threshold after set_diagonally_dominant()")
-	}
-	self.options.set_diagonal_pivot_threshold(u);
+        if self.diagonally_dominant {
+            panic!("You cannot call set_diagonal_pivot_threshold after set_diagonally_dominant()")
+        }
+        self.options.set_diagonal_pivot_threshold(u);
     }
 
-    /// Get the underlying superlu_options_t 
+    /// Get the underlying superlu_options_t
     pub fn get_options(&self) -> &superlu_options_t {
-	&self.options.get_options()
+        &self.options.get_options()
     }
 }
 
@@ -205,16 +208,15 @@ pub enum ColumnPermPolicy {
     ColAMD,
 }
 
-/// Wrapper for the SuperLU C library superlu_options_t. 
+/// Wrapper for the SuperLU C library superlu_options_t.
 ///
 /// The superlu_options_t struct controls the behaviour of the
 /// simple driver and expert drivers.
 pub struct CSuperluOptions {
-    options: superlu_options_t
+    options: superlu_options_t,
 }
 
 impl CSuperluOptions {
-
     /// Create a new CSuperluOptions struct (containing superlu_options_t)
     ///
     /// The default options documented in Section 2.4 of the SuperLU manual:
@@ -236,52 +238,48 @@ impl CSuperluOptions {
             set_default_options(options.as_mut_ptr());
             options.assume_init()
         };
-	Self {
-	    options,
-	}
+        Self { options }
     }
 
     pub fn set_diagonal_pivot_threshold(&mut self, u: f64) {
-	self.options.DiagPivotThresh = u;
+        self.options.DiagPivotThresh = u;
     }
-    
+
     pub fn set_symmetric_mode(&mut self, value: bool) {
-	if value {
-	    self.options.SymmetricMode = yes_no_t_YES
-	} else {
-	    self.options.SymmetricMode = yes_no_t_NO
-	}
+        if value {
+            self.options.SymmetricMode = yes_no_t_YES
+        } else {
+            self.options.SymmetricMode = yes_no_t_NO
+        }
     }
-    
+
     /// Get the underlying superlu_options_t struct
     ///
     /// This function is intended for use in the driver wrapper
     /// routines for getting raw access to the options struct.
     pub fn get_options(&self) -> &superlu_options_t {
-	&self.options
+        &self.options
     }
 
     /// Set the algorithm to be used for computing column permutations
     pub fn set_column_perm_policy(&mut self, policy: ColumnPermPolicy) {
-	match policy {
-	    ColumnPermPolicy::Natural => self.options.ColPerm = colperm_t_NATURAL,
-	    ColumnPermPolicy::MmdAtA => self.options.ColPerm = colperm_t_MMD_ATA,
-	    ColumnPermPolicy::MmdAtPlusA => self.options.ColPerm = colperm_t_MMD_AT_PLUS_A,
-	    ColumnPermPolicy::ColAMD => self.options.ColPerm = colperm_t_COLAMD,
-	}
+        match policy {
+            ColumnPermPolicy::Natural => self.options.ColPerm = colperm_t_NATURAL,
+            ColumnPermPolicy::MmdAtA => self.options.ColPerm = colperm_t_MMD_ATA,
+            ColumnPermPolicy::MmdAtPlusA => self.options.ColPerm = colperm_t_MMD_AT_PLUS_A,
+            ColumnPermPolicy::ColAMD => self.options.ColPerm = colperm_t_COLAMD,
+        }
     }
 
     /// Set the column permutation option to use a user supplied vector
     ///
     pub fn set_user_column_perm(&mut self) {
-	self.options.ColPerm = colperm_t_MY_PERMC;
+        self.options.ColPerm = colperm_t_MY_PERMC;
     }
 
     /// Set the column permutation option to use a user supplied vector
     ///
     pub fn set_user_row_perm(&mut self) {
-	self.options.RowPerm = rowperm_t_MY_PERMR;
+        self.options.RowPerm = rowperm_t_MY_PERMR;
     }
-
-    
 }

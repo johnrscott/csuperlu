@@ -8,7 +8,7 @@ use csuperlu_sys::SuperMatrix;
 
 use self::create_comp_col_mat::CreateCompColMat;
 
-use super::{super_matrix::CSuperMatrix, error::Error, free::destroy_super_matrix_store};
+use super::{error::Error, free::destroy_super_matrix_store, super_matrix::CSuperMatrix};
 
 pub mod create_comp_col_mat;
 
@@ -38,7 +38,6 @@ pub struct CompColMat<P: CreateCompColMat> {
 }
 
 impl<P: CreateCompColMat> CompColMat<P> {
-
     /// Create a new compressed column matrix from raw vectors
     ///
     /// # Errors
@@ -67,41 +66,34 @@ impl<P: CreateCompColMat> CompColMat<P> {
     /// If the input vectors are invalid, undefined behaviour may
     /// result in the SuperLU routines.
     ///
-    pub unsafe fn from_raw(
-	raw: CompColRaw<P>
-    ) -> Result<Self, Error> {
+    pub unsafe fn from_raw(raw: CompColRaw<P>) -> Result<Self, Error> {
+        let CompColRaw {
+            num_rows,
+            non_zero_vals,
+            row_indices,
+            col_offsets,
+        } = raw;
 
-	let CompColRaw {
-	    num_rows,
-	    non_zero_vals,
-	    row_indices,
-	    col_offsets,
-	} = raw;
-	
-	let super_matrix = P::create_comp_col_matrix(
-	    num_rows,
-	    &non_zero_vals,
-	    &row_indices,
-	    &col_offsets,
-	)?;
-	Ok(Self {
-	    non_zero_vals,
-	    row_indices,
-	    col_offsets,
-	    super_matrix,
-	})
+        let super_matrix =
+            P::create_comp_col_matrix(num_rows, &non_zero_vals, &row_indices, &col_offsets)?;
+        Ok(Self {
+            non_zero_vals,
+            row_indices,
+            col_offsets,
+            super_matrix,
+        })
     }
 
     /// Get the number of rows in the matrix
     pub fn num_rows(&self) -> usize {
-	self.super_matrix.num_rows()
+        self.super_matrix.num_rows()
     }
 
     /// Get the number of columns in the matrix
     pub fn num_cols(&self) -> usize {
-	self.super_matrix.num_cols()
+        self.super_matrix.num_cols()
     }
-    
+
     /// Get the underlying vectors from the object.
     ///
     /// No copies are made; you get the vectors that were
@@ -112,58 +104,64 @@ impl<P: CreateCompColMat> CompColMat<P> {
     ///
     ///
     pub fn to_raw(mut self) -> CompColRaw<P> {
-	// You can't just move the vectors out of the matrix because
-	// of the drop trait. Instead, get raw pointers to the vectors
-	// and then reconstruct the Vecs to "trick" the compiler, then
-	// call the free manually and forget the matrix struct.
+        // You can't just move the vectors out of the matrix because
+        // of the drop trait. Instead, get raw pointers to the vectors
+        // and then reconstruct the Vecs to "trick" the compiler, then
+        // call the free manually and forget the matrix struct.
 
-	// These lines are fine because the arguments to from_raw_parts
-	// came from a Vec
-	let non_zero_vals = unsafe {
-	    Vec::from_raw_parts(self.non_zero_vals.as_mut_ptr(),
-				self.non_zero_vals.len(),
-				self.non_zero_vals.capacity())
-	};
-	let row_indices = unsafe {
-	    Vec::from_raw_parts(self.row_indices.as_mut_ptr(),
-				self.row_indices.len(),
-				self.row_indices.capacity())
-	};
-	let col_offsets = unsafe {
-	    Vec::from_raw_parts(self.col_offsets.as_mut_ptr(),
-				self.col_offsets.len(),
-				self.col_offsets.capacity())
-	};
+        // These lines are fine because the arguments to from_raw_parts
+        // came from a Vec
+        let non_zero_vals = unsafe {
+            Vec::from_raw_parts(
+                self.non_zero_vals.as_mut_ptr(),
+                self.non_zero_vals.len(),
+                self.non_zero_vals.capacity(),
+            )
+        };
+        let row_indices = unsafe {
+            Vec::from_raw_parts(
+                self.row_indices.as_mut_ptr(),
+                self.row_indices.len(),
+                self.row_indices.capacity(),
+            )
+        };
+        let col_offsets = unsafe {
+            Vec::from_raw_parts(
+                self.col_offsets.as_mut_ptr(),
+                self.col_offsets.len(),
+                self.col_offsets.capacity(),
+            )
+        };
 
-	// Also get the number of rows before dropping
-	let num_rows = self.num_rows();
-	
-	// Call the destructor (to avoid the need for drop)
-	unsafe {
-	    destroy_super_matrix_store(&mut self.super_matrix);
-	};
-	
-	// Treat self as deallocated already
-	mem::forget(self);
-	
-	CompColRaw {
-	    num_rows,
-	    non_zero_vals,
-	    row_indices,
-	    col_offsets,
-	}
+        // Also get the number of rows before dropping
+        let num_rows = self.num_rows();
+
+        // Call the destructor (to avoid the need for drop)
+        unsafe {
+            destroy_super_matrix_store(&mut self.super_matrix);
+        };
+
+        // Treat self as deallocated already
+        mem::forget(self);
+
+        CompColRaw {
+            num_rows,
+            non_zero_vals,
+            row_indices,
+            col_offsets,
+        }
     }
 
     pub fn super_matrix(&self) -> &SuperMatrix {
-	&self.super_matrix.super_matrix()
+        &self.super_matrix.super_matrix()
     }
 }
 
 impl<P: CreateCompColMat> Drop for CompColMat<P> {
     fn drop(&mut self) {
-	unsafe {
-	    destroy_super_matrix_store(&mut self.super_matrix);
-	}
+        unsafe {
+            destroy_super_matrix_store(&mut self.super_matrix);
+        }
     }
 }
 
@@ -178,24 +176,20 @@ fn test_drop_leaks() {
     let col_offsets = vec![0, 1, 2];
 
     let raw = CompColRaw {
-	num_rows,
-	non_zero_vals,
-	row_indices,
-	col_offsets,
+        num_rows,
+        non_zero_vals,
+        row_indices,
+        col_offsets,
     };
-    
+
     // Create the matrix wrapper
-    let a = unsafe {
-	CompColMat::from_raw(raw)
-	    .expect("Failed to create matrix")
-    };
+    let a = unsafe { CompColMat::from_raw(raw).expect("Failed to create matrix") };
 }
 
 /// Replace this with better tests covering creating
 /// matrices and getting values
 #[test]
 fn test_comp_col_matrix() {
-
     // Make a simple compressed column matrix
     let num_rows = 2;
     let non_zero_vals = vec![1.0, 2.0];
@@ -203,17 +197,14 @@ fn test_comp_col_matrix() {
     let col_offsets = vec![0, 1, 2];
 
     let raw = CompColRaw {
-	num_rows,
-	non_zero_vals,
-	row_indices,
-	col_offsets,
+        num_rows,
+        non_zero_vals,
+        row_indices,
+        col_offsets,
     };
-    
+
     // Create the matrix wrapper
-    let a = unsafe {
-	CompColMat::from_raw(raw)
-	    .expect("Failed to create matrix")
-    };
+    let a = unsafe { CompColMat::from_raw(raw).expect("Failed to create matrix") };
 
     // Check the size
     assert_eq!(a.num_cols(), 2);
@@ -223,10 +214,10 @@ fn test_comp_col_matrix() {
 
     // Get the vectors back out
     let CompColRaw {
-	num_rows,
-	non_zero_vals,
-	row_indices,
-	col_offsets,
+        num_rows,
+        non_zero_vals,
+        row_indices,
+        col_offsets,
     } = a.to_raw();
 
     // Check the vectors are all correct
@@ -234,5 +225,4 @@ fn test_comp_col_matrix() {
     assert_eq!(non_zero_vals, vec![1.0, 2.0]);
     assert_eq!(row_indices, vec![1, 2]);
     assert_eq!(col_offsets, vec![0, 1, 2]);
-    
 }

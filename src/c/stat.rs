@@ -7,7 +7,7 @@
 
 use std::mem::MaybeUninit;
 
-use csuperlu_sys::{StatInit, StatFree, SuperLUStat_t, StatPrint};
+use csuperlu_sys::{StatFree, StatInit, StatPrint, SuperLUStat_t};
 
 pub struct SuperluStat {
     stat: SuperLUStat_t,
@@ -22,9 +22,7 @@ impl SuperluStat {
             StatInit(stat.as_mut_ptr());
             stat.assume_init()
         };
-	Self {
-	    stat,
-	}
+        Self { stat }
     }
 
     /// Get the underlying SuperLUStat_t struct
@@ -32,26 +30,25 @@ impl SuperluStat {
     /// This function is intended for use in the driver wrapper
     /// routines for getting raw access to the stat struct.
     pub fn get_stat(&mut self) -> &mut SuperLUStat_t {
-	&mut self.stat
+        &mut self.stat
     }
-    
+
     /// Print a stats struct (using the C library print function)
     ///
     /// This function makes the assumption that the C library does not
     /// modify the stats object while printing it.
     ///
     pub fn print(&self) {
-	unsafe {
-	    StatPrint(&self.stat as *const SuperLUStat_t as *mut SuperLUStat_t);
-	}
+        unsafe {
+            StatPrint(&self.stat as *const SuperLUStat_t as *mut SuperLUStat_t);
+        }
     }
-    
 }
 
 impl Drop for SuperluStat {
     fn drop(&mut self) {
-	unsafe {
+        unsafe {
             StatFree(&mut self.stat as *mut SuperLUStat_t);
-	}
+        }
     }
 }

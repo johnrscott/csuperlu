@@ -1,6 +1,6 @@
 //! Low-level wrapper for SuperMatrix structure (use comp_col and dense instead)
 
-use csuperlu_sys::{SuperMatrix, Stype_t_SLU_DN, Dtype_t_SLU_S, Mtype_t_SLU_GE};
+use csuperlu_sys::{Dtype_t_SLU_S, Mtype_t_SLU_GE, Stype_t_SLU_DN, SuperMatrix};
 
 #[derive(Debug)]
 pub struct CSuperMatrix {
@@ -10,7 +10,7 @@ pub struct CSuperMatrix {
 impl CSuperMatrix {
     /// Allocate an empty SuperMatrix structure.
     ///
-    /// The values of the fields are meangingless. The only 
+    /// The values of the fields are meangingless. The only
     /// purpose of this function is to safely allocate a
     /// SuperMatrix for passing into (e.g.) dgssv as L and
     /// U. It would be better not to initialise at all -- however,
@@ -25,43 +25,40 @@ impl CSuperMatrix {
     /// properly.
     ///
     pub unsafe fn alloc() -> Self {
-	let super_matrix = SuperMatrix {
-	    Stype: Stype_t_SLU_DN,
-	    Dtype: Dtype_t_SLU_S,
-	    Mtype: Mtype_t_SLU_GE,
-	    nrow: 0,
-	    ncol: 0,
-	    Store: std::ptr::null_mut(),
-	};
-	Self {
-	    super_matrix,
-	}
+        let super_matrix = SuperMatrix {
+            Stype: Stype_t_SLU_DN,
+            Dtype: Dtype_t_SLU_S,
+            Mtype: Mtype_t_SLU_GE,
+            nrow: 0,
+            ncol: 0,
+            Store: std::ptr::null_mut(),
+        };
+        Self { super_matrix }
     }
 
     /// Get the number of rows in the matrix
     pub fn num_rows(&self) -> usize {
-	self.super_matrix.nrow as usize
+        self.super_matrix.nrow as usize
     }
 
     /// Get the number of columns in the matrix
     pub fn num_cols(&self) -> usize {
-	self.super_matrix.ncol as usize
+        self.super_matrix.ncol as usize
     }
 
     /// Get a reference to the underlying SuperMatrix
     ///
     pub fn super_matrix(&self) -> &SuperMatrix {
-	&self.super_matrix
+        &self.super_matrix
     }
-    
+
     /// Get the SuperMatrix store
     ///
-    /// # Safety 
+    /// # Safety
     ///
     /// This function is unsafe because you must use the
     /// correct type T for the type of matrix you want to access
     pub unsafe fn store<T>(&self) -> &T {
-	&*(self.super_matrix.Store as *const T)
+        &*(self.super_matrix.Store as *const T)
     }
-    
 }

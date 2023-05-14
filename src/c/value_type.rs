@@ -6,7 +6,7 @@
 //! double (num::Complex<f64>).
 //!
 
-use std::{str, fmt};
+use std::{fmt, str};
 
 use num::Num;
 

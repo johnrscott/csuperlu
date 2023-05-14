@@ -1,9 +1,16 @@
 //! Interface to the simple driver routine
 //!
 
-use csuperlu_sys::{sgssv, superlu_options_t, SuperMatrix, dgssv, cgssv, zgssv};
+use csuperlu_sys::{cgssv, dgssv, sgssv, superlu_options_t, zgssv, SuperMatrix};
 
-use super::{options::SimpleDriverOptions, comp_col::{CompColMat, create_comp_col_mat::CreateCompColMat}, dense::{DenseMat, create_dense_mat::CreateDenseMat}, error::Error, stat::SuperluStat, super_matrix::CSuperMatrix};
+use super::{
+    comp_col::{create_comp_col_mat::CreateCompColMat, CompColMat},
+    dense::{create_dense_mat::CreateDenseMat, DenseMat},
+    error::Error,
+    options::SimpleDriverOptions,
+    stat::SuperluStat,
+    super_matrix::CSuperMatrix,
+};
 
 /// Solution from the simple driver
 pub struct SimpleSolution<P: SimpleDriver> {
@@ -11,7 +18,7 @@ pub struct SimpleSolution<P: SimpleDriver> {
     pub perm_c: Vec<i32>,
     pub perm_r: Vec<i32>,
     pub l: CSuperMatrix,
-    pub u: CSuperMatrix,    
+    pub u: CSuperMatrix,
 }
 
 /// Enum of errors that can arise during the solution
@@ -19,11 +26,11 @@ pub enum SimpleError {
     /// The factorisatio completed successfully, but A
     /// was singular so no solution was returned
     SingularFact {
-	singular_column: usize,
-	perm_c: Vec<i32>,
-	perm_r: Vec<i32>,
-	l: CSuperMatrix,
-	u: CSuperMatrix,	
+        singular_column: usize,
+        perm_c: Vec<i32>,
+        perm_r: Vec<i32>,
+        l: CSuperMatrix,
+        u: CSuperMatrix,
     },
     /// An out-of-memory error or another (unknown) error
     /// occured.
@@ -52,30 +59,32 @@ fn simple_result_from_vectors<P: SimpleDriver>(
     u: CSuperMatrix,
 ) -> Result<SimpleSolution<P>, SimpleError> {
     if info < 0 {
-	// Check for invalid (negative) info
-	Err(SimpleError::Err(Error::UnknownError))
+        // Check for invalid (negative) info
+        Err(SimpleError::Err(Error::UnknownError))
     } else if info == 0 {
-	// Success -- system solved
-	Ok(SimpleSolution {
-	    x,
-	    perm_c,
-	    perm_r,
-	    l,
-	    u,
-	})
+        // Success -- system solved
+        Ok(SimpleSolution {
+            x,
+            perm_c,
+            perm_r,
+            l,
+            u,
+        })
     } else if info as usize <= num_cols_a {
-	// A is singular, factorisation successful
-	Err(SimpleError::SingularFact {
-	    singular_column: info as usize - 1,
-	    perm_c,
-	    perm_r,
-	    l,
-	    u,
-	})
+        // A is singular, factorisation successful
+        Err(SimpleError::SingularFact {
+            singular_column: info as usize - 1,
+            perm_c,
+            perm_r,
+            l,
+            u,
+        })
     } else {
-	// Failed due to singular A -- factorisation complete
-	let mem_alloc_at_failure = info as usize - num_cols_a;
-	Err(SimpleError::Err(Error::OutOfMemory { mem_alloc_at_failure  }))
+        // Failed due to singular A -- factorisation complete
+        let mem_alloc_at_failure = info as usize - num_cols_a;
+        Err(SimpleError::Err(Error::OutOfMemory {
+            mem_alloc_at_failure,
+        }))
     }
 }
 
@@ -90,19 +99,23 @@ fn make_simple_perms(
     mut options: SimpleDriverOptions,
 ) -> (Vec<i32>, Vec<i32>, SimpleDriverOptions) {
     let perm_c = match perm_c {
-	Some(perm) => {
-	    options.set_user_column_perm();
-	    perm
-	},
-	None => {
-	    let mut perm = Vec::<i32>::with_capacity(size);
-	    unsafe { perm.set_len(size); }
-	    perm
-	},
+        Some(perm) => {
+            options.set_user_column_perm();
+            perm
+        }
+        None => {
+            let mut perm = Vec::<i32>::with_capacity(size);
+            unsafe {
+                perm.set_len(size);
+            }
+            perm
+        }
     };
 
     let mut perm_r = Vec::<i32>::with_capacity(size);
-    unsafe { perm_r.set_len(size); }
+    unsafe {
+        perm_r.set_len(size);
+    }
 
     (perm_c, perm_r, options)
 }
@@ -149,12 +162,11 @@ impl SimpleDriver for f32 {
         b: DenseMat<Self>,
         stat: &mut SuperluStat,
     ) -> Result<SimpleSolution<Self>, SimpleError> {
-	let mut info = 0i32;
-	let l = CSuperMatrix::alloc();
+        let mut info = 0i32;
+        let l = CSuperMatrix::alloc();
         let u = CSuperMatrix::alloc();
-	let (mut perm_c, mut perm_r, options)
-	    = make_simple_perms(a.num_cols(), perm_c, options);
-		
+        let (mut perm_c, mut perm_r, options) = make_simple_perms(a.num_cols(), perm_c, options);
+
         sgssv(
             options.get_options() as *const superlu_options_t as *mut superlu_options_t,
             a.super_matrix() as *const SuperMatrix as *mut SuperMatrix,
@@ -167,7 +179,7 @@ impl SimpleDriver for f32 {
             &mut info,
         );
 
-	simple_result_from_vectors(info, a.num_cols(), b, perm_c, perm_r, l, u,)
+        simple_result_from_vectors(info, a.num_cols(), b, perm_c, perm_r, l, u)
     }
 }
 
@@ -179,12 +191,10 @@ impl SimpleDriver for f64 {
         b: DenseMat<Self>,
         stat: &mut SuperluStat,
     ) -> Result<SimpleSolution<Self>, SimpleError> {
-
-	let mut info = 0i32;
-	let l = CSuperMatrix::alloc();
+        let mut info = 0i32;
+        let l = CSuperMatrix::alloc();
         let u = CSuperMatrix::alloc();
-	let (mut perm_c, mut perm_r, options)
-	    = make_simple_perms(a.num_cols(), perm_c, options);
+        let (mut perm_c, mut perm_r, options) = make_simple_perms(a.num_cols(), perm_c, options);
 
         dgssv(
             options.get_options() as *const superlu_options_t as *mut superlu_options_t,
@@ -198,7 +208,7 @@ impl SimpleDriver for f64 {
             &mut info,
         );
 
-	simple_result_from_vectors(info, a.num_cols(), b, perm_c, perm_r, l, u,)
+        simple_result_from_vectors(info, a.num_cols(), b, perm_c, perm_r, l, u)
     }
 }
 
@@ -210,13 +220,12 @@ impl SimpleDriver for num::Complex<f32> {
         b: DenseMat<Self>,
         stat: &mut SuperluStat,
     ) -> Result<SimpleSolution<Self>, SimpleError> {
-	let mut info = 0i32;
-	let l = CSuperMatrix::alloc();
+        let mut info = 0i32;
+        let l = CSuperMatrix::alloc();
         let u = CSuperMatrix::alloc();
-	let (mut perm_c, mut perm_r, options)
-	    = make_simple_perms(a.num_cols(), perm_c, options);
+        let (mut perm_c, mut perm_r, options) = make_simple_perms(a.num_cols(), perm_c, options);
 
-	cgssv(
+        cgssv(
             options.get_options() as *const superlu_options_t as *mut superlu_options_t,
             a.super_matrix() as *const SuperMatrix as *mut SuperMatrix,
             perm_c.as_mut_ptr(),
@@ -228,7 +237,7 @@ impl SimpleDriver for num::Complex<f32> {
             &mut info,
         );
 
-	simple_result_from_vectors(info, a.num_cols(), b, perm_c, perm_r, l, u,)
+        simple_result_from_vectors(info, a.num_cols(), b, perm_c, perm_r, l, u)
     }
 }
 
@@ -240,13 +249,12 @@ impl SimpleDriver for num::Complex<f64> {
         b: DenseMat<Self>,
         stat: &mut SuperluStat,
     ) -> Result<SimpleSolution<Self>, SimpleError> {
-	let mut info = 0i32;
-	let l = CSuperMatrix::alloc();
+        let mut info = 0i32;
+        let l = CSuperMatrix::alloc();
         let u = CSuperMatrix::alloc();
-	let (mut perm_c, mut perm_r, options)
-	    = make_simple_perms(a.num_cols(), perm_c, options);
+        let (mut perm_c, mut perm_r, options) = make_simple_perms(a.num_cols(), perm_c, options);
 
-	zgssv(
+        zgssv(
             options.get_options() as *const superlu_options_t as *mut superlu_options_t,
             a.super_matrix() as *const SuperMatrix as *mut SuperMatrix,
             perm_c.as_mut_ptr(),
@@ -258,6 +266,6 @@ impl SimpleDriver for num::Complex<f64> {
             &mut info,
         );
 
-	simple_result_from_vectors(info, a.num_cols(), b, perm_c, perm_r, l, u,)
+        simple_result_from_vectors(info, a.num_cols(), b, perm_c, perm_r, l, u)
     }
 }

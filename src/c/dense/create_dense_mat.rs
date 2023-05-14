@@ -1,4 +1,8 @@
-use csuperlu_sys::{zCreate_Dense_Matrix, SuperMatrix, doublecomplex, Stype_t_SLU_DN, Dtype_t_SLU_Z, Mtype_t_SLU_GE, Dtype_t_SLU_C, complex, cCreate_Dense_Matrix, dCreate_Dense_Matrix, Dtype_t_SLU_D, Dtype_t_SLU_S, sCreate_Dense_Matrix};
+use csuperlu_sys::{
+    cCreate_Dense_Matrix, complex, dCreate_Dense_Matrix, doublecomplex, sCreate_Dense_Matrix,
+    zCreate_Dense_Matrix, Dtype_t_SLU_C, Dtype_t_SLU_D, Dtype_t_SLU_S, Dtype_t_SLU_Z,
+    Mtype_t_SLU_GE, Stype_t_SLU_DN, SuperMatrix,
+};
 
 use crate::c::{error::Error, super_matrix::CSuperMatrix};
 
@@ -20,7 +24,6 @@ fn check_dense_conditions<T>(
     }
     Ok(())
 }
-
 
 pub trait CreateDenseMat: Sized {
     /// Create a dense matrix from a raw vector
@@ -78,7 +81,7 @@ impl CreateDenseMat for f64 {
                 num_rows as i32,
                 Stype_t_SLU_DN,
                 Dtype_t_SLU_D,
-		Mtype_t_SLU_GE,
+                Mtype_t_SLU_GE,
             );
             Ok(x)
         }
@@ -132,4 +135,3 @@ impl CreateDenseMat for num::Complex<f64> {
         }
     }
 }
-

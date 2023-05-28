@@ -1,18 +1,21 @@
 use std::ops::AddAssign;
 
-use num::Float;
+use num::{Float, Num};
+use num::Zero;
 
 use crate::c::{comp_col::{CompColMat, CompColRaw}, dense::{DenseRaw, DenseMat}, options::SimpleDriverOptions, simple_driver::SimpleDriver, stat::SuperluStat, value_type::ValueType};
 
+use num::traits::real::Real;
+
 use super::SimpleSolution;
 
-fn distance(a: Vec<f64>, b: Vec<f64>) -> f64 {
+fn distance<P: ValueType>(a: Vec<P>, b: Vec<P>) -> P::RealType {
     if a.len() == b.len() {
-	let mut sum = 0.0;
+	let mut sum = P::RealType::zero();
 	for n in 0..a.len() {
-	    sum += (a[n] - b[n]) * (a[n] - b[n]);
+	    sum += P::abs(a[n] - b[n]) * P::abs(a[n] - b[n])
 	}
-	f64::sqrt(sum)
+	sum.sqrt()
     } else {
 	panic!("a and b must be equal length in nearly_equal()")	
     }

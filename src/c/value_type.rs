@@ -8,7 +8,7 @@
 
 use std::{fmt, str};
 
-use num::Num;
+use num::{Num, Float};
 
 use super::simple_driver::SimpleDriver;
 

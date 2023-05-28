@@ -183,7 +183,7 @@ fn test_drop_leaks() {
     };
 
     // Create the matrix wrapper
-    let a = unsafe { CompColMat::from_raw(raw).expect("Failed to create matrix") };
+    let _a = unsafe { CompColMat::from_raw(raw).expect("Failed to create matrix") };
 }
 
 /// Replace this with better tests covering creating

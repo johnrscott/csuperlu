@@ -13,6 +13,7 @@ use super::{
 };
 
 /// Solution from the simple driver
+#[derive(Debug)]
 pub struct SimpleSolution<P: SimpleDriver> {
     pub x: DenseMat<P>,
     pub perm_c: Vec<i32>,
@@ -22,6 +23,7 @@ pub struct SimpleSolution<P: SimpleDriver> {
 }
 
 /// Enum of errors that can arise during the solution
+#[derive(Debug)]
 pub enum SimpleError {
     /// The factorisatio completed successfully, but A
     /// was singular so no solution was returned
@@ -269,3 +271,6 @@ impl SimpleDriver for num::Complex<f64> {
         simple_result_from_vectors(info, a.num_cols(), b, perm_c, perm_r, l, u)
     }
 }
+
+#[cfg(test)]
+mod tests;

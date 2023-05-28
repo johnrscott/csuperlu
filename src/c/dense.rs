@@ -20,6 +20,7 @@ pub struct DenseRaw<P: CreateDenseMat> {
 }
 
 /// Dense matrix
+#[derive(Debug)]
 pub struct DenseMat<P: CreateDenseMat> {
     col_maj_vals: Vec<P>,
     super_matrix: CSuperMatrix,
@@ -122,7 +123,7 @@ fn test_drop_leaks() {
     };
 
     // Create the matrix wrapper
-    let a = DenseMat::from_raw(raw).expect("Failed to create matrix");
+    let _a = DenseMat::from_raw(raw).expect("Failed to create matrix");
 }
 
 #[test]

@@ -8,14 +8,14 @@
 
 use std::{fmt, str, ops::AddAssign};
 
-use num::{Num, Float, traits::real::Real};
+use num::{Num, Float, traits::real::Real, FromPrimitive};
 
 use super::simple_driver::SimpleDriver;
 
 /// Valid numerical value types for the C SuperLU library
 ///
 pub trait ValueType: Num + Copy + str::FromStr + fmt::Debug + SimpleDriver {
-    type RealType: Real + AddAssign;
+    type RealType: Real + AddAssign + FromPrimitive;
     fn abs(self) -> Self::RealType;    
 }
 

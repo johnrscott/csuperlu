@@ -1,13 +1,24 @@
 use std::ops::AddAssign;
 
-use num::{Float, Num};
+use num::{Float, Num, Complex};
 use num::Zero;
 
 use crate::c::{comp_col::{CompColMat, CompColRaw}, dense::{DenseRaw, DenseMat}, options::SimpleDriverOptions, simple_driver::SimpleDriver, stat::SuperluStat, value_type::ValueType};
 
 use num::traits::real::Real;
+use num::FromPrimitive;
 
 use super::SimpleSolution;
+
+// https://stackoverflow.com/questions/72679829/
+// how-to-write-a-macro-to-turn-a-list-of-tuples-
+// into-a-vec-of-complex-numbers
+fn vec_cmplx<F: Float, const N: usize>(tuples: [(F, F); N]) -> Vec<Complex<F>> {
+    tuples
+        .into_iter()
+        .map(|(re, im)| Complex { re, im })
+        .collect()
+}
 
 fn distance<P: ValueType>(a: Vec<P>, b: Vec<P>) -> P::RealType {
     if a.len() == b.len() {
@@ -21,9 +32,9 @@ fn distance<P: ValueType>(a: Vec<P>, b: Vec<P>) -> P::RealType {
     }
 }
 
-fn check_linear_equation_solution(a: CompColRaw<f64>,
-				  x_correct: Vec<f64>,
-				  b: DenseRaw<f64>) {
+fn check_linear_equation_solution<P: ValueType>(a: CompColRaw<P>,
+						x_correct: Vec<P>,
+						b: DenseRaw<P>) {
     if b.num_cols != 1 {
 	panic!("This function is intended for single-column right-hand sides b")
     }
@@ -43,7 +54,7 @@ fn check_linear_equation_solution(a: CompColRaw<f64>,
 
     // Solve the system
     let solution = unsafe {
-	f64::simple_driver(options,
+	P::simple_driver(options,
 			   &a,
 			   None,
 			   b,
@@ -56,9 +67,12 @@ fn check_linear_equation_solution(a: CompColRaw<f64>,
 	col_maj_vals,
     } = solution.x.to_raw();
 
+    println!("{:?}", col_maj_vals);
+    
     assert!(num_rows == a.num_rows());
     assert!(num_cols == 1);
-    assert!(distance(col_maj_vals, x_correct) < 1e-7);
+    assert!(distance(col_maj_vals, x_correct) <
+	    P::RealType::from_f64(1e-7).unwrap());
 }
 
 #[test]
@@ -86,7 +100,7 @@ fn test_2x2_real_identity_solution() {
 }
 
 #[test]
-fn test_3x3_real_constant_matrix_solution() {
+fn test_3x3_real_matrix_solution() {
 
     // This test checks the solution x to
     //
@@ -111,6 +125,61 @@ fn test_3x3_real_constant_matrix_solution() {
 	num_rows,
 	num_cols: 1,
 	col_maj_vals: vec![-1.0, 3.0, -11.0],
+    };
+    check_linear_equation_solution(a, x_correct, b);
+}
+
+#[test]
+fn test_2x2_complex_pauli_y_solution() {
+
+    // This test checks the solution x to
+    //
+    //   a       x       b
+    // [ 0 -i ] [ 1 ] = [ -2i ]
+    // [ i  0 ] [ 2 ]   [   i ] 
+    //
+    // where a, x and b are complex
+    let a = CompColRaw {
+        num_rows: 2,
+        non_zero_vals: vec_cmplx([(0.0, 1.0), (0.0, -1.0)]),
+        row_indices: vec![1, 0],
+        col_offsets: vec![0, 1, 2],
+    };
+    let x_correct = vec_cmplx([(1.0, 0.0), (2.0, 0.0)]);
+    let b = DenseRaw {
+	num_rows: 2,
+	num_cols: 1,
+	col_maj_vals: vec_cmplx([(0.0, -2.0), (0.0, 1.0)]),
+    };
+    check_linear_equation_solution(a, x_correct, b);
+}
+
+#[test]
+fn test_3x3_complex_matrix_solution() {
+
+    // This test checks the solution x to
+    //
+    //   a                        x        b
+    // [ 0     -5+3i    8+7i ] [  1 ]   [ -26+18i ]
+    // [ 3-10i     0   -3+9i ] [ 2i ] = [  -9+26i ] 
+    // [ 3+i   -8+5i       0 ] [  4 ]   [  -7-15i ]
+    //
+    let num_rows = 3;
+    let a = CompColRaw {
+        num_rows,
+        non_zero_vals: vec_cmplx([(3.0,-10.0), (3.0,1.0),
+				  (-5.0,3.0), (-8.0,5.0),
+				  (8.0,7.0), (-3.0,9.0)]),
+	row_indices: vec![1, 2,
+			  0, 2,
+			  0, 1],
+        col_offsets: vec![0, 2, 4, 6],
+    };
+    let x_correct = vec_cmplx([(1.0,0.0), (0.0,2.0), (4.0,0.0)]);
+    let b = DenseRaw {
+	num_rows,
+	num_cols: 1,
+	col_maj_vals: vec_cmplx([(26.0,18.0), (-9.0,26.0), (-7.0,-15.0)]),
     };
     check_linear_equation_solution(a, x_correct, b);
 }

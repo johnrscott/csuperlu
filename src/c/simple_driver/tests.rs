@@ -6,44 +6,21 @@ use crate::c::{comp_col::{CompColMat, CompColRaw}, dense::{DenseRaw, DenseMat}, 
 
 use super::SimpleSolution;
 
-trait DistanceFrom<P: ValueType> {
-    type RealType;
-    fn distance_from(&self, other_vector: Vec<P>) -> Self::RealType;
-}
-
-impl DistanceFrom<f32> for Vec<f32> {
-    type RealType = f32;
-    fn distance_from(&self, other_vector: Vec<f32>) -> Self::RealType {
-	if self.len() == other_vector.len() {
-	    let mut sum =  0.0;
-	    for n in 0..self.len() {
-		sum += (self[n] - other_vector[n]) * (self[n] - other_vector[n]);
-	    }
-	    f32::sqrt(sum)
-	} else {
-	    panic!("a and b must be equal length")	
-	}	
+fn distance(a: Vec<f64>, b: Vec<f64>) -> f64 {
+    if a.len() == b.len() {
+	let mut sum = 0.0;
+	for n in 0..a.len() {
+	    sum += (a[n] - b[n]) * (a[n] - b[n]);
+	}
+	f64::sqrt(sum)
+    } else {
+	panic!("a and b must be equal length in nearly_equal()")	
     }
 }
 
-impl DistanceFrom<f64> for Vec<f64> {
-    type RealType = f64;
-    fn distance_from(&self, other_vector: Vec<f64>) -> Self::RealType {
-	if self.len() == other_vector.len() {
-	    let mut sum =  0.0;
-	    for n in 0..self.len() {
-		sum += (self[n] - other_vector[n]) * (self[n] - other_vector[n]);
-	    }
-	    f64::sqrt(sum)
-	} else {
-	    panic!("a and b must be equal length")	
-	}	
-    }
-}
-
-fn check_linear_equation_solution<P: ValueType>(a: CompColRaw<P>,
-						x_correct: Vec<P>,
-						b: DenseRaw<P>) {
+fn check_linear_equation_solution(a: CompColRaw<f64>,
+				  x_correct: Vec<f64>,
+				  b: DenseRaw<f64>) {
     if b.num_cols != 1 {
 	panic!("This function is intended for single-column right-hand sides b")
     }
@@ -63,11 +40,11 @@ fn check_linear_equation_solution<P: ValueType>(a: CompColRaw<P>,
 
     // Solve the system
     let solution = unsafe {
-	P::simple_driver(options,
-			 &a,
-			 None,
-			 b,
-			 &mut stats)
+	f64::simple_driver(options,
+			   &a,
+			   None,
+			   b,
+			   &mut stats)
     }.expect("The solution should be valid");
 
     let DenseRaw {
@@ -78,7 +55,7 @@ fn check_linear_equation_solution<P: ValueType>(a: CompColRaw<P>,
 
     assert!(num_rows == a.num_rows());
     assert!(num_cols == 1);
-    assert!(col_maj_vals.distance_from(x_correct) < 1e-7);
+    assert!(distance(col_maj_vals, x_correct) < 1e-7);
 }
 
 #[test]

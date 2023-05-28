@@ -14,35 +14,9 @@ use super::simple_driver::SimpleDriver;
 
 /// Valid numerical value types for the C SuperLU library
 ///
-pub trait ValueType: Num + Copy + str::FromStr + fmt::Debug + SimpleDriver {
-    type RealType;
-    fn abs(&self) -> Self::RealType;
-}
+pub trait ValueType: Num + Copy + str::FromStr + fmt::Debug + SimpleDriver {}
 
-impl ValueType for f32 {
-    type RealType = f32;
-    fn abs(&self) -> f32 {
-	f32::abs(*self)
-    }
-}
-
-impl ValueType for f64 {
-    type RealType = f64;
-    fn abs(&self) -> f64 {
-	f64::abs(*self)
-    }
-}
-
-impl ValueType for num::Complex<f32> {
-    type RealType = f32;
-    fn abs(&self) -> f32 {
-	self.norm()
-    }
-}
-
-impl ValueType for num::Complex<f64> {
-    type RealType = f64;
-    fn abs(&self) -> f64 {
-	self.norm()
-    }
-}
+impl ValueType for f32 {}
+impl ValueType for f64 {}
+impl ValueType for num::Complex<f32> {}
+impl ValueType for num::Complex<f64> {}

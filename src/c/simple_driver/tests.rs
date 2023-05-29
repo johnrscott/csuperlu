@@ -3,6 +3,7 @@ use std::ops::AddAssign;
 use num::{Float, Num, Complex};
 use num::Zero;
 
+use crate::c::options::CSuperluOptions;
 use crate::c::{comp_col::{CompColMat, CompColRaw}, dense::{DenseRaw, DenseMat}, options::SimpleDriverOptions, simple_driver::SimpleDriver, stat::SuperluStat, value_type::ValueType};
 
 use num::traits::real::Real;
@@ -60,11 +61,7 @@ fn check_linear_equation_solution<P: ValueType>(
     
     // Solve the system
     let solution = unsafe {
-	P::simple_driver(options,
-			   &a,
-			   None,
-			   b,
-			   &mut stats)
+	P::simple_driver(options, &a, None, b, &mut stats)
     }.expect("The solution should be valid");
 
     let DenseRaw {
@@ -225,4 +222,50 @@ fn test_4x4_real_row_perm_diagonal_solution() {
     };
     let perm_r_correct = vec![3, 1, 0, 2];
     check_linear_equation_solution(a, x_correct, b, None, Some(perm_r_correct));
+}
+
+#[test]
+fn test_4x4_real_no_row_perm_solution() {
+
+    // This test checks the solution x to
+    //
+    //   a                  x       b
+    // [ 1   0   0   0 ] [  1 ]   [  1 ]
+    // [ 2   1   0   0 ] [  2 ] = [  4 ] 
+    // [ 0   2   1   0 ] [  3 ]   [  7 ]
+    // [ 0   0   2   1 ] [  4 ]   [ 10 ]
+    //
+    // Set the diagonal pivot threshold to u = 0.0
+    // to disable pivoting.
+    // 
+    // Expect row permutation p = [ 0 1 2 3 ] (row
+    // n is moved to p[n]). With pivoting, the
+    // 2s would be moved onto the diagonal (comment
+    // out the set u = 0.0 line to check).
+    let num_rows = 4;
+    let a = CompColRaw {
+        num_rows,
+        non_zero_vals: vec![1.0, 2.0,
+			    1.0, 2.0,
+			    1.0, 2.0,
+			    1.0,],
+	row_indices: vec![0, 1,
+			  1, 2,
+			  2, 3,
+			  3],
+        col_offsets: vec![0, 2, 4, 6, 7],
+    };
+    let x_correct = vec![1.0, 2.0, 3.0, 4.0];
+    let b = DenseRaw {
+	num_rows,
+	num_cols: 1,
+	col_maj_vals: vec![1.0, 4.0, 7.0, 10.0],
+    };
+    let perm_r_correct = vec![0, 1, 2, 3];
+
+    let mut options = SimpleDriverOptions::new();
+    options.set_diagonal_pivot_threshold(0.0);
+    check_linear_equation_solution(a, x_correct, b,
+				   Some(options),
+				   Some(perm_r_correct));
 }

@@ -13,12 +13,36 @@ use super::{
 };
 
 /// Solution from the simple driver
+///
+/// This struct contains the solution $x$ to $Ax=b$, along with a factorisation
+/// of $A$. The simple driver factorises $A$ as $$P_rAP_c = LU.$$
+///
+/// The row permutation matrix $P_r$ is chosen during the Gaussian elimination
+/// step, in order to move large-magnitude elements in each column onto the
+/// diagonal. These large elements are called pivots, and are used to eliminate
+/// the other elements in the column.
 #[derive(Debug)]
 pub struct SimpleSolution<P: SimpleDriver> {
+    /// The solution $x$ to $Ax=b$
     pub x: DenseMat<P>,
+    /// The column permutation vector representing $P_c$. 
     pub perm_c: Vec<i32>,
+
+    /// Row $n$ of $A$ becomes row perm_r[n] of $P_r A$. The matrix $P_r$
+    /// has ones at positions (perm_r[n], n), and zeros elsewhere.
+    /// 
+    /// Row $i$ of $P_r$ defines row $i$ of $P_r A$ as a linear combination of
+    /// rows of $A$. Each row of $P_r$ has exactly one 1 at column $n$,
+    /// which sets row $i$ of $P_r A$ equal to row $n$ of $A$. 
+    ///
+    /// For example, if perm_r = [ 3 1 0 2 ], then row 0 of $A$ becomes
+    /// row 3 of $P_r A$, row 1 of $A$ becomes row 1 of $P_r A$, row 2 of $A$
+    /// becomes row 0 of $P_r A$, and row 3 of $P_r A$ becomes row 2 of $P_r A$.
+    ///
     pub perm_r: Vec<i32>,
+    /// The matrix $L$ 
     pub l: CSuperMatrix,
+    /// The matrix $U$
     pub u: CSuperMatrix,
 }
 

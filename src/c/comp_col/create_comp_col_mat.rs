@@ -1,6 +1,10 @@
 //! Low-level creation of compressed-column matrices
 
-use csuperlu_sys::{sCreate_CompCol_Matrix, SuperMatrix, dCreate_CompCol_Matrix, Stype_t_SLU_NC, Dtype_t_SLU_S, Mtype_t_SLU_GE, Dtype_t_SLU_D, cCreate_CompCol_Matrix, complex, Dtype_t_SLU_C, zCreate_CompCol_Matrix, doublecomplex, Dtype_t_SLU_Z};
+use csuperlu_sys::{
+    cCreate_CompCol_Matrix, complex, dCreate_CompCol_Matrix, doublecomplex, sCreate_CompCol_Matrix,
+    zCreate_CompCol_Matrix, Dtype_t_SLU_C, Dtype_t_SLU_D, Dtype_t_SLU_S, Dtype_t_SLU_Z,
+    Mtype_t_SLU_GE, Stype_t_SLU_NC, SuperMatrix,
+};
 
 use crate::c::{error::Error, super_matrix::CSuperMatrix};
 
@@ -124,7 +128,7 @@ impl CreateCompColMat for num::Complex<f32> {
             i32::try_from(num_rows).unwrap(),
             (col_offsets.len() - 1) as i32,
             non_zero_vals.len() as i32,
-	    non_zero_vals.as_ptr() as *mut complex,
+            non_zero_vals.as_ptr() as *mut complex,
             row_indices.as_ptr() as *mut i32,
             col_offsets.as_ptr() as *mut i32,
             Stype_t_SLU_NC,
@@ -149,7 +153,7 @@ impl CreateCompColMat for num::Complex<f64> {
             i32::try_from(num_rows).unwrap(),
             (col_offsets.len() - 1) as i32,
             non_zero_vals.len() as i32,
-	    non_zero_vals.as_ptr() as *mut doublecomplex,
+            non_zero_vals.as_ptr() as *mut doublecomplex,
             row_indices.as_ptr() as *mut i32,
             col_offsets.as_ptr() as *mut i32,
             Stype_t_SLU_NC,

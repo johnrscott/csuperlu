@@ -29,13 +29,12 @@
 //!
 //!
 
-
-pub mod simple_driver;
-pub mod value_type;
-mod free;
-pub mod options;
-pub mod stat;
-pub mod super_matrix;
 pub mod comp_col;
 pub mod dense;
 pub mod error;
+mod free;
+pub mod options;
+pub mod simple_driver;
+pub mod stat;
+pub mod super_matrix;
+pub mod value_type;

@@ -1,4 +1,3 @@
-
 use super::*;
 
 #[test]
@@ -34,11 +33,11 @@ fn insert_into_fixed_matrix() {
     assert_eq!(a.non_zero_vals[&(1, 3)], 1.5);
     assert_eq!(a.get(4, 2), 0.4);
     for i in 0..5 {
-	for j in 0..5 {
-	    if !((i == 1 && j == 3) || (i == 4 && j == 2)) {
-		assert_eq!(a.get(i, j), 0.0);		
-	    }
-	}
+        for j in 0..5 {
+            if !((i == 1 && j == 3) || (i == 4 && j == 2)) {
+                assert_eq!(a.get(i, j), 0.0);
+            }
+        }
     }
 }
 
@@ -70,11 +69,11 @@ fn insert_into_dynamic_matrix() {
     assert_eq!(a.get(4, 2), 0.4);
     // Check up to 5x5 even though it isn't that size
     for i in 0..5 {
-	for j in 0..5 {
-	    if !((i == 1 && j == 3) || (i == 4 && j == 2)) {
-		assert_eq!(a.get_unbounded(i, j), 0.0);		
-	    }
-	}
+        for j in 0..5 {
+            if !((i == 1 && j == 3) || (i == 4 && j == 2)) {
+                assert_eq!(a.get_unbounded(i, j), 0.0);
+            }
+        }
     }
 }
 

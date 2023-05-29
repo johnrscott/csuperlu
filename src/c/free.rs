@@ -1,8 +1,10 @@
 //! Functions for freeing memory allocated to superlu structures
 //!
 
-use csuperlu_sys::{Destroy_CompCol_Matrix,
-		   Destroy_Dense_Matrix, Destroy_SuperNode_Matrix, SuperMatrix, Destroy_SuperMatrix_Store};
+use csuperlu_sys::{
+    Destroy_CompCol_Matrix, Destroy_Dense_Matrix, Destroy_SuperMatrix_Store,
+    Destroy_SuperNode_Matrix, SuperMatrix,
+};
 
 use crate::c::super_matrix::CSuperMatrix;
 
@@ -31,4 +33,3 @@ pub unsafe fn destroy_super_node_matrix(a: &mut CSuperMatrix) {
 pub unsafe fn destroy_super_matrix_store(a: &mut CSuperMatrix) {
     Destroy_SuperMatrix_Store(a.super_matrix() as *const SuperMatrix as *mut SuperMatrix);
 }
-

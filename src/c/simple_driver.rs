@@ -9,8 +9,33 @@ use super::{
     error::Error,
     options::SimpleDriverOptions,
     stat::SuperluStat,
-    super_matrix::CSuperMatrix,
+    super_matrix::CSuperMatrix, free::destroy_super_node_matrix,
 };
+
+#[derive(Debug)]
+pub struct LUDecomp {
+    pub l: CSuperMatrix,
+    pub u: CSuperMatrix
+}
+
+impl LUDecomp {
+    /// # Safety
+    ///
+    /// The arguments must be allocated L and U matrices
+    pub unsafe fn new(l: CSuperMatrix, u: CSuperMatrix) -> Self {
+	Self { l, u }
+    }
+}
+
+impl Drop for LUDecomp {
+    fn drop(&mut self) {
+        unsafe {
+            destroy_super_node_matrix(&mut self.l);
+	    destroy_super_node_matrix(&mut self.u);
+        }
+    }
+
+}
 
 /// Solution from the simple driver
 ///
@@ -40,11 +65,10 @@ pub struct SimpleSolution<P: SimpleDriver> {
     /// becomes row 0 of $P_r A$, and row 3 of $P_r A$ becomes row 2 of $P_r A$.
     ///
     pub perm_r: Vec<i32>,
-    /// The matrix $L$ 
-    pub l: CSuperMatrix,
-    /// The matrix $U$
-    pub u: CSuperMatrix,
+    pub lu: LUDecomp,
 }
+
+
 
 /// Enum of errors that can arise during the solution
 #[derive(Debug)]
@@ -55,8 +79,7 @@ pub enum SimpleError {
         singular_column: usize,
         perm_c: Vec<i32>,
         perm_r: Vec<i32>,
-        l: CSuperMatrix,
-        u: CSuperMatrix,
+        lu: LUDecomp
     },
     /// An out-of-memory error or another (unknown) error
     /// occured.
@@ -75,7 +98,7 @@ pub enum SimpleError {
 /// occured. In that case, (info - num_cols_a) is the number
 /// of bytes allocated when the failure occured. TODO check
 /// the superlu source code that this is not out-by-one.
-fn simple_result_from_vectors<P: SimpleDriver>(
+unsafe fn simple_result_from_vectors<P: SimpleDriver>(
     info: i32,
     num_cols_a: usize,
     x: DenseMat<P>,
@@ -93,8 +116,7 @@ fn simple_result_from_vectors<P: SimpleDriver>(
             x,
             perm_c,
             perm_r,
-            l,
-            u,
+            lu: LUDecomp::new(l, u),
         })
     } else if info as usize <= num_cols_a {
         // A is singular, factorisation successful
@@ -102,8 +124,7 @@ fn simple_result_from_vectors<P: SimpleDriver>(
             singular_column: info as usize - 1,
             perm_c,
             perm_r,
-            l,
-            u,
+            lu: LUDecomp::new(l, u),
         })
     } else {
         // Failed due to singular A -- factorisation complete
